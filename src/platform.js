@@ -46,7 +46,7 @@ class HomePodIsraelHebrewPlatform {
   async setup() {
     const cfg = this.config;
     this.tts = new TtsService(cfg.tts || {}, path.join(this.api.user.storagePath(), CACHE_DIR), this.log);
-    this.env = new PyatvEnv(this.log, { pythonPath: cfg.pythonPath });
+    this.env = new PyatvEnv(this.log, { pythonPath: cfg.pythonPath, storagePath: this.api.user.storagePath() });
 
     for (const s of cfg.speakers || []) {
       if (!s || !s.name) continue;

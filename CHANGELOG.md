@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.0
+- The voice engine (pyatv) now lives in the Homebridge storage directory (`homepod-israel-hebrew-engine`), so it is part of Homebridge backups. It is set up again automatically on first start (a few minutes); the old `~/.homepod-israel-hebrew` folder is removed once the new one is ready.
+- Prepared for "Verified by Homebridge".
+
 ## 1.3.1
 - Docs: step-by-step Cartesia key guide (Hebrew and English).
 - Docs: every voice provider is now marked free 🆓 or paid 💳, with a note that no payment is needed.

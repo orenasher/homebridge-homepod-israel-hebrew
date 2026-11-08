@@ -1,8 +1,8 @@
 {
   "name": "homebridge-homepod-israel-hebrew",
   "displayName": "HomePod Israel Hebrew",
-  "version": "1.3.1",
-  "description": "הכרזות קוליות טבעיות בעברית בהום פוד — Natural-sounding Hebrew (and English) announcements on HomePods: a switch per phrase, choose which HomePod speaks, many voices (Hila, Avri, Google, ElevenLabs), bilingual settings screen. Fully self-contained.",
+  "version": "1.4.0",
+  "description": "הכרזות קוליות טבעיות בעברית בהום פוד — Natural-sounding Hebrew (and English) announcements on HomePods: a switch per phrase, choose which HomePod speaks, dozens of voices (Gemini, Microsoft Hila/Avri, Cartesia, OpenAI, Google, ElevenLabs, voice cloning) with speaking styles, bilingual settings screen. Fully self-contained.",
   "main": "index.js",
   "license": "MIT",
   "author": "Oren Asher",

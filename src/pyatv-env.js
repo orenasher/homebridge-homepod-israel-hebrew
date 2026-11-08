@@ -40,14 +40,31 @@ function executable(p) {
   }
 }
 
+const ENGINE_DIR = 'homepod-israel-hebrew-engine';
+const DEFAULT_STORAGE = process.env.UIX_STORAGE_PATH || '/var/lib/homebridge';
+
+/* Versions before 1.4.0 kept the engine in ~/.homepod-israel-hebrew. It now lives in the
+   Homebridge storage directory; once the new one is ready, remove the old copy. */
+function removeLegacyEngine(currentDir, log) {
+  const legacy = path.join(os.homedir(), '.homepod-israel-hebrew');
+  if (path.resolve(legacy) === path.resolve(currentDir) || !fs.existsSync(path.join(legacy, 'venv'))) return;
+  try {
+    fs.rmSync(legacy, { recursive: true, force: true });
+    log.info(`Removed the old voice engine folder ${legacy}.`);
+  } catch (err) {
+    log.debug(`Could not remove ${legacy}: ${err.message}`);
+  }
+}
+
 class PyatvEnv {
   /**
    * @param {object} log logger with info/warn/error/debug
-   * @param {object} [opts] { baseDir, pythonPath } — pythonPath = use an existing python with pyatv
+   * @param {object} [opts] { storagePath, baseDir, pythonPath } — the engine lives in the Homebridge
+   *   storage directory; pythonPath = use an existing python with pyatv
    */
   constructor(log, opts = {}) {
     this.log = log;
-    this.baseDir = opts.baseDir || path.join(os.homedir(), '.homepod-israel-hebrew');
+    this.baseDir = opts.baseDir || path.join(opts.storagePath || DEFAULT_STORAGE, ENGINE_DIR);
     this.venv = path.join(this.baseDir, 'venv');
     this.stamp = path.join(this.baseDir, 'installed.txt');
     this.override = opts.pythonPath || '';
@@ -167,6 +184,7 @@ class PyatvEnv {
     const check = await this.helperOnce({ cmd: 'check' }, 60000);
     fs.writeFileSync(this.stamp, `${STAMP_VALUE}\n`);
     this.log.info(`Voice engine ready (pyatv ${check.pyatv}).`);
+    removeLegacyEngine(this.baseDir, this.log);
   }
 
   /*
@@ -307,4 +325,4 @@ function lastLine(err) {
   return text.split('\n').filter(Boolean).slice(-2).join(' ').slice(0, 400);
 }
 
-module.exports = { PyatvEnv, REQUIREMENTS };
+module.exports = { PyatvEnv, REQUIREMENTS, ENGINE_DIR };

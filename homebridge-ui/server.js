@@ -24,13 +24,13 @@ const quietLog = {
   class UiServer extends HomebridgePluginUiServer {
     constructor() {
       super();
-      this.env = new PyatvEnv(quietLog);
+      this.env = new PyatvEnv(quietLog, { storagePath: this.homebridgeStoragePath });
 
       this.onRequest('/voices', async () => listVoices());
       this.onRequest('/styles', async () => listStyles());
 
       this.onRequest('/status', async (body = {}) => {
-        if (body.pythonPath) this.env = new PyatvEnv(quietLog, { pythonPath: body.pythonPath });
+        if (body.pythonPath) this.env = new PyatvEnv(quietLog, { pythonPath: body.pythonPath, storagePath: this.homebridgeStoragePath });
         return { engine: this.env.status(), error: this.env.lastError || '' };
       });
 

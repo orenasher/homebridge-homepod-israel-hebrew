@@ -28,7 +28,7 @@ function loadConfig(file) {
   const ci = args.indexOf('--config');
   const configFile = ci >= 0 ? args.splice(ci, 2)[1] : '/var/lib/homebridge/config.json';
   const [cmd, ...rest] = args;
-  const env = new PyatvEnv(log);
+  const env = new PyatvEnv(log, { storagePath: path.dirname(path.resolve(configFile)) });
   env.noDaemon = true; // one-shot is simpler for a command that exits right away
 
   if (cmd === 'engine') {
