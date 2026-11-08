@@ -60,19 +60,21 @@ class Characteristic extends EventEmitter {
   updateValue(v) { this.value = v; return this; }
 }
 class Service {
-  constructor(name) { this.name = name; this.chars = new Map(); }
+  constructor(name, type, subtype) { this.name = name; this.UUID = type; this.subtype = subtype; this.chars = new Map(); }
   setCharacteristic() { return this; }
   testCharacteristic() { return false; }
   addOptionalCharacteristic() {}
   getCharacteristic(c) { if (!this.chars.has(c)) this.chars.set(c, new Characteristic()); return this.chars.get(c); }
 }
 class PlatformAccessory {
-  constructor(name, uuid) { this.displayName = name; this.UUID = uuid; this.context = {}; this.services = { info: new Service('info') }; }
-  getService(t) { return this.services[t]; }
-  addService(t, n) { this.services[t] = new Service(n); return this.services[t]; }
+  constructor(name, uuid) { this.displayName = name; this.UUID = uuid; this.context = {}; this.services = [new Service('info', 'info')]; }
+  getService(t) { return this.services.find((s) => s.UUID === (t.UUID || t)); }
+  getServiceById(t, sub) { return this.services.find((s) => s.UUID === (t.UUID || t) && s.subtype === sub); }
+  addService(t, n, sub) { const s = new Service(n, t.UUID || t, sub); this.services.push(s); return s; }
+  removeService(s) { this.services = this.services.filter((x) => x !== s); }
 }
 const api = new EventEmitter();
-api.hap = { Service: { AccessoryInformation: 'info', Switch: 'switch' },
+api.hap = { Service: { AccessoryInformation: { UUID: 'info' }, Switch: { UUID: 'switch' } },
   Characteristic: { On: 'On', Name: 'Name', ConfiguredName: 'CN', Manufacturer: 'm', Model: 'mo', SerialNumber: 's' },
   uuid: { generate: (s) => require('crypto').createHash('md5').update(s).digest('hex') } };
 api.platformAccessory = PlatformAccessory;
@@ -289,6 +291,38 @@ exit 1
   // 8. switchName
   const { switchName } = require('../src/platform');
   assert.strictEqual(switchName('מזגן דולק וחלון פתוח בחדר של תומר, נא לסגור את החלון בבקשה'), 'מזגן דולק וחלון פתוח בחדר של תומר נא');
+
+  // 9. group mode: one accessory, a switch per phrase
+  {
+    const reg2 = [];
+    let unreg = [];
+    const api2 = Object.assign(new EventEmitter(), api, {
+      registerPlatformAccessories: (p, n, a) => reg2.push(...a),
+      unregisterPlatformAccessories: (p, n, a) => { unreg = a; },
+    });
+    const gp = new Platform(log, { ...config, webhook: {}, pregenerate: false, groupSwitches: true }, api2);
+    for (const a of registered) gp.configureAccessory(a); // the old per-phrase switches are cached
+    gp.speakers = platform.speakers; gp.tts = platform.tts; gp.env = platform.env;
+    gp.syncAccessories();
+    assert.strictEqual(reg2.length, 1, 'one group accessory');
+    assert.strictEqual(reg2[0].displayName, 'קבצי הקול שלי');
+    const sw = reg2[0].services.filter((x) => x.UUID === 'switch');
+    assert.deepStrictEqual(sw.map((x) => x.subtype), ['ארוחת ערב מוכנה כולם לשולחן', 'הכביסה מוכנה', 'Good night']);
+    assert.strictEqual(unreg.length, 3, 'old single switches removed');
+    const before = speakCalls().length;
+    sw[1].getCharacteristic('On').setter(true);
+    await sleep(400);
+    const last = speakCalls().slice(before);
+    assert.ok(last.length >= 1 && last.every((c) => c.host === '10.0.0.5'), 'group switch speaks its own phrase on its HomePod');
+
+    // a removed phrase disappears from the group; back to single switches removes the group
+    gp.config = { ...gp.config, phrases: [config.phrases[1]] };
+    gp.syncAccessories();
+    assert.deepStrictEqual(reg2[0].services.filter((x) => x.UUID === 'switch').map((x) => x.subtype), ['הכביסה מוכנה']);
+    gp.config = { ...gp.config, groupSwitches: false };
+    gp.syncAccessories();
+    assert.strictEqual(unreg[0], reg2[0], 'group accessory removed when grouping is off');
+  }
 
   api.emit('shutdown');
   console.log('All tests passed');

@@ -53,6 +53,15 @@
     <div class="muted" style="margin-bottom:8px" data-t="phrasesHelp"></div>
     <div id="phrases"></div>
     <button id="addPhraseBtn" class="btn btn-primary btn-sm" data-t="addPhrase"></button>
+    <div class="form-check" style="margin-top:12px">
+      <input id="groupSwitches" type="checkbox" class="form-check-input">
+      <label for="groupSwitches" class="form-check-label" data-t="groupSwitches"></label>
+    </div>
+    <div id="groupBox" style="display:none; margin-top:6px">
+      <label data-t="groupName"></label>
+      <input id="groupName" type="text" class="form-control">
+      <div class="muted" style="margin-top:4px" data-t="groupHelp"></div>
+    </div>
   </div>
 
   <!-- Default voice -->
@@ -167,6 +176,8 @@
       noSpeakers: 'עדיין אין הום פודים. לחץ "חפש הום פודים".',
       phrasesTitle: '💬 מה ההום פוד יגיד',
       phrasesHelp: 'כל משפט הופך למתג בבית של אפל. בוחרים איזה הום פוד ידבר (אחד, כמה או כולם), קול וווליום.',
+      groupSwitches: '📁 כל המתגים בקבוצה אחת (אביזר אחד בבית של אפל)', groupName: 'שם הקבוצה',
+      groupHelp: 'בבית של אפל יופיע אביזר אחד, ובתוכו מתג לכל משפט. שינוי ההגדרה יוצר את המתגים מחדש, אז צריך לחבר מחדש אוטומציות קיימות.',
       addPhrase: '➕ הוסף משפט', phraseText: 'הטקסט שיוקרא', switchName: 'שם המתג (לא חובה)',
       who: 'מי ידבר:', allIfNone: '(אם לא סומן — כולם)', voice: 'קול', defaultOpt: 'ברירת המחדל',
       useVol: 'ווליום מיוחד', test: '▶️ השמע עכשיו', testing: 'משמיע…', played: 'הושמע ✓',
@@ -216,6 +227,8 @@
       noSpeakers: 'No HomePods yet. Tap "Find HomePods".',
       phrasesTitle: '💬 What the HomePod will say',
       phrasesHelp: 'Each phrase becomes a switch in Apple Home. Choose which HomePod speaks (one, several or all), the voice and the volume.',
+      groupSwitches: '📁 All switches in one group (one accessory in Apple Home)', groupName: 'Group name',
+      groupHelp: 'Apple Home shows one accessory with a switch for each phrase inside. Changing this recreates the switches, so existing automations need to be reconnected.',
       addPhrase: '➕ Add phrase', phraseText: 'Text to say', switchName: 'Switch name (optional)',
       who: 'Who speaks:', allIfNone: '(none checked = all)', voice: 'Voice', defaultOpt: 'Default',
       useVol: 'Custom volume', test: '▶️ Play now', testing: 'Playing…', played: 'Played ✓',
@@ -542,6 +555,9 @@
   bind('whEnabled', (el) => { el.checked = !!cfg.webhook.enabled; }, (el) => { cfg.webhook.enabled = el.checked; });
   bind('whPort', (el) => { el.value = cfg.webhook.port || 8095; }, (el) => { cfg.webhook.port = Number(el.value) || 8095; });
   bind('whToken', (el) => { el.value = cfg.webhook.token || ''; }, (el) => { cfg.webhook.token = el.value.trim(); });
+  const showGroup = () => { $('groupBox').style.display = cfg.groupSwitches ? '' : 'none'; };
+  bind('groupSwitches', (el) => { el.checked = !!cfg.groupSwitches; showGroup(); }, (el) => { cfg.groupSwitches = el.checked; showGroup(); });
+  bind('groupName', (el) => { el.placeholder = 'קבצי הקול שלי'; el.value = cfg.groupName || ''; }, (el) => { const v = el.value.trim(); if (v) cfg.groupName = v; else delete cfg.groupName; });
   bind('restoreVolume', (el) => { el.checked = cfg.restoreVolume !== false; }, (el) => { cfg.restoreVolume = el.checked; });
   bind('pregenerate', (el) => { el.checked = cfg.pregenerate !== false; }, (el) => { cfg.pregenerate = el.checked; });
   bind('cacheDays', (el) => { el.value = cfg.cacheDays || 90; }, (el) => { cfg.cacheDays = Number(el.value) || 90; });

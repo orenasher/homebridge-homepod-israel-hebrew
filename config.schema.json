@@ -157,6 +157,17 @@
           }
         }
       },
+      "groupSwitches": {
+        "title": "כל המתגים בקבוצה אחת | All switches in one group",
+        "type": "boolean",
+        "default": false,
+        "description": "מציג את כל המשפטים כאביזר אחד בבית של אפל | Show all phrases as one accessory in Apple Home"
+      },
+      "groupName": {
+        "title": "שם הקבוצה | Group name",
+        "type": "string",
+        "default": "קבצי הקול שלי"
+      },
       "voice": {
         "title": "קול ברירת מחדל | Default voice",
         "type": "string",

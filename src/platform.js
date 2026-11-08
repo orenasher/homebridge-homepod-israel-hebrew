@@ -10,6 +10,8 @@ const { DEFAULT_VOICE } = require('./voices');
 const PLUGIN_NAME = 'homebridge-homepod-israel-hebrew';
 const PLATFORM_NAME = 'HomePodIsraelHebrew';
 const CACHE_DIR = 'homepod-israel-hebrew-cache';
+const DEFAULT_GROUP_NAME = 'קבצי הקול שלי';
+const MAX_GROUP_SWITCHES = 90; // HomeKit allows up to 100 services per accessory
 
 class HomePodIsraelHebrewPlatform {
   constructor(log, config, api) {
@@ -93,46 +95,43 @@ class HomePodIsraelHebrewPlatform {
   }
 
   syncAccessories() {
-    const { Service, Characteristic } = this.api.hap;
+    const items = this.items();
     const wanted = new Set();
 
-    for (const item of this.items()) {
-      const uuid = this.api.hap.uuid.generate(`${PLATFORM_NAME}:${item.name}`);
+    if (this.config.groupSwitches) {
+      // One accessory ("My voice files") holding a switch per phrase.
+      const groupName = switchName(this.config.groupName || DEFAULT_GROUP_NAME);
+      const uuid = this.api.hap.uuid.generate(`${PLATFORM_NAME}:group`);
       wanted.add(uuid);
-
-      let accessory = this.cached.get(uuid);
-      const isNew = !accessory;
-      if (isNew) accessory = new this.api.platformAccessory(item.name, uuid);
-      accessory.context.item = item;
-
-      accessory.getService(Service.AccessoryInformation)
-        .setCharacteristic(Characteristic.Manufacturer, 'Oren Asher')
-        .setCharacteristic(Characteristic.Model, 'HomePod Israel Hebrew')
-        .setCharacteristic(Characteristic.SerialNumber, uuid.slice(0, 13));
-
-      const service = accessory.getService(Service.Switch) || accessory.addService(Service.Switch, item.name);
-      service.setCharacteristic(Characteristic.Name, item.name);
-      if (Characteristic.ConfiguredName) {
-        try {
-          if (!service.testCharacteristic(Characteristic.ConfiguredName)) service.addOptionalCharacteristic(Characteristic.ConfiguredName);
-          service.setCharacteristic(Characteristic.ConfiguredName, item.name);
-        } catch { /* older HAP */ }
+      const shown = items.slice(0, MAX_GROUP_SWITCHES);
+      if (items.length > shown.length) {
+        this.log.warn(`A group can hold up to ${MAX_GROUP_SWITCHES} switches — ${items.length - shown.length} phrase(s) were left out.`);
       }
-      const on = service.getCharacteristic(Characteristic.On);
-      on.onGet(() => false);
-      on.onSet((value) => {
-        if (!value) return;
-        // momentary: report "off" again so the next trigger works
-        setTimeout(() => on.updateValue(false), 1000);
-        this.announce(accessory.context.item).catch((err) => this.log.error(`"${accessory.context.item.name}": ${err.message}`));
+      this.ensureAccessory(uuid, groupName, (accessory) => {
+        accessory.context.group = true;
+        accessory.context.items = shown;
+        const { Service } = this.api.hap;
+        const keep = new Set(shown.map((i) => i.name));
+        for (const svc of [...accessory.services]) {
+          if (svc.UUID === Service.Switch.UUID && !keep.has(svc.subtype)) accessory.removeService(svc);
+        }
+        for (const item of shown) {
+          const service = accessory.getServiceById(Service.Switch, item.name)
+            || accessory.addService(Service.Switch, item.name, item.name);
+          this.setupSwitch(service, item.name, () => (accessory.context.items || []).find((i) => i.name === item.name));
+        }
       });
-      on.updateValue(false);
-
-      if (isNew) {
-        this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
-        this.log.info(`Added switch "${item.name}"`);
-      } else {
-        this.api.updatePlatformAccessories([accessory]);
+    } else {
+      for (const item of items) {
+        const uuid = this.api.hap.uuid.generate(`${PLATFORM_NAME}:${item.name}`);
+        wanted.add(uuid);
+        this.ensureAccessory(uuid, item.name, (accessory) => {
+          accessory.context.group = false;
+          accessory.context.item = item;
+          const { Service } = this.api.hap;
+          const service = accessory.getService(Service.Switch) || accessory.addService(Service.Switch, item.name);
+          this.setupSwitch(service, item.name, () => accessory.context.item);
+        });
       }
     }
 
@@ -141,9 +140,57 @@ class HomePodIsraelHebrewPlatform {
       this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, stale);
       for (const a of stale) {
         this.cached.delete(a.UUID);
-        this.log.info(`Removed switch "${a.displayName}"`);
+        this.log.info(`Removed "${a.displayName}"`);
       }
     }
+  }
+
+  /** Create or refresh one accessory, then let `fill` add its switch services. */
+  ensureAccessory(uuid, name, fill) {
+    const { Service, Characteristic } = this.api.hap;
+    let accessory = this.cached.get(uuid);
+    const isNew = !accessory;
+    if (isNew) accessory = new this.api.platformAccessory(name, uuid);
+    if (accessory.displayName !== name) accessory.displayName = name;
+
+    accessory.getService(Service.AccessoryInformation)
+      .setCharacteristic(Characteristic.Name, name)
+      .setCharacteristic(Characteristic.Manufacturer, 'Oren Asher')
+      .setCharacteristic(Characteristic.Model, 'HomePod Israel Hebrew')
+      .setCharacteristic(Characteristic.SerialNumber, uuid.slice(0, 13));
+
+    fill(accessory);
+
+    if (isNew) {
+      this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+      this.cached.set(uuid, accessory);
+      this.log.info(`Added "${name}"`);
+    } else {
+      this.api.updatePlatformAccessories([accessory]);
+    }
+  }
+
+  /** A momentary switch that speaks its phrase. */
+  setupSwitch(service, name, getItem) {
+    const { Characteristic } = this.api.hap;
+    service.setCharacteristic(Characteristic.Name, name);
+    if (Characteristic.ConfiguredName) {
+      try {
+        if (!service.testCharacteristic(Characteristic.ConfiguredName)) service.addOptionalCharacteristic(Characteristic.ConfiguredName);
+        service.setCharacteristic(Characteristic.ConfiguredName, name);
+      } catch { /* older HAP */ }
+    }
+    const on = service.getCharacteristic(Characteristic.On);
+    on.onGet(() => false);
+    on.onSet((value) => {
+      if (!value) return;
+      // momentary: report "off" again so the next trigger works
+      setTimeout(() => on.updateValue(false), 1000);
+      const item = getItem();
+      if (!item) return;
+      this.announce(item).catch((err) => this.log.error(`"${item.name}": ${err.message}`));
+    });
+    on.updateValue(false);
   }
 
   /* ------------------------------------------------------------ speaking */

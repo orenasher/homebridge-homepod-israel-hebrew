@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.5.0
+- **New (optional): all switches in one group** — one accessory in Apple Home (default name "קבצי הקול שלי") with a switch for each phrase inside. Off by default.
+
 ## 1.4.1
 - Stability: if the voice helper exits at the exact moment a phrase is sent, the error is now logged instead of being able to stop Homebridge.
 - New blue-and-white icon.

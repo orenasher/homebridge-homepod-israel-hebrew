@@ -17,6 +17,7 @@ Type a sentence → it becomes a switch in Apple Home → turn it on and the Hom
 
 - 🇮🇱 **Made for Israelis** — Hebrew by default, bilingual settings screen (Hebrew / English toggle).
 - 💬 **One phrase = one switch.**
+- 📁 **One group (optional)** — all switches inside a single accessory called "My voice files", keeping Apple Home tidy.
 - 🔊 **Pick the HomePods per phrase** — kitchen only, bedroom only, or both together.
 - 🎙️ **Voice + style per phrase** — 16 truly different Gemini voices (free key), Microsoft's Hila & Avri, Google and ElevenLabs; 9 styles: cheerful, calm, whisper, announcer, urgent, warm, excited, playful.
 - ▶️ **Test playback** right from the settings screen.
@@ -41,6 +42,16 @@ Type a sentence → it becomes a switch in Apple Home → turn it on and the Hom
 4. **Write phrases** — tap **➕ Add phrase**. Type the text, tick **who speaks** (none ticked = all), pick a voice, optionally a custom volume, and tap **▶️ Play now** to hear it.
 5. **Save** and restart Homebridge. The switches appear in Apple Home.
 6. **Use it** — tap the switch, ask Siri, or trigger it from an Apple Home automation.
+
+### 📁 All switches in one group (optional)
+Got many phrases? Collect all the switches into one accessory so Apple Home stays tidy.
+1. In the plugin settings, under the phrase list, tick **"📁 All switches in one group"**.
+2. Optionally rename the group (default: **"קבצי הקול שלי"** — "My voice files").
+3. Save and restart Homebridge.
+4. Apple Home shows one accessory; open it to find a switch for each phrase.
+
+> ⚠️ Switching between separate switches and the group (either way) recreates the switches, so existing automations and scenes need to be reconnected. Siri keeps working by switch name.
+> 💡 If Apple Home shows the switches as separate tiles: long-press one of the switches → ⚙️ → turn off **Show as Separate Tiles**.
 
 ---
 
