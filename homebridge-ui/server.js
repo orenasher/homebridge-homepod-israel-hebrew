@@ -8,6 +8,7 @@ const { TtsService } = require('../src/tts');
 const { Speaker } = require('../src/player');
 const { listVoices, listStyles } = require('../src/voices');
 const { CACHE_DIR } = require('../src/platform');
+const { listCartesiaVoices, createElevenLabsClone } = require('../src/providers');
 
 const quietLog = {
   info: (m) => console.log(m),
@@ -39,6 +40,25 @@ const quietLog = {
           return { engine: 'ready' };
         } catch (err) {
           throw new RequestError(err.message, { engine: 'error' });
+        }
+      });
+
+      this.onRequest('/cartesia-voices', async (body = {}) => {
+        try {
+          return await listCartesiaVoices(body.apiKey);
+        } catch (err) {
+          throw new RequestError(err.message, {});
+        }
+      });
+
+      this.onRequest('/clone', async (body = {}) => {
+        try {
+          const files = (body.files || []).map((f) => ({ name: f.name, type: f.type, data: Buffer.from(f.data || '', 'base64') }))
+            .filter((f) => f.data.length > 1000);
+          if (!files.length) throw new Error('the recording is empty');
+          return await createElevenLabsClone(body.apiKey, body.name, files);
+        } catch (err) {
+          throw new RequestError(err.message, {});
         }
       });
 

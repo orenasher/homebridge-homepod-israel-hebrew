@@ -82,11 +82,36 @@
       <input id="elVoice" type="text" class="form-control" autocomplete="off">
       <label data-t="gKey" style="margin-top:6px"></label>
       <input id="gKey" type="password" class="form-control" autocomplete="off">
+      <label data-t="oaKey" style="margin-top:6px"></label>
+      <input id="oaKey" type="password" class="form-control" autocomplete="off" placeholder="sk-...">
+      <div class="muted" data-t="oaHelp"></div>
+      <label data-t="caKey" style="margin-top:6px"></label>
+      <div class="row-flex">
+        <input id="caKey" type="password" class="form-control grow" autocomplete="off" placeholder="sk_car_...">
+        <button id="caLoad" class="btn btn-sm btn-outline-primary" data-t="caLoad"></button>
+      </div>
+      <div class="muted" data-t="caHelp"></div>
+      <div id="caList" style="margin-top:6px"></div>
       <div class="form-check" style="margin-top:8px">
         <input id="fallback" type="checkbox" class="form-check-input">
         <label for="fallback" class="form-check-label" data-t="fallback"></label>
       </div>
     </details>
+  </div>
+
+  <!-- Voice cloning -->
+  <div class="card">
+    <h5 data-t="cloneTitle"></h5>
+    <div class="muted" data-t="cloneHelp"></div>
+    <ol class="muted" style="margin:6px 0; padding-inline-start: 20px">
+      <li data-t="cloneStep1"></li><li data-t="cloneStep2"></li><li data-t="cloneStep3"></li>
+    </ol>
+    <div class="row-flex">
+      <input id="cloneName" type="text" class="form-control grow" data-ph="cloneName">
+      <input id="cloneFiles" type="file" accept="audio/*" multiple class="form-control grow">
+      <button id="cloneBtn" class="btn btn-sm btn-primary" data-t="cloneBtn"></button>
+    </div>
+    <div id="cloneList" style="margin-top:8px"></div>
   </div>
 
   <!-- Webhook + advanced -->
@@ -152,6 +177,18 @@
       geminiTipText: 'למיקרוסופט יש רק שני קולות עבריים (הילה ואברי). עם מפתח Gemini חינמי (בלי כרטיס אשראי, 2 דקות) תקבל 16 קולות שונים לגמרי — גברים ונשים — שגם באמת לוחשים, צוחקים, מכריזים ומתלהבים לפי הסגנון.',
       geminiTipLink: 'לקבלת מפתח חינמי ←', geminiKey: 'הדבק כאן את מפתח ה-Gemini (מתחיל ב-AQ. או AIza)',
       g_gemini: 'Gemini — 16 קולות שונים (מפתח חינמי)',
+      g_clones: '🎤 הקולות המשובטים שלך', g_cartesia: 'Cartesia — עברית מלידה (מפתח)', g_openai: 'OpenAI — הרבה קולות (מפתח, ייתכן מבטא)',
+      oaKey: 'OpenAI API key', oaHelp: 'platform.openai.com → API keys. בתשלום לפי שימוש (זול). מבצע את הסגנון לפי הוראות.',
+      caKey: 'Cartesia API key', caLoad: 'טען קולות עבריים', caHelp: 'play.cartesia.ai → API Keys. אחרי הדבקת המפתח לחץ "טען קולות עבריים" והוסף את הקולות שאתה רוצה.',
+      caNone: 'לא נמצאו קולות עבריים בחשבון.', caNeedKey: 'הדבק קודם מפתח Cartesia',
+      cloneTitle: '🎤 שיבוט קול — ההום פוד מדבר בקול שלך',
+      cloneHelp: 'משתמש ב-ElevenLabs (צריך מפתח ElevenLabs למעלה, ומנוי שכולל Voice Cloning). שבטו רק קול שלכם, או של מי שהסכים לכך.',
+      cloneStep1: 'הקלט 1–2 דקות דיבור ברור בעברית בחדר שקט (למשל באפליקציית "תזכורות קוליות" באייפון).',
+      cloneStep2: 'שמור את ההקלטה בקבצים, תן שם לקול ובחר את הקובץ כאן.',
+      cloneStep3: 'לחץ "צור קול" — הקול יופיע ברשימת הקולות בכל משפט.',
+      cloneName: 'שם הקול (למשל: הקול של אורן)', cloneBtn: 'צור קול', cloneNeedKey: 'צריך קודם מפתח ElevenLabs (בקולות פרימיום)',
+      cloneNeedFile: 'בחר קובץ הקלטה', cloneDefaultName: 'הקול שלי', cloneDone: 'הקול נוצר! בחר אותו באחד המשפטים ולחץ ▶️',
+
       sample: 'שלום! ככה אני נשמעת. ההכרזות שלך יישמעו בדיוק כך.',
       sampleM: 'שלום! ככה אני נשמע. ההכרזות שלך יישמעו בדיוק כך.',
       g_free: 'מיקרוסופט — חינם, בלי מפתח', g_multi: 'רב-לשוני — חינם (ניסיוני)', g_google: 'Google Chirp 3 HD — דורש מפתח', g_elevenlabs: 'ElevenLabs — דורש מפתח',
@@ -189,6 +226,18 @@
       geminiTipText: 'Microsoft has only two Hebrew voices (Hila and Avri). With a free Gemini key (no credit card, 2 minutes) you get 16 completely different voices — men and women — that really whisper, laugh, announce and get excited according to the style.',
       geminiTipLink: 'Get a free key →', geminiKey: 'Paste your Gemini key here (starts with AQ. or AIza)',
       g_gemini: 'Gemini — 16 different voices (free key)',
+      g_clones: '🎤 Your cloned voices', g_cartesia: 'Cartesia — native Hebrew (key)', g_openai: 'OpenAI — many voices (key, may have an accent)',
+      oaKey: 'OpenAI API key', oaHelp: 'platform.openai.com → API keys. Pay-as-you-go (cheap). Follows the style as an instruction.',
+      caKey: 'Cartesia API key', caLoad: 'Load Hebrew voices', caHelp: 'play.cartesia.ai → API Keys. After pasting the key tap "Load Hebrew voices" and add the ones you like.',
+      caNone: 'No Hebrew voices found in the account.', caNeedKey: 'Paste a Cartesia key first',
+      cloneTitle: '🎤 Voice cloning — the HomePod speaks in your voice',
+      cloneHelp: 'Uses ElevenLabs (needs the ElevenLabs key above and a plan that includes Voice Cloning). Only clone your own voice, or someone who agreed.',
+      cloneStep1: 'Record 1–2 minutes of clear speech in a quiet room (e.g. the Voice Memos app).',
+      cloneStep2: 'Save the recording to Files, name the voice and pick the file here.',
+      cloneStep3: 'Tap "Create voice" — it appears in the voice list of every phrase.',
+      cloneName: 'Voice name (e.g. Oren\'s voice)', cloneBtn: 'Create voice', cloneNeedKey: 'An ElevenLabs key is needed first (Premium voices)',
+      cloneNeedFile: 'Pick a recording', cloneDefaultName: 'My voice', cloneDone: 'Voice created! Pick it in a phrase and tap ▶️',
+
       sample: 'Hi! This is how I sound. Your announcements will sound just like this.',
       sampleM: 'Hi! This is how I sound. Your announcements will sound just like this.',
       g_free: 'Microsoft — free, no key', g_multi: 'Multilingual — free (experimental)', g_google: 'Google Chirp 3 HD — needs key', g_elevenlabs: 'ElevenLabs — needs key',
@@ -269,6 +318,7 @@
     root.querySelectorAll('[data-ph]').forEach((el) => { el.placeholder = t(el.dataset.ph); });
     renderSpeakers(); renderPhrases(); renderVoiceSelect($('defaultVoice'), cfg.voice, false);
     renderStyleSelect($('defaultStyle'), cfg.style || 'normal', false); refreshState(); renderWebhookExample();
+    renderCartesiaList(); renderClones();
   }
   root.querySelectorAll('[data-lang]').forEach((b) => b.addEventListener('click', () => {
     lang = b.dataset.lang; cfg.language = lang; save(); applyLang();
@@ -365,10 +415,17 @@
   });
 
   /* ---------- voices ---------- */
+  function allVoices() {
+    const extra = [];
+    for (const c of cfg.tts.clones || []) extra.push({ id: `clone:${c.id}`, group: 'clones', gender: '', he: `🎤 ${c.name}`, en: `🎤 ${c.name}` });
+    for (const v of cfg.tts.cartesiaVoices || []) extra.push({ id: `cartesia:${v.id}`, group: 'cartesia', gender: v.gender, he: v.name, en: v.name });
+    return [...extra, ...voices];
+  }
   function renderVoiceSelect(sel, value, withDefault) {
-    const groups = ['free', 'gemini', 'multi', 'google', 'elevenlabs'];
+    const groups = ['clones', 'free', 'gemini', 'cartesia', 'openai', 'multi', 'google', 'elevenlabs'];
+    const all = allVoices();
     sel.innerHTML = (withDefault ? `<option value="">${esc(t('defaultOpt'))}</option>` : '')
-      + groups.map((g) => `<optgroup label="${esc(t(`g_${g}`))}">${voices.filter((v) => v.group === g)
+      + groups.filter((g) => all.some((v) => v.group === g)).map((g) => `<optgroup label="${esc(t(`g_${g}`))}">${all.filter((v) => v.group === g)
         .map((v) => `<option value="${esc(v.id)}">${v.gender === 'f' ? '👩 ' : v.gender === 'm' ? '👨 ' : '⭐ '}${esc(lang === 'he' ? v.he : v.en)}</option>`).join('')}</optgroup>`).join('');
     sel.value = value || '';
   }
@@ -478,6 +535,8 @@
   bind('elKey', (el) => { el.value = cfg.tts.elevenlabsApiKey || ''; }, (el) => { cfg.tts.elevenlabsApiKey = el.value.trim(); });
   bind('elVoice', (el) => { el.value = cfg.tts.elevenlabsVoiceId || ''; }, (el) => { cfg.tts.elevenlabsVoiceId = el.value.trim(); });
   bind('gKey', (el) => { el.value = cfg.tts.googleApiKey || ''; }, (el) => { cfg.tts.googleApiKey = el.value.trim(); });
+  bind('oaKey', (el) => { el.value = cfg.tts.openaiApiKey || ''; }, (el) => { cfg.tts.openaiApiKey = el.value.trim(); });
+  bind('caKey', (el) => { el.value = cfg.tts.cartesiaApiKey || ''; }, (el) => { cfg.tts.cartesiaApiKey = el.value.trim(); });
   bind('geminiKey', (el) => { el.value = cfg.tts.geminiApiKey || ''; }, (el) => { cfg.tts.geminiApiKey = el.value.trim(); });
   bind('fallback', (el) => { el.checked = cfg.tts.fallback !== false; }, (el) => { cfg.tts.fallback = el.checked; });
   bind('whEnabled', (el) => { el.checked = !!cfg.webhook.enabled; }, (el) => { cfg.webhook.enabled = el.checked; });
@@ -487,6 +546,81 @@
   bind('pregenerate', (el) => { el.checked = cfg.pregenerate !== false; }, (el) => { cfg.pregenerate = el.checked; });
   bind('cacheDays', (el) => { el.value = cfg.cacheDays || 90; }, (el) => { cfg.cacheDays = Number(el.value) || 90; });
   bind('pythonPath', (el) => { el.value = cfg.pythonPath || ''; }, (el) => { const v = el.value.trim(); if (v) cfg.pythonPath = v; else delete cfg.pythonPath; refreshState(); });
+
+  /* ---------- Cartesia voices ---------- */
+  function refreshVoiceSelects() {
+    renderVoiceSelect($('defaultVoice'), cfg.voice, false);
+    renderPhrases();
+  }
+  function renderCartesiaList(found) {
+    const box = $('caList');
+    const mine = cfg.tts.cartesiaVoices || [];
+    const list = found || mine;
+    if (!list.length) { box.innerHTML = found ? `<div class="muted">${esc(t('caNone'))}</div>` : ''; return; }
+    box.innerHTML = list.map((v, i) => {
+      const has = mine.some((m) => m.id === v.id);
+      return `<div class="scan-item"><div>${v.gender === 'f' ? '👩' : v.gender === 'm' ? '👨' : '🎙️'} <b>${esc(v.name)}</b> <span class="muted">${esc(v.description || '')}</span></div>
+        <button class="btn btn-sm ${has ? 'btn-outline-danger' : 'btn-outline-primary'}" data-ci="${i}">${esc(has ? t('remove') : t('add'))}</button></div>`;
+    }).join('');
+    box.querySelectorAll('[data-ci]').forEach((b) => b.addEventListener('click', () => {
+      const v = list[Number(b.dataset.ci)];
+      cfg.tts.cartesiaVoices = (cfg.tts.cartesiaVoices || []).filter((m) => m.id !== v.id);
+      if (b.textContent === t('add')) cfg.tts.cartesiaVoices.push({ id: v.id, name: v.name, gender: v.gender });
+      if (!cfg.tts.cartesiaVoices.length) delete cfg.tts.cartesiaVoices;
+      save(); renderCartesiaList(found); refreshVoiceSelects();
+    }));
+  }
+  $('caLoad').addEventListener('click', async (e) => {
+    if (!cfg.tts.cartesiaApiKey) return homebridge.toast.warning(t('caNeedKey'));
+    e.target.disabled = true;
+    homebridge.showSpinner();
+    try {
+      renderCartesiaList(await homebridge.request('/cartesia-voices', { apiKey: cfg.tts.cartesiaApiKey }));
+    } catch (err) {
+      homebridge.toast.error(err.message || String(err));
+    } finally {
+      homebridge.hideSpinner(); e.target.disabled = false;
+    }
+  });
+
+  /* ---------- voice cloning ---------- */
+  function renderClones() {
+    const box = $('cloneList');
+    const list = cfg.tts.clones || [];
+    box.innerHTML = list.map((c, i) => `<div class="scan-item"><div>🎤 <b>${esc(c.name)}</b></div>
+      <button class="btn btn-sm btn-outline-danger" data-cl="${i}">${esc(t('remove'))}</button></div>`).join('');
+    box.querySelectorAll('[data-cl]').forEach((b) => b.addEventListener('click', () => {
+      list.splice(Number(b.dataset.cl), 1);
+      if (!list.length) delete cfg.tts.clones;
+      save(); renderClones(); refreshVoiceSelects();
+    }));
+  }
+  const readFile = (f) => new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res({ name: f.name, type: f.type, data: String(r.result).split(',')[1] || '' });
+    r.onerror = () => rej(r.error);
+    r.readAsDataURL(f);
+  });
+  $('cloneBtn').addEventListener('click', async (e) => {
+    if (!cfg.tts.elevenlabsApiKey) return homebridge.toast.warning(t('cloneNeedKey'));
+    const files = [...$('cloneFiles').files];
+    if (!files.length) return homebridge.toast.warning(t('cloneNeedFile'));
+    const name = $('cloneName').value.trim() || t('cloneDefaultName');
+    e.target.disabled = true;
+    homebridge.showSpinner();
+    try {
+      const payload = await Promise.all(files.map(readFile));
+      const r = await homebridge.request('/clone', { apiKey: cfg.tts.elevenlabsApiKey, name, files: payload });
+      cfg.tts.clones = [...(cfg.tts.clones || []), { id: r.id, name: r.name }];
+      save(); renderClones(); refreshVoiceSelects();
+      homebridge.toast.success(t('cloneDone'));
+      $('cloneFiles').value = ''; $('cloneName').value = '';
+    } catch (err) {
+      homebridge.toast.error(err.message || String(err));
+    } finally {
+      homebridge.hideSpinner(); e.target.disabled = false;
+    }
+  });
 
   function renderWebhookExample() {
     const port = cfg.webhook.port || 8095;

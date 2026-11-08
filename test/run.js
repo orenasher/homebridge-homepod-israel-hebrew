@@ -250,6 +250,42 @@ exit 1
   assert.strictEqual(rv('elevenlabs', { elevenlabsVoiceId: 'x' }, 'whisper').tag, '[whispers]');
   assert.strictEqual(rv('hila', {}, 'excited').pitch, '+18Hz');
 
+  // 7c. OpenAI, Cartesia (API-version fallback) and ElevenLabs voice cloning
+  const calls2 = [];
+  global.fetch = async (url, init) => {
+    calls2.push({ url, init });
+    if (url.includes('api.openai.com')) return new Response(Buffer.alloc(900, 1), { status: 200 });
+    if (url.includes('cartesia') && init.headers['Cartesia-Version'] === '2026-08-14') {
+      return new Response('{"error":"invalid Cartesia-Version"}', { status: 400, statusText: 'Bad Request' });
+    }
+    if (url.includes('cartesia.ai/tts')) return new Response(Buffer.alloc(900, 2), { status: 200 });
+    if (url.includes('cartesia.ai/voices')) {
+      return new Response(JSON.stringify({ data: [{ id: 'v1', name: 'Ayala', language: 'he', gender: 'feminine' }, { id: 'v2', name: 'Noam', language: 'he', gender: 'masculine' }, { id: 'v3', name: 'Bob', language: 'en' }], has_more: false }), { status: 200 });
+    }
+    if (url.includes('elevenlabs.io/v1/voices/add')) return new Response('{"voice_id":"CLONE123"}', { status: 200 });
+    return new Response('nope', { status: 500 });
+  };
+  const osvc = new TtsService({ openaiApiKey: 'o', cartesiaApiKey: 'c' }, path.join(tmp, 'ocache'), log);
+  const o1 = await osvc.getAudio('שלום', 'openai-onyx', 'urgent');
+  assert.strictEqual(o1.voice, 'openai-onyx');
+  const ob = JSON.parse(calls2[0].init.body);
+  assert.strictEqual(ob.voice, 'onyx');
+  assert.ok(ob.instructions.includes('urgently') && ob.instructions.includes('Israeli'));
+  const c1 = await osvc.getAudio('שלום', 'cartesia:v1');
+  assert.strictEqual(c1.voice, 'cartesia:v1');
+  const cb = JSON.parse(calls2.find((c) => c.url.includes('tts/bytes') && c.init.headers['Cartesia-Version'] !== '2026-08-14').init.body);
+  assert.strictEqual(cb.language, 'he');
+  assert.strictEqual(cb.voice.id, 'v1');
+  const { listCartesiaVoices, createElevenLabsClone } = require('../src/providers');
+  const cv = await listCartesiaVoices('c');
+  assert.deepStrictEqual(cv.map((v) => [v.name, v.gender]), [['Ayala', 'f'], ['Noam', 'm']]);
+  const clone = await createElevenLabsClone('e', 'הקול של אורן', [{ name: 'a.m4a', type: 'audio/mp4', data: Buffer.alloc(5000, 3) }]);
+  assert.strictEqual(clone.id, 'CLONE123');
+  const cl = calls2.find((c) => c.url.includes('voices/add'));
+  assert.ok(cl.init.body instanceof FormData && cl.init.body.get('name') === 'הקול של אורן');
+  assert.strictEqual(rv('clone:CLONE123', { elevenlabsApiKey: 'e' }).voice, 'CLONE123');
+  global.fetch = realFetch;
+
   // 8. switchName
   const { switchName } = require('../src/platform');
   assert.strictEqual(switchName('מזגן דולק וחלון פתוח בחדר של תומר, נא לסגור את החלון בבקשה'), 'מזגן דולק וחלון פתוח בחדר של תומר נא');

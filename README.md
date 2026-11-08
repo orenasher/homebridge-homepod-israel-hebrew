@@ -51,6 +51,9 @@ Every phrase has a **voice** (who speaks) and a **style** (how they speak).
 | Voices | How many | Cost |
 |---|---|---|
 | 🎙️ **Gemini** — Zephyr, Kore, Leda, Sulafat, Puck, Charon, Algenib… | 16 truly different voices, 8 female / 8 male | **Free key** (no credit card) |
+| 🎤 **Your own voice** — voice cloning | The HomePod speaks in your voice | ElevenLabs key with Voice Cloning |
+| 👩👨 **Cartesia** — native Hebrew voices | from their library | Cartesia key |
+| 👩👨 **OpenAI** — Coral, Nova, Onyx, Ash… | 13 voices | OpenAI key (pay-as-you-go) |
 | 👩👨 **Microsoft** — Hila, Avri | 2 native Hebrew voices | Free, no key |
 | 👩👨 Multilingual — Ava, Emma, Andrew, Brian | 4 (may have an accent) | Free |
 | 👩👨 Google Chirp 3 HD | 12 | Google Cloud key |
@@ -61,6 +64,12 @@ Gemini voices really *perform* the style; for Microsoft voices a style is only a
 
 **Gemini (free, 2 minutes):** open [aistudio.google.com/apikey](https://aistudio.google.com/apikey) (if an *Import projects* window opens, just close it) → **Create API key** → pick any project → **Copy** → paste it in the yellow box in the settings → pick a Gemini voice.
 The key starts with `AQ.` (Google's new format) or `AIza` (old format) — both work. 🔒 Keep it private; if it was exposed, delete it in AI Studio and create a new one.
+
+**🎤 Voice cloning:** set an ElevenLabs key (a plan with Voice Cloning is required) → record 1–2 minutes of clear speech (e.g. Voice Memos) → settings → **Voice cloning** → name it, pick the file, **Create voice**. Only clone your own voice or someone who agreed.
+
+**Cartesia:** [play.cartesia.ai](https://play.cartesia.ai) → **API Keys** → paste under **Premium voices** → **Load Hebrew voices** → **Add** the ones you like.
+
+**OpenAI:** [platform.openai.com/api-keys](https://platform.openai.com/api-keys) → paste under **Premium voices** → pick an OpenAI voice (may have a slight accent in Hebrew).
 
 **ElevenLabs:** [elevenlabs.io](https://elevenlabs.io) → **API Keys**; copy a **Voice ID** from the Voice Library; paste both under **Premium voices**.
 

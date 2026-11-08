@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.0
+- **Voice cloning:** upload a short recording and the HomePod speaks in your own voice (ElevenLabs Instant Voice Clone).
+- **Cartesia:** native Hebrew voices — paste the key, tap "Load Hebrew voices" and add the ones you like.
+- **OpenAI:** 13 voices (gpt-4o-mini-tts) that follow the speaking style as an instruction.
+- Gemini key guide: new `AQ.` key format, "Import projects" window.
+
 ## 1.2.0
 - Voices that really sound different: 16 Gemini voices (free API key, no credit card) — men and women, each with its own character.
 - Speaking styles for every phrase: cheerful, calm, whisper, announcer, urgent, warm, excited, playful. Gemini really performs them; ElevenLabs v3 gets matching audio tags; Microsoft voices get a stronger speed/pitch change.

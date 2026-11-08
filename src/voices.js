@@ -23,6 +23,15 @@ const CHIRP = [
   ['Charon', 'm'], ['Puck', 'm'], ['Fenrir', 'm'], ['Orus', 'm'], ['Enceladus', 'm'], ['Iapetus', 'm'],
 ];
 
+const OPENAI = [
+  // name, gender, he, en
+  ['coral', 'f', 'חמה ושמחה', 'warm & upbeat'], ['nova', 'f', 'צעירה ואנרגטית', 'young & energetic'],
+  ['shimmer', 'f', 'רכה', 'soft'], ['sage', 'f', 'רגועה', 'calm'], ['marin', 'f', 'טבעית', 'natural'],
+  ['ash', 'm', 'ברור', 'clear'], ['echo', 'm', 'רך', 'soft'], ['onyx', 'm', 'עמוק', 'deep'],
+  ['fable', 'm', 'מספר סיפורים', 'storyteller'], ['verse', 'm', 'דינמי', 'dynamic'], ['cedar', 'm', 'טבעי', 'natural'],
+  ['ballad', 'm', 'רגשי', 'emotive'], ['alloy', 'n', 'ניטרלי', 'neutral'],
+];
+
 const VOICES = [
   // ---- Microsoft — free, no key. The only two native Hebrew voices Microsoft offers.
   { id: 'hila', engine: 'edge', voice: 'he-IL-HilaNeural', gender: 'f', group: 'free', he: 'הילה', en: 'Hila' },
@@ -44,6 +53,12 @@ const VOICES = [
   ...CHIRP.map(([n, g]) => ({
     id: `google-${n.toLowerCase()}`, engine: 'googlecloud', voice: `he-IL-Chirp3-HD-${n}`, gender: g, group: 'google',
     he: n, en: n,
+  })),
+
+  // ---- OpenAI gpt-4o-mini-tts — OpenAI key; follows style instructions (may have a slight accent).
+  ...OPENAI.map(([n, g, he, en]) => ({
+    id: `openai-${n}`, engine: 'openai', voice: n, gender: g === 'n' ? '' : g, group: 'openai',
+    he: `${n[0].toUpperCase()}${n.slice(1)} — ${he}`, en: `${n[0].toUpperCase()}${n.slice(1)} — ${en}`,
   })),
 
   // ---- ElevenLabs — the voice ID from the settings.
@@ -106,7 +121,11 @@ function resolveVoice(id, tts = {}, styleId) {
 
   const preset = BY_ID.get(key);
   let opts;
-  if (preset) {
+  if (key.startsWith('cartesia:')) {
+    opts = { id: key, engine: 'cartesia', voice: key.slice(9) };
+  } else if (key.startsWith('clone:')) {
+    opts = { id: key, engine: 'elevenlabs', voice: key.slice(6) };
+  } else if (preset) {
     opts = { id: preset.id, engine: preset.engine, voice: preset.voice };
   } else if (/Chirp|Wavenet|Neural2|Standard/i.test(key) && /^[a-z]{2}-[A-Z]{2}-/.test(key)) {
     opts = { id: key, engine: 'googlecloud', voice: key };
@@ -131,9 +150,19 @@ function resolveVoice(id, tts = {}, styleId) {
       opts.apiKey = tts.googleApiKey;
       if (st.speed) opts.speakingRate = st.speed;
       break;
+    case 'openai':
+      opts.apiKey = tts.openaiApiKey;
+      opts.model = tts.openaiModel;
+      opts.prompt = st.prompt;
+      break;
+    case 'cartesia':
+      opts.apiKey = tts.cartesiaApiKey;
+      opts.model = tts.cartesiaModel;
+      if (st.speed) opts.speed = st.speed;
+      break;
     case 'elevenlabs':
       Object.assign(opts, {
-        apiKey: tts.elevenlabsApiKey, voice: tts.elevenlabsVoiceId, model: tts.elevenlabsModel,
+        apiKey: tts.elevenlabsApiKey, voice: opts.voice || tts.elevenlabsVoiceId, model: tts.elevenlabsModel,
         language: tts.elevenlabsLanguage, stability: tts.elevenlabsStability, speed: tts.elevenlabsSpeed,
       });
       if (st.tag) opts.tag = st.tag;

@@ -38,6 +38,28 @@ async function fetchBuffer(url, options = {}, timeoutMs = DEFAULT_TIMEOUT_MS) {
   }
 }
 
+const CARTESIA_VERSIONS = ['2026-08-14', '2026-03-01', '2024-11-13'];
+
+/** Call the Cartesia API, trying newer → older API versions if one is rejected. */
+async function cartesiaRequest(pathname, apiKey, init = {}, timeoutMs = DEFAULT_TIMEOUT_MS) {
+  let lastErr;
+  for (const version of CARTESIA_VERSIONS) {
+    try {
+      return await fetchBuffer(`https://api.cartesia.ai${pathname}`, {
+        ...init,
+        headers: {
+          Authorization: `Bearer ${apiKey}`, 'X-API-Key': apiKey, 'Cartesia-Version': version,
+          'Content-Type': 'application/json', ...(init.headers || {}),
+        },
+      }, timeoutMs);
+    } catch (err) {
+      lastErr = err;
+      if (!/version/i.test(err.message)) throw err;
+    }
+  }
+  throw lastErr;
+}
+
 /** Split text into chunks of at most `max` characters, preferring sentence and word boundaries. */
 function splitText(text, max) {
   const chunks = [];
@@ -158,6 +180,48 @@ const engines = {
       } catch (err) {
         lastErr = err;
         if (!/HTTP 404/.test(err.message)) throw err; // only try the next model if this one doesn't exist
+      }
+    }
+    throw lastErr;
+  },
+
+  /** OpenAI gpt-4o-mini-tts — many voices, follows free-text speaking instructions. */
+  async openai(text, opts, outFile) {
+    if (!opts.apiKey) throw new Error('OpenAI API key is missing');
+    const how = opts.prompt ? `${opts.prompt}.` : 'Speak naturally and clearly.';
+    const instructions = `${how} If the text is Hebrew, speak fluent native Israeli Hebrew with a natural Israeli accent.`;
+    const buf = await fetchBuffer('https://api.openai.com/v1/audio/speech', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${opts.apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: opts.model || 'gpt-4o-mini-tts', voice: opts.voice || 'coral', input: text, instructions, response_format: 'mp3',
+      }),
+    }, opts.timeoutMs || 60000);
+    await fsp.writeFile(outFile, buf);
+  },
+
+  /** Cartesia Sonic — native Hebrew voices. Voice IDs come from the voice list in the settings. */
+  async cartesia(text, opts, outFile) {
+    if (!opts.apiKey) throw new Error('Cartesia API key is missing');
+    if (!opts.voice) throw new Error('Cartesia voice is missing');
+    const models = opts.model ? [opts.model] : ['sonic-3.5', 'sonic-3'];
+    let lastErr;
+    for (const model of models) {
+      const body = {
+        model_id: model,
+        transcript: text,
+        voice: { mode: 'id', id: opts.voice },
+        language: /[\u0590-\u05FF]/.test(text) ? 'he' : 'en',
+        output_format: { container: 'mp3', sample_rate: 44100, bit_rate: 128000 },
+      };
+      if (opts.speed && opts.speed !== 1) body.generation_config = { speed: opts.speed };
+      try {
+        const buf = await cartesiaRequest('/tts/bytes', opts.apiKey, { method: 'POST', body: JSON.stringify(body) }, opts.timeoutMs || 60000);
+        await fsp.writeFile(outFile, buf);
+        return;
+      } catch (err) {
+        lastErr = err;
+        if (!/HTTP 4(00|04|22)/.test(err.message)) throw err;
       }
     }
     throw lastErr;
@@ -317,4 +381,4 @@ async function exists(file) {
   }
 }
 
-module.exports = { TtsService, splitText, engines, pcmToWav };
+module.exports = { TtsService, splitText, engines, pcmToWav, cartesiaRequest, fetchBuffer };

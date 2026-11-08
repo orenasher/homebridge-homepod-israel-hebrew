@@ -1,7 +1,7 @@
 {
   "name": "homebridge-homepod-israel-hebrew",
   "displayName": "HomePod Israel Hebrew",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "הכרזות קוליות טבעיות בעברית בהום פוד — Natural-sounding Hebrew (and English) announcements on HomePods: a switch per phrase, choose which HomePod speaks, many voices (Hila, Avri, Google, ElevenLabs), bilingual settings screen. Fully self-contained.",
   "main": "index.js",
   "license": "MIT",
@@ -29,7 +29,11 @@
     "intercom",
     "elevenlabs",
     "hebrew",
-    "pyatv"
+    "pyatv",
+    "gemini",
+    "openai",
+    "cartesia",
+    "voice-cloning"
   ],
   "engines": {
     "node": "^18.20.0 || ^20.15.0 || ^22.0.0 || ^24.0.0",
