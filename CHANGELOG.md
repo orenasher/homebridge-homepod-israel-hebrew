@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.1
+- Stability: if the voice helper exits at the exact moment a phrase is sent, the error is now logged instead of being able to stop Homebridge.
+- New blue-and-white icon.
+
 ## 1.4.0
 - The voice engine (pyatv) now lives in the Homebridge storage directory (`homepod-israel-hebrew-engine`), so it is part of Homebridge backups. It is set up again automatically on first start (a few minutes); the old `~/.homepod-israel-hebrew` folder is removed once the new one is ready.
 - Prepared for "Verified by Homebridge".

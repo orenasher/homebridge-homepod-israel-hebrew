@@ -242,6 +242,11 @@ class PyatvEnv {
     };
     child.on('exit', onExit);
     child.on('error', onExit);
+    // A write to a helper that just exited raises EPIPE on stdin; without a listener
+    // Node would treat it as an uncaught exception and take Homebridge down with it.
+    child.stdin.on('error', (err) => this.log.debug(`[helper] stdin: ${err.message}`));
+    child.stdout.on('error', () => {});
+    child.stderr.on('error', () => {});
     return ready;
   }
 
