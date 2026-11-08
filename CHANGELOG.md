@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.1
+- Docs: step-by-step Cartesia key guide (Hebrew and English).
+- Docs: every voice provider is now marked free 🆓 or paid 💳, with a note that no payment is needed.
+
 ## 1.3.0
 - **Voice cloning:** upload a short recording and the HomePod speaks in your own voice (ElevenLabs Instant Voice Clone).
 - **Cartesia:** native Hebrew voices — paste the key, tap "Load Hebrew voices" and add the ones you like.

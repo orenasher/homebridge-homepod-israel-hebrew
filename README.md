@@ -48,16 +48,19 @@ Type a sentence → it becomes a switch in Apple Home → turn it on and the Hom
 
 Every phrase has a **voice** (who speaks) and a **style** (how they speak).
 
-| Voices | How many | Cost |
+| Voices | How many | Free or paid? |
 |---|---|---|
-| 🎙️ **Gemini** — Zephyr, Kore, Leda, Sulafat, Puck, Charon, Algenib… | 16 truly different voices, 8 female / 8 male | **Free key** (no credit card) |
-| 🎤 **Your own voice** — voice cloning | The HomePod speaks in your voice | ElevenLabs key with Voice Cloning |
-| 👩👨 **Cartesia** — native Hebrew voices | from their library | Cartesia key |
-| 👩👨 **OpenAI** — Coral, Nova, Onyx, Ash… | 13 voices | OpenAI key (pay-as-you-go) |
-| 👩👨 **Microsoft** — Hila, Avri | 2 native Hebrew voices | Free, no key |
-| 👩👨 Multilingual — Ava, Emma, Andrew, Brian | 4 (may have an accent) | Free |
-| 👩👨 Google Chirp 3 HD | 12 | Google Cloud key |
-| ⭐ ElevenLabs | any voice from the library | ElevenLabs key |
+| 🎙️ **Gemini** — Zephyr, Kore, Leda, Sulafat, Puck, Charon, Algenib… | 16 truly different voices, 8 female / 8 male | 🆓 **Free** — free key, no credit card |
+| 👩👨 **Microsoft** — Hila, Avri | 2 native Hebrew voices | 🆓 **Free**, no key |
+| 👩👨 Multilingual — Ava, Emma, Andrew, Brian | 4 (may have an accent) | 🆓 **Free**, no key |
+| 👩👨 **Cartesia** — native Hebrew voices | from their library | 🆓 **Free up to a quota** — 20,000 characters/month, no credit card |
+| 🎤 **Your own voice** — voice cloning | The HomePod speaks in your voice | 💳 **Paid** — ElevenLabs plan with Voice Cloning |
+| 👩👨 **OpenAI** — Coral, Nova, Onyx, Ash… | 13 voices | 💳 **Paid** — pay-as-you-go, credit card required |
+| ⭐ ElevenLabs | any voice from the library | 💳 **Paid** (small free quota) |
+| 👩👨 Google Chirp 3 HD | 12 | 💳 **Needs a Google Cloud billing account** (monthly free quota) |
+
+> 💡 **You don't have to pay anything.** Gemini, Microsoft and Cartesia (free quota) are plenty. Paid voices are an optional extra.
+> Each phrase is generated **once** and cached — replaying it uses no quota.
 
 **Styles:** normal · cheerful · calm · whisper · announcer · urgent · warm · excited · playful.
 Gemini voices really *perform* the style; for Microsoft voices a style is only a speed/pitch change — so for real variety use Gemini.
@@ -65,15 +68,24 @@ Gemini voices really *perform* the style; for Microsoft voices a style is only a
 **Gemini (free, 2 minutes):** open [aistudio.google.com/apikey](https://aistudio.google.com/apikey) (if an *Import projects* window opens, just close it) → **Create API key** → pick any project → **Copy** → paste it in the yellow box in the settings → pick a Gemini voice.
 The key starts with `AQ.` (Google's new format) or `AIza` (old format) — both work. 🔒 Keep it private; if it was exposed, delete it in AI Studio and create a new one.
 
-**🎤 Voice cloning:** set an ElevenLabs key (a plan with Voice Cloning is required) → record 1–2 minutes of clear speech (e.g. Voice Memos) → settings → **Voice cloning** → name it, pick the file, **Create voice**. Only clone your own voice or someone who agreed.
+**🎤 Voice cloning (💳 paid):** set an ElevenLabs key (a plan with Voice Cloning is required) → record 1–2 minutes of clear speech (e.g. Voice Memos) → settings → **Voice cloning** → name it, pick the file, **Create voice**. Only clone your own voice or someone who agreed.
 
-**Cartesia:** [play.cartesia.ai](https://play.cartesia.ai) → **API Keys** → paste under **Premium voices** → **Load Hebrew voices** → **Add** the ones you like.
+**Cartesia (🆓 free up to 20,000 characters/month):**
+1. Sign up at [play.cartesia.ai](https://play.cartesia.ai) (Google sign-in works).
+2. On **"How did you hear about us?"** tap **Skip** (bottom left).
+3. On the next screen tap **Start with Models** (top card). You don't need **Agents**.
+4. Open the menu (☰) or **Settings** → **API Keys** → **New / Create API Key** → name it, e.g. `homebridge`.
+5. Copy the key **right away** — it's shown only once. It starts with `sk_car_`.
+6. In the plugin settings → **Premium voices** → paste it in the Cartesia box → **Load Hebrew voices**.
+7. Tap **Add** next to the voices you like → **Save**. They appear in every phrase's voice list; test each with ▶️.
 
-**OpenAI:** [platform.openai.com/api-keys](https://platform.openai.com/api-keys) → paste under **Premium voices** → pick an OpenAI voice (may have a slight accent in Hebrew).
+For Cartesia voices the style only changes speed. 🔒 Paste the key only into the plugin settings — never share it.
 
-**ElevenLabs:** [elevenlabs.io](https://elevenlabs.io) → **API Keys**; copy a **Voice ID** from the Voice Library; paste both under **Premium voices**.
+**OpenAI (💳 paid):** [platform.openai.com/api-keys](https://platform.openai.com/api-keys) → paste under **Premium voices** → pick an OpenAI voice (may have a slight accent in Hebrew).
 
-**Google Chirp 3 HD:** enable **Cloud Text-to-Speech API** in [Google Cloud Console](https://console.cloud.google.com), create an API key, paste it under **Premium voices**.
+**ElevenLabs (💳 paid):** [elevenlabs.io](https://elevenlabs.io) → **API Keys**; copy a **Voice ID** from the Voice Library; paste both under **Premium voices**.
+
+**Google Chirp 3 HD (💳 billing account):** enable **Cloud Text-to-Speech API** in [Google Cloud Console](https://console.cloud.google.com), create an API key, paste it under **Premium voices**.
 
 ---
 
