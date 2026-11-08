@@ -30,6 +30,7 @@ class HomePodIsraelHebrewPlatform {
     });
     api.on('shutdown', () => {
       if (this.server) this.server.close();
+      if (this.env) this.env.stopDaemon();
     });
   }
 
@@ -60,7 +61,10 @@ class HomePodIsraelHebrewPlatform {
     }
 
     // Prepare the voice engine and audio in the background.
-    this.env.ensure().catch((err) => this.log.error(`Voice engine setup failed: ${err.message}`));
+    this.env.ensure()
+      .then(() => this.env.warm([...this.speakers.values()].map((s) => ({ host: s.host, id: s.id }))))
+      .then(() => this.log.info('Fast mode ready — HomePods located.'))
+      .catch((err) => this.log.error(`Voice engine setup failed: ${err.message}`));
     if (cfg.pregenerate !== false) this.pregenerate();
     this.tts.prune(cfg.cacheDays || 90).catch(() => {});
   }

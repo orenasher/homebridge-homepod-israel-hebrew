@@ -7,7 +7,7 @@
  * need to be in backups).
  */
 
-const { execFile } = require('child_process');
+const { execFile, spawn } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -53,6 +53,9 @@ class PyatvEnv {
     this.override = opts.pythonPath || '';
     this.installing = null;
     this.lastError = '';
+    this.daemon = null;
+    this.pending = new Map();
+    this.nextRid = 1;
   }
 
   get python() {
@@ -161,13 +164,118 @@ class PyatvEnv {
     } catch (err) {
       throw new Error(`Installing pyatv failed: ${lastLine(err)}`);
     }
-    const check = await this.helper({ cmd: 'check' }, 60000);
+    const check = await this.helperOnce({ cmd: 'check' }, 60000);
     fs.writeFileSync(this.stamp, `${STAMP_VALUE}\n`);
     this.log.info(`Voice engine ready (pyatv ${check.pyatv}).`);
   }
 
-  /** Run the python helper with JSON args; resolves to its JSON reply (rejects on ok:false). */
+  /*
+   * Fast mode: one long-running helper keeps pyatv loaded and remembers where each HomePod is,
+   * so an announcement starts without Python start-up or a network scan.
+   */
+  startDaemon() {
+    if (this.daemon) return this.daemon.ready;
+    const child = spawn(this.python, ['-I', HELPER, JSON.stringify({ cmd: 'serve' })], { stdio: ['pipe', 'pipe', 'pipe'] });
+    let buf = '';
+    let resolveReady;
+    let rejectReady;
+    const ready = new Promise((res, rej) => { resolveReady = res; rejectReady = rej; });
+    ready.catch(() => {});
+    const d = { child, ready, alive: true };
+    this.daemon = d;
+    const startTimer = setTimeout(() => rejectReady(new Error('fast mode did not start')), 60000);
+
+    child.stdout.on('data', (chunk) => {
+      buf += chunk.toString();
+      let nl;
+      while ((nl = buf.indexOf('\n')) >= 0) {
+        const line = buf.slice(0, nl).trim();
+        buf = buf.slice(nl + 1);
+        if (!line) continue;
+        let msg;
+        try { msg = JSON.parse(line); } catch { continue; }
+        if (msg.ready) {
+          clearTimeout(startTimer);
+          resolveReady();
+          continue;
+        }
+        const p = this.pending.get(msg.rid);
+        if (!p) continue;
+        this.pending.delete(msg.rid);
+        clearTimeout(p.timer);
+        if (msg.ok) p.resolve(msg);
+        else p.reject(new Error(msg.error || 'failed'));
+      }
+    });
+    child.stderr.on('data', (c) => this.log.debug(`[helper] ${String(c).trim()}`));
+    const onExit = () => {
+      if (!d.alive) return;
+      d.alive = false;
+      clearTimeout(startTimer);
+      rejectReady(new Error('fast mode stopped'));
+      if (this.daemon === d) this.daemon = null;
+      for (const [rid, p] of this.pending) {
+        if (p.daemon === d) {
+          this.pending.delete(rid);
+          clearTimeout(p.timer);
+          p.reject(Object.assign(new Error('helper stopped'), { helperStopped: true }));
+        }
+      }
+    };
+    child.on('exit', onExit);
+    child.on('error', onExit);
+    return ready;
+  }
+
+  stopDaemon() {
+    if (this.daemon) {
+      try { this.daemon.child.kill(); } catch { /* ignore */ }
+      this.daemon = null;
+    }
+  }
+
+  async daemonRequest(args, timeoutMs) {
+    await this.startDaemon();
+    const d = this.daemon;
+    if (!d || !d.alive) throw Object.assign(new Error('helper stopped'), { helperStopped: true });
+    const rid = this.nextRid++;
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        this.pending.delete(rid);
+        reject(new Error(`timed out after ${Math.round(timeoutMs / 1000)} s`));
+      }, timeoutMs);
+      this.pending.set(rid, { resolve, reject, timer, daemon: d });
+      d.child.stdin.write(`${JSON.stringify({ ...args, rid })}\n`);
+    });
+  }
+
+  /** Remember where the HomePods are ahead of time (makes the first announcement fast too). */
+  async warm(devices) {
+    if (!this.isReady() || !devices.length) return;
+    try {
+      await this.daemonRequest({ cmd: 'warm', devices }, 60000);
+    } catch (err) {
+      this.log.debug(`warm-up skipped: ${err.message}`);
+    }
+  }
+
+  /** Run a helper command — fast mode first, one-shot process as a fallback. */
   async helper(args, timeoutMs = 180000) {
+    if (args.cmd !== 'check' && this.isReady() && !this.noDaemon) {
+      try {
+        return await this.daemonRequest(args, timeoutMs);
+      } catch (err) {
+        // Only fall back when the helper itself failed to start or died before replying;
+        // a real error from the HomePod is returned as-is.
+        if (!err.helperStopped && !/fast mode/.test(err.message)) throw err;
+        this.log.debug(`fast mode unavailable (${err.message}) — using one-shot helper`);
+      }
+    }
+    return this.helperOnce(args, timeoutMs);
+  }
+
+  /** Run the python helper once with JSON args; resolves to its JSON reply (rejects on ok:false). */
+  async helperOnce(args, timeoutMs = 180000) {
     let res;
     try {
       res = await run(this.python, ['-I', HELPER, JSON.stringify(args)], timeoutMs);

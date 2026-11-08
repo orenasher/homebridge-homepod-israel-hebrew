@@ -12,7 +12,24 @@ const callsLog = path.join(tmp, 'calls.log');
 const fakePython = path.join(tmp, 'python');
 // Fake python: argv = -I speak.py '<json>'
 fs.writeFileSync(fakePython, `#!/usr/bin/env node
-const a = JSON.parse(process.argv[4]);
+const reply = (a) => {
+  require('fs').appendFileSync(${JSON.stringify(callsLog)}, JSON.stringify(a) + '\\n');
+  if (a.cmd === 'warm') return { ok: true, known: (a.devices || []).length };
+  if (a.cmd === 'scan') return { ok: true, devices: [{ name: 'מטבח', host: '10.0.0.5', id: 'AA', homepod: true }] };
+  if (a.host === '10.0.0.99') return { ok: false, error: 'HomePod not found on the network' };
+  return { ok: true, previousVolume: 35, warnings: [] };
+};
+const first = JSON.parse(process.argv[4] || '{}');
+if (first.cmd === 'serve') {
+  require('fs').appendFileSync(${JSON.stringify(callsLog)}, JSON.stringify({ cmd: 'serve-start' }) + '\\n');
+  console.log(JSON.stringify({ ok: true, ready: true }));
+  require('readline').createInterface({ input: process.stdin }).on('line', (l) => {
+    const a = JSON.parse(l); const r = reply(a); r.rid = a.rid;
+    setTimeout(() => console.log(JSON.stringify(r)), 20);
+  });
+  return;
+}
+const a = first;
 require('fs').appendFileSync(${JSON.stringify(callsLog)}, JSON.stringify(a) + '\\n');
 if (a.cmd === 'check') { console.log(JSON.stringify({ ok: true, pyatv: 'test' })); process.exit(0); }
 if (a.cmd === 'scan') { console.log(JSON.stringify({ ok: true, devices: [{ name: 'מטבח', host: '10.0.0.5', id: 'AA', homepod: true }] })); process.exit(0); }
@@ -130,11 +147,18 @@ const speakCalls = () => calls().filter((c) => c.cmd === 'speak');
   assert.strictEqual(sc.find((c) => c.host === '10.0.0.5').volume, 40);
   assert.strictEqual(sc.find((c) => c.host === '10.0.0.6').volume, null);
 
+  // fast mode: one long-running helper for everything so far, HomePods warmed at startup
+  const allCalls = calls();
+  assert.ok(!allCalls.some((c) => c.cmd === 'serve-start'), 'log was reset after start');
+
   // 3. phrase with no speakers → all, broken one fails but others play
   fs.rmSync(callsLog, { force: true });
   const r0 = await platform.announce(platform.items()[0]);
   assert.deepStrictEqual(r0.failed, ['Broken']);
   assert.strictEqual(speakCalls().length, 3);
+
+  assert.strictEqual(platform.env.daemon && platform.env.daemon.alive, true, 'fast-mode helper is running');
+  const pidBefore = platform.env.daemon.child.pid;
 
   // 4. webhook
   let r = await req('GET', '/say?text=hi');
@@ -147,6 +171,14 @@ const speakCalls = () => calls().filter((c) => c.cmd === 'speak');
   assert.strictEqual(r.status, 202);
   r = await req('GET', '/status?token=secret');
   assert.strictEqual(r.json.voiceEngine, 'ready');
+
+  assert.strictEqual(platform.env.daemon.child.pid, pidBefore, 'same helper process reused');
+  // helper crash → next announcement restarts it transparently
+  platform.env.daemon.child.kill();
+  await sleep(200);
+  const rr = await platform.say('אחרי קריסה', { speakers: 'מטבח' });
+  assert.deepStrictEqual(rr.failed, []);
+  assert.notStrictEqual(platform.env.daemon.child.pid, pidBefore, 'helper restarted');
 
   // 5. fallback: google without key → hila → translate when edge is down
   const a1 = await platform.tts.getAudio('טקסט', 'google-kore');
@@ -182,7 +214,7 @@ exit 1
   // patch: fake venv python treats "-m pip ..." as success
   fs.writeFileSync(fakePython + '-pipok', '');
   const origCp = fs.readFileSync(fakePython, 'utf8');
-  fs.writeFileSync(fakePython, origCp.replace('const a = JSON.parse', "if (process.argv[2] === '-m') process.exit(0);\nconst a = JSON.parse"));
+  fs.writeFileSync(fakePython, origCp.replace('const reply = (a) =>', "if (process.argv[2] === '-m') process.exit(0);\nconst reply = (a) =>"));
   await env.ensure();
   assert.strictEqual(env.status(), 'ready');
   await Promise.all([env.ensure(), env.ensure()]);

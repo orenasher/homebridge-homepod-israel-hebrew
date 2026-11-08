@@ -1,6 +1,7 @@
 # Changelog
 
-## 1.1.1
+## 1.2.0
+- Faster announcements: a fast mode keeps the voice engine loaded and remembers where each HomePod is, so playback starts without Python start-up or a network search (HomePods are located once at startup). Falls back automatically if needed.
 - Settings screen: no more "Not connected to the Homebridge UI server" error while the backend is still starting — requests retry automatically.
 
 ## 1.1.0

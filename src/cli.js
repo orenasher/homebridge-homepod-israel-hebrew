@@ -29,6 +29,7 @@ function loadConfig(file) {
   const configFile = ci >= 0 ? args.splice(ci, 2)[1] : '/var/lib/homebridge/config.json';
   const [cmd, ...rest] = args;
   const env = new PyatvEnv(log);
+  env.noDaemon = true; // one-shot is simpler for a command that exits right away
 
   if (cmd === 'engine') {
     await env.ensure();
@@ -52,7 +53,8 @@ function loadConfig(file) {
     await env.ensure();
     const results = await Promise.allSettled(speakers.map((s) => new Speaker(s, env, log).play(audio.file)));
     results.forEach((r, i) => console.log(`${speakers[i].name}: ${r.status === 'fulfilled' ? 'OK ✓' : `FAILED — ${r.reason.message}`}`));
-  } else {
+  }
+  if (!cmd || !['engine', 'scan', 'say'].includes(cmd)) {
     console.log('commands: engine | scan | say "text" [speakers] [voice]   (--config <path>)');
   }
 })().catch((err) => {
