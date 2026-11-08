@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.1.1
+- Settings screen: no more "Not connected to the Homebridge UI server" error while the backend is still starting — requests retry automatically.
+
 ## 1.1.0
 - New bilingual settings screen — Hebrew by default, with an English toggle.
 - Choose which HomePods speak for every phrase (one, several or all together), plus voice and volume per phrase.
