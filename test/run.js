@@ -125,8 +125,8 @@ const speakCalls = () => calls().filter((c) => c.cmd === 'speak');
   await sleep(400);
 
   assert.deepStrictEqual(registered.map((a) => a.displayName), ['ארוחת ערב מוכנה כולם לשולחן', 'הכביסה מוכנה', 'Good night']);
-  assert.ok(generated.some((g) => g.voice === 'he-IL-AvriNeural' && g.pitch === '-10Hz'), 'avri-deep style applied');
-  assert.ok(generated.some((g) => g.voice === 'he-IL-HilaNeural' && g.rate === '-12%'), 'default voice hila-calm applied');
+  assert.ok(generated.some((g) => g.voice === 'he-IL-AvriNeural' && g.pitch === '-4Hz'), 'legacy avri-deep → avri + announcer style');
+  assert.ok(generated.some((g) => g.voice === 'he-IL-HilaNeural' && g.rate === '-18%'), 'legacy hila-calm → hila + calm style');
 
   // 1. phrase with one speaker + volume
   fs.rmSync(callsLog, { force: true });
@@ -220,6 +220,35 @@ exit 1
   await Promise.all([env.ensure(), env.ensure()]);
   process.env.PATH = oldPath;
   void realHelper; void execFile;
+
+  // 7b. Gemini: real voices + styles, PCM → WAV, falls back to the older model on 404
+  const realFetch = global.fetch;
+  const seen = [];
+  global.fetch = async (url, init) => {
+    seen.push({ url, body: JSON.parse(init.body) });
+    if (url.includes('gemini-3.1')) return new Response('not found', { status: 404, statusText: 'Not Found' });
+    const pcm = Buffer.alloc(4800, 7).toString('base64');
+    return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ inlineData: { mimeType: 'audio/L16;codec=pcm;rate=24000', data: pcm } }] } }] }), { status: 200 });
+  };
+  const realGemini = require('../src/tts').engines.gemini;
+  const { TtsService } = require('../src/tts');
+  const gsvc = new TtsService({ geminiApiKey: 'k' }, path.join(tmp, 'gcache'), log);
+  const g1 = await gsvc.getAudio('שלום לכולם', 'gemini-puck', 'whisper');
+  assert.strictEqual(g1.voice, 'gemini-puck');
+  assert.ok(g1.file.endsWith('.wav'));
+  const wav = fs.readFileSync(g1.file);
+  assert.strictEqual(wav.toString('ascii', 0, 4), 'RIFF');
+  assert.strictEqual(wav.readUInt32LE(24), 24000);
+  assert.strictEqual(seen.length, 2, 'tried 3.1 then 2.5');
+  assert.ok(seen[1].body.contents[0].parts[0].text.startsWith('Whisper'), 'style sent as instruction');
+  assert.strictEqual(seen[1].body.generationConfig.speechConfig.voiceConfig.prebuiltVoiceConfig.voiceName, 'Puck');
+  const g2 = await gsvc.getAudio('שלום לכולם', 'gemini-puck', 'cheerful');
+  assert.notStrictEqual(g2.file, g1.file, 'different style → different audio');
+  global.fetch = realFetch;
+  void realGemini;
+  const { resolveVoice: rv } = require('../src/voices');
+  assert.strictEqual(rv('elevenlabs', { elevenlabsVoiceId: 'x' }, 'whisper').tag, '[whispers]');
+  assert.strictEqual(rv('hila', {}, 'excited').pitch, '+18Hz');
 
   // 8. switchName
   const { switchName } = require('../src/platform');

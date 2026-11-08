@@ -99,7 +99,17 @@ async def speak_reply(args, cache=None):
         try:
             await atv.stream.stream_file(args["file"])
         except Exception as exc:
-            raise SpeakError({"ok": False, "error": f"playback failed: {exc}", "warnings": warnings}, 5)
+            # A sleeping HomePod sometimes drops the very first connection — reconnect once and retry.
+            warnings.append(f"retry after: {exc}")
+            pending = atv.close()
+            if pending:
+                await asyncio.wait(pending, timeout=3)
+            await asyncio.sleep(1)
+            atv = await pyatv.connect(conf, loop)
+            try:
+                await atv.stream.stream_file(args["file"])
+            except Exception as exc2:
+                raise SpeakError({"ok": False, "error": f"playback failed: {exc2}", "warnings": warnings}, 5)
         if previous is not None and volume is not None and abs(previous - float(volume)) > 0.5:
             try:
                 await atv.audio.set_volume(previous)

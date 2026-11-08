@@ -1,97 +1,154 @@
 'use strict';
 
 /**
- * Voice catalog. Each preset maps to an engine + voice + optional style (rate/pitch).
- * Labels are bilingual so the settings screen can show them in Hebrew or English.
+ * Voice catalog and speaking styles.
+ *
+ * A phrase has a VOICE (who speaks) and a STYLE (how they speak). Real variety comes from
+ * different engines: Microsoft has only two Hebrew voices (Hila, Avri), while Gemini, Google
+ * Chirp and ElevenLabs offer many genuinely different voices. Labels are bilingual for the UI.
  */
-const VOICES = [
-  // ---- Microsoft Edge — free, no key. Native Hebrew voices in several styles.
-  { id: 'hila', engine: 'edge', voice: 'he-IL-HilaNeural', gender: 'f', group: 'free',
-    he: 'הילה — רגיל', en: 'Hila — natural' },
-  { id: 'hila-calm', engine: 'edge', voice: 'he-IL-HilaNeural', rate: '-12%', pitch: '-2Hz', gender: 'f', group: 'free',
-    he: 'הילה — רגוע ואיטי', en: 'Hila — calm & slow' },
-  { id: 'hila-bright', engine: 'edge', voice: 'he-IL-HilaNeural', rate: '+8%', pitch: '+6Hz', gender: 'f', group: 'free',
-    he: 'הילה — עליז ואנרגטי', en: 'Hila — bright & lively' },
-  { id: 'hila-soft', engine: 'edge', voice: 'he-IL-HilaNeural', rate: '-5%', pitch: '-6Hz', gender: 'f', group: 'free',
-    he: 'הילה — רך ונמוך', en: 'Hila — soft & low' },
-  { id: 'avri', engine: 'edge', voice: 'he-IL-AvriNeural', gender: 'm', group: 'free',
-    he: 'אברי — רגיל', en: 'Avri — natural' },
-  { id: 'avri-deep', engine: 'edge', voice: 'he-IL-AvriNeural', rate: '-5%', pitch: '-10Hz', gender: 'm', group: 'free',
-    he: 'אברי — קול עמוק', en: 'Avri — deep' },
-  { id: 'avri-calm', engine: 'edge', voice: 'he-IL-AvriNeural', rate: '-12%', gender: 'm', group: 'free',
-    he: 'אברי — רגוע ואיטי', en: 'Avri — calm & slow' },
-  { id: 'avri-fast', engine: 'edge', voice: 'he-IL-AvriNeural', rate: '+12%', pitch: '+3Hz', gender: 'm', group: 'free',
-    he: 'אברי — מהיר ונמרץ', en: 'Avri — quick & energetic' },
 
-  // ---- Microsoft multilingual voices — free, may have a slight accent in Hebrew.
-  { id: 'ava', engine: 'edge', voice: 'en-US-AvaMultilingualNeural', gender: 'f', group: 'multi',
-    he: 'אווה — רב-לשוני (ניסיוני)', en: 'Ava — multilingual (experimental)' },
-  { id: 'emma', engine: 'edge', voice: 'en-US-EmmaMultilingualNeural', gender: 'f', group: 'multi',
-    he: 'אמה — רב-לשוני (ניסיוני)', en: 'Emma — multilingual (experimental)' },
-  { id: 'seraphina', engine: 'edge', voice: 'de-DE-SeraphinaMultilingualNeural', gender: 'f', group: 'multi',
-    he: 'סרפינה — רב-לשוני (ניסיוני)', en: 'Seraphina — multilingual (experimental)' },
-  { id: 'andrew', engine: 'edge', voice: 'en-US-AndrewMultilingualNeural', gender: 'm', group: 'multi',
-    he: 'אנדרו — רב-לשוני (ניסיוני)', en: 'Andrew — multilingual (experimental)' },
-  { id: 'brian', engine: 'edge', voice: 'en-US-BrianMultilingualNeural', gender: 'm', group: 'multi',
-    he: 'בריאן — רב-לשוני (ניסיוני)', en: 'Brian — multilingual (experimental)' },
-  { id: 'remy', engine: 'edge', voice: 'fr-FR-RemyMultilingualNeural', gender: 'm', group: 'multi',
-    he: 'רמי — רב-לשוני (ניסיוני)', en: 'Remy — multilingual (experimental)' },
-
-  // ---- Google Chirp 3 HD — needs a Google Cloud API key. Very clear Hebrew.
-  ...[
-    ['Kore', 'f'], ['Aoede', 'f'], ['Leda', 'f'], ['Zephyr', 'f'], ['Callirrhoe', 'f'], ['Despina', 'f'],
-    ['Gacrux', 'f'], ['Sulafat', 'f'],
-    ['Charon', 'm'], ['Puck', 'm'], ['Fenrir', 'm'], ['Orus', 'm'], ['Enceladus', 'm'], ['Iapetus', 'm'],
-    ['Algieba', 'm'], ['Umbriel', 'm'],
-  ].map(([n, g]) => ({
-    id: `google-${n.toLowerCase()}`, engine: 'googlecloud', voice: `he-IL-Chirp3-HD-${n}`, gender: g, group: 'google',
-    he: `${n} — ${g === 'f' ? 'אישה' : 'גבר'} (Google)`, en: `${n} — ${g === 'f' ? 'female' : 'male'} (Google)`,
-  })),
-
-  // ---- ElevenLabs — needs an API key; uses the voice ID from the settings.
-  { id: 'elevenlabs', engine: 'elevenlabs', gender: '', group: 'elevenlabs',
-    he: 'ElevenLabs — הקול שבחרת', en: 'ElevenLabs — your chosen voice' },
+const GEMINI = [
+  // name, gender, he, en
+  ['Zephyr', 'f', 'בהיר', 'bright'], ['Kore', 'f', 'יציב', 'firm'], ['Leda', 'f', 'צעיר', 'youthful'],
+  ['Aoede', 'f', 'קליל', 'breezy'], ['Achernar', 'f', 'רך', 'soft'], ['Sulafat', 'f', 'חם', 'warm'],
+  ['Gacrux', 'f', 'בוגר', 'mature'], ['Vindemiatrix', 'f', 'עדין', 'gentle'],
+  ['Puck', 'm', 'שמח', 'upbeat'], ['Charon', 'm', 'קריין', 'informative'], ['Fenrir', 'm', 'נלהב', 'excitable'],
+  ['Algenib', 'm', 'צרוד', 'gravelly'], ['Enceladus', 'm', 'נושם', 'breathy'], ['Achird', 'm', 'ידידותי', 'friendly'],
+  ['Sadaltager', 'm', 'מלומד', 'knowledgeable'], ['Iapetus', 'm', 'צלול', 'clear'],
 ];
 
-const BY_ID = new Map(VOICES.map((v) => [v.id, v]));
-const DEFAULT_VOICE = 'hila';
+const CHIRP = [
+  ['Kore', 'f'], ['Aoede', 'f'], ['Leda', 'f'], ['Zephyr', 'f'], ['Callirrhoe', 'f'], ['Despina', 'f'],
+  ['Charon', 'm'], ['Puck', 'm'], ['Fenrir', 'm'], ['Orus', 'm'], ['Enceladus', 'm'], ['Iapetus', 'm'],
+];
 
-/** Legacy 1.0 engine names → preset. */
-const LEGACY = { edge: 'hila', googlecloud: 'google-kore', elevenlabs: 'elevenlabs', googletranslate: 'translate' };
+const VOICES = [
+  // ---- Microsoft — free, no key. The only two native Hebrew voices Microsoft offers.
+  { id: 'hila', engine: 'edge', voice: 'he-IL-HilaNeural', gender: 'f', group: 'free', he: 'הילה', en: 'Hila' },
+  { id: 'avri', engine: 'edge', voice: 'he-IL-AvriNeural', gender: 'm', group: 'free', he: 'אברי', en: 'Avri' },
+
+  // ---- Gemini — free API key (no credit card), 16 really different voices + real speaking styles.
+  ...GEMINI.map(([n, g, he, en]) => ({
+    id: `gemini-${n.toLowerCase()}`, engine: 'gemini', voice: n, gender: g, group: 'gemini',
+    he: `${n} — ${he}`, en: `${n} — ${en}`,
+  })),
+
+  // ---- Microsoft multilingual — free, may have an accent in Hebrew.
+  { id: 'ava', engine: 'edge', voice: 'en-US-AvaMultilingualNeural', gender: 'f', group: 'multi', he: 'אווה (רב-לשוני)', en: 'Ava (multilingual)' },
+  { id: 'emma', engine: 'edge', voice: 'en-US-EmmaMultilingualNeural', gender: 'f', group: 'multi', he: 'אמה (רב-לשוני)', en: 'Emma (multilingual)' },
+  { id: 'andrew', engine: 'edge', voice: 'en-US-AndrewMultilingualNeural', gender: 'm', group: 'multi', he: 'אנדרו (רב-לשוני)', en: 'Andrew (multilingual)' },
+  { id: 'brian', engine: 'edge', voice: 'en-US-BrianMultilingualNeural', gender: 'm', group: 'multi', he: 'בריאן (רב-לשוני)', en: 'Brian (multilingual)' },
+
+  // ---- Google Chirp 3 HD — Google Cloud key (billing account, free monthly tier).
+  ...CHIRP.map(([n, g]) => ({
+    id: `google-${n.toLowerCase()}`, engine: 'googlecloud', voice: `he-IL-Chirp3-HD-${n}`, gender: g, group: 'google',
+    he: n, en: n,
+  })),
+
+  // ---- ElevenLabs — the voice ID from the settings.
+  { id: 'elevenlabs', engine: 'elevenlabs', gender: '', group: 'elevenlabs', he: 'הקול שבחרת ב-ElevenLabs', en: 'Your ElevenLabs voice' },
+];
 
 /**
- * Resolve a preset id (or a raw voice name) to engine options.
- * @param {string} id preset id, e.g. "avri-deep"; also accepts raw Edge/Google voice names.
- * @param {object} tts the "tts" config block (keys, ElevenLabs voice id, ...)
+ * Speaking styles. Gemini performs them for real (it is told how to speak); ElevenLabs v3 gets an
+ * audio tag; Microsoft and Google voices get a speed/pitch change as an approximation.
  */
-function resolveVoice(id, tts = {}) {
+const STYLES = [
+  { id: 'normal', he: 'רגיל', en: 'Normal' },
+  { id: 'cheerful', he: 'שמח ועליז', en: 'Cheerful',
+    prompt: 'Say cheerfully, with a big smile', tag: '[happily]', rate: '+12%', pitch: '+12Hz', speed: 1.1 },
+  { id: 'calm', he: 'רגוע ושקט', en: 'Calm & quiet',
+    prompt: 'Say slowly, calmly and softly, like a relaxing evening message', tag: '[calmly]', rate: '-18%', pitch: '-6Hz', speed: 0.85 },
+  { id: 'whisper', he: 'לחישה', en: 'Whisper',
+    prompt: 'Whisper this quietly and gently', tag: '[whispers]', rate: '-15%', pitch: '-10Hz', speed: 0.9 },
+  { id: 'announcer', he: 'כרוז רשמי', en: 'Announcer',
+    prompt: 'Read this like a clear, formal public announcement at an airport', tag: '[formally]', rate: '-6%', pitch: '-4Hz', speed: 0.95 },
+  { id: 'urgent', he: 'דחוף / אזהרה', en: 'Urgent warning',
+    prompt: 'Say urgently and firmly, as an important warning that needs attention now', tag: '[urgently]', rate: '+18%', pitch: '+6Hz', speed: 1.15 },
+  { id: 'warm', he: 'חם ואוהב', en: 'Warm & loving',
+    prompt: 'Say warmly and lovingly, like a parent talking to their family', tag: '[warmly]', rate: '-8%', pitch: '+2Hz', speed: 0.95 },
+  { id: 'excited', he: 'נרגש ומלא אנרגיה', en: 'Excited',
+    prompt: 'Say with lots of excitement and energy', tag: '[excited]', rate: '+20%', pitch: '+18Hz', speed: 1.15 },
+  { id: 'funny', he: 'מצחיק ושובב', en: 'Playful',
+    prompt: 'Say playfully and humorously, with a teasing tone', tag: '[mischievously]', rate: '+5%', pitch: '+8Hz', speed: 1.05 },
+];
+
+/** Legacy ids from 1.0 / 1.1 → [voice, style]. */
+const LEGACY = {
+  edge: ['hila', 'normal'], googlecloud: ['google-kore', 'normal'], googletranslate: ['translate', 'normal'],
+  'hila-calm': ['hila', 'calm'], 'hila-bright': ['hila', 'cheerful'], 'hila-soft': ['hila', 'warm'],
+  'avri-deep': ['avri', 'announcer'], 'avri-calm': ['avri', 'calm'], 'avri-fast': ['avri', 'urgent'],
+  seraphina: ['emma', 'normal'], remy: ['brian', 'normal'],
+  'google-gacrux': ['google-kore', 'normal'], 'google-sulafat': ['google-aoede', 'normal'],
+  'google-algieba': ['google-charon', 'normal'], 'google-umbriel': ['google-puck', 'normal'],
+};
+
+const BY_ID = new Map(VOICES.map((v) => [v.id, v]));
+const STYLE_BY_ID = new Map(STYLES.map((s) => [s.id, s]));
+const DEFAULT_VOICE = 'hila';
+
+/**
+ * Resolve a voice id (+ optional style) to engine options.
+ * @param {string} id     voice id, legacy id, or raw Edge/Google voice name
+ * @param {object} tts    the "tts" config block (keys, ElevenLabs voice id, ...)
+ * @param {string} [styleId]
+ */
+function resolveVoice(id, tts = {}, styleId) {
   let key = id || DEFAULT_VOICE;
-  if (LEGACY[key]) key = LEGACY[key];
-  if (key === 'translate') return { id: key, engine: 'googletranslate', language: 'iw' };
+  let style = styleId;
+  if (LEGACY[key]) {
+    if (!style || style === 'normal') style = LEGACY[key][1];
+    key = LEGACY[key][0];
+  }
+  const st = STYLE_BY_ID.get(style) || STYLE_BY_ID.get('normal');
+  if (key === 'translate') return { id: key, engine: 'googletranslate', language: 'iw', style: 'normal' };
 
   const preset = BY_ID.get(key);
+  let opts;
   if (preset) {
-    const opts = { id: preset.id, engine: preset.engine, voice: preset.voice, rate: preset.rate, pitch: preset.pitch };
-    if (preset.engine === 'googlecloud') opts.apiKey = tts.googleApiKey;
-    if (preset.engine === 'elevenlabs') {
+    opts = { id: preset.id, engine: preset.engine, voice: preset.voice };
+  } else if (/Chirp|Wavenet|Neural2|Standard/i.test(key) && /^[a-z]{2}-[A-Z]{2}-/.test(key)) {
+    opts = { id: key, engine: 'googlecloud', voice: key };
+  } else if (/Neural$/.test(key)) {
+    opts = { id: key, engine: 'edge', voice: key };
+  } else {
+    return resolveVoice(DEFAULT_VOICE, tts, style);
+  }
+  opts.style = st.id;
+
+  switch (opts.engine) {
+    case 'edge':
+      if (st.rate) opts.rate = st.rate;
+      if (st.pitch) opts.pitch = st.pitch;
+      break;
+    case 'gemini':
+      opts.apiKey = tts.geminiApiKey;
+      opts.model = tts.geminiModel;
+      if (st.prompt) opts.prompt = st.prompt;
+      break;
+    case 'googlecloud':
+      opts.apiKey = tts.googleApiKey;
+      if (st.speed) opts.speakingRate = st.speed;
+      break;
+    case 'elevenlabs':
       Object.assign(opts, {
         apiKey: tts.elevenlabsApiKey, voice: tts.elevenlabsVoiceId, model: tts.elevenlabsModel,
         language: tts.elevenlabsLanguage, stability: tts.elevenlabsStability, speed: tts.elevenlabsSpeed,
       });
-    }
-    return opts;
+      if (st.tag) opts.tag = st.tag;
+      break;
+    default:
   }
-  // raw voice names
-  if (/Chirp|Wavenet|Neural2|Standard/i.test(key) && /^[a-z]{2}-[A-Z]{2}-/.test(key)) {
-    return { id: key, engine: 'googlecloud', voice: key, apiKey: tts.googleApiKey };
-  }
-  if (/Neural$/.test(key)) return { id: key, engine: 'edge', voice: key };
-  return resolveVoice(DEFAULT_VOICE, tts);
+  return opts;
 }
 
-/** Public list for the settings screen. */
+/** Public lists for the settings screen. */
 function listVoices() {
   return VOICES.map(({ id, gender, group, he, en, engine }) => ({ id, gender, group, he, en, engine }));
 }
+function listStyles() {
+  return STYLES.map(({ id, he, en }) => ({ id, he, en }));
+}
 
-module.exports = { VOICES, DEFAULT_VOICE, resolveVoice, listVoices };
+module.exports = { VOICES, STYLES, DEFAULT_VOICE, resolveVoice, listVoices, listStyles };

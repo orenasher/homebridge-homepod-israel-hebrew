@@ -59,6 +59,25 @@ function splitText(text, max) {
   return chunks;
 }
 
+/** Wrap 16-bit mono PCM in a WAV header. */
+function pcmToWav(pcm, sampleRate = 24000) {
+  const h = Buffer.alloc(44);
+  h.write('RIFF', 0);
+  h.writeUInt32LE(36 + pcm.length, 4);
+  h.write('WAVE', 8);
+  h.write('fmt ', 12);
+  h.writeUInt32LE(16, 16);
+  h.writeUInt16LE(1, 20); // PCM
+  h.writeUInt16LE(1, 22); // mono
+  h.writeUInt32LE(sampleRate, 24);
+  h.writeUInt32LE(sampleRate * 2, 28);
+  h.writeUInt16LE(2, 32);
+  h.writeUInt16LE(16, 34);
+  h.write('data', 36);
+  h.writeUInt32LE(pcm.length, 40);
+  return Buffer.concat([h, pcm]);
+}
+
 /* ---------------------------------------------------------------- engines */
 
 const engines = {
@@ -87,7 +106,8 @@ const engines = {
     const voice = opts.voice || DEFAULTS.elevenlabs.voice;
     if (!voice) throw new Error('ElevenLabs voice ID is missing');
     const model = opts.model || DEFAULTS.elevenlabs.model;
-    const body = { text, model_id: model };
+    const tagged = opts.tag && /v3|v4/.test(model) ? `${opts.tag} ${text}` : text;
+    const body = { text: tagged, model_id: model };
     const language = opts.language === undefined ? DEFAULTS.elevenlabs.language : opts.language;
     if (language) body.language_code = language;
     if (opts.stability !== undefined || opts.speed !== undefined) {
@@ -102,6 +122,45 @@ const engines = {
       body: JSON.stringify(body),
     }, opts.timeoutMs || 45000);
     await fsp.writeFile(outFile, buf);
+  },
+
+  /**
+   * Gemini TTS — free API key from Google AI Studio. Many distinct voices, and it really performs
+   * the requested style (cheerful, whisper, announcer…). Returns raw PCM, saved as WAV.
+   */
+  async gemini(text, opts, outFile) {
+    if (!opts.apiKey) throw new Error('Gemini API key is missing');
+    const models = opts.model ? [opts.model] : ['gemini-3.1-flash-tts-preview', 'gemini-2.5-flash-preview-tts'];
+    const how = opts.prompt || 'Read this aloud naturally and clearly';
+    const prompt = `${how}, in the language it is written in (Hebrew = native Israeli accent):\n${text}`;
+    const body = JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        responseModalities: ['AUDIO'],
+        speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: opts.voice || 'Kore' } } },
+      },
+    });
+    let lastErr;
+    for (const model of models) {
+      try {
+        const buf = await fetchBuffer(
+          `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
+          { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': opts.apiKey }, body },
+          opts.timeoutMs || 60000,
+        );
+        const json = JSON.parse(buf.toString('utf8'));
+        const parts = (((json.candidates || [])[0] || {}).content || {}).parts || [];
+        const audio = parts.find((p) => p.inlineData && p.inlineData.data);
+        if (!audio) throw new Error('Gemini returned no audio');
+        const rate = Number((/rate=(\d+)/.exec(audio.inlineData.mimeType || '') || [])[1]) || 24000;
+        await fsp.writeFile(outFile, pcmToWav(Buffer.from(audio.inlineData.data, 'base64'), rate));
+        return;
+      } catch (err) {
+        lastErr = err;
+        if (!/HTTP 404/.test(err.message)) throw err; // only try the next model if this one doesn't exist
+      }
+    }
+    throw lastErr;
   },
 
   /** Google Cloud Text-to-Speech (Chirp 3 HD, WaveNet...). Needs an API key. */
@@ -158,11 +217,12 @@ class TtsService {
   }
 
   /** Ordered list of resolved voices to try: the chosen one, then free fallbacks. */
-  chain(voiceId) {
-    const list = [resolveVoice(voiceId, this.config)];
+  chain(voiceId, styleId) {
+    const first = resolveVoice(voiceId, this.config, styleId);
+    const list = [first];
     if (this.config.fallback !== false) {
       for (const id of [DEFAULT_VOICE, 'translate']) {
-        if (!list.some((v) => v.id === id)) list.push(resolveVoice(id, this.config));
+        if (!list.some((v) => v.id === id)) list.push(resolveVoice(id, this.config, first.style));
       }
     }
     return list;
@@ -170,22 +230,25 @@ class TtsService {
 
   cacheFile(opts, text) {
     const key = JSON.stringify([opts.engine, opts.voice || '', opts.model || '', opts.language || '',
-      opts.rate || '', opts.pitch || '', opts.stability ?? '', opts.speed ?? '', text]);
+      opts.rate || '', opts.pitch || '', opts.stability ?? '', opts.speed ?? '', opts.speakingRate ?? '',
+      opts.prompt || '', opts.tag || '', text]);
     const hash = crypto.createHash('sha1').update(key).digest('hex').slice(0, 20);
-    return path.join(this.cacheDir, `${opts.engine}-${hash}.mp3`);
+    const ext = opts.engine === 'gemini' ? 'wav' : 'mp3';
+    return path.join(this.cacheDir, `${opts.engine}-${hash}.${ext}`);
   }
 
   /**
    * Returns the path of an MP3 for `text`, generating it if needed.
    * @param {string} text
-   * @param {string} [voiceId] preset id from voices.js
+   * @param {string} [voiceId] voice id from voices.js
+   * @param {string} [styleId] style id from voices.js
    */
-  async getAudio(text, voiceId) {
+  async getAudio(text, voiceId, styleId) {
     const clean = String(text || '').trim();
     if (!clean) throw new Error('nothing to say (empty text)');
 
     const errors = [];
-    const chain = this.chain(voiceId);
+    const chain = this.chain(voiceId, styleId);
     for (let i = 0; i < chain.length; i++) {
       const opts = chain[i];
       const file = this.cacheFile(opts, clean);
@@ -254,4 +317,4 @@ async function exists(file) {
   }
 }
 
-module.exports = { TtsService, splitText, engines };
+module.exports = { TtsService, splitText, engines, pcmToWav };

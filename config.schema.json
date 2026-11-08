@@ -88,187 +88,211 @@
               "type": "string",
               "oneOf": [
                 {
-                  "title": "הילה — רגיל | Hila — natural",
+                  "title": "הילה | Hila",
                   "enum": [
                     "hila"
                   ]
                 },
                 {
-                  "title": "הילה — רגוע ואיטי | Hila — calm & slow",
-                  "enum": [
-                    "hila-calm"
-                  ]
-                },
-                {
-                  "title": "הילה — עליז ואנרגטי | Hila — bright & lively",
-                  "enum": [
-                    "hila-bright"
-                  ]
-                },
-                {
-                  "title": "הילה — רך ונמוך | Hila — soft & low",
-                  "enum": [
-                    "hila-soft"
-                  ]
-                },
-                {
-                  "title": "אברי — רגיל | Avri — natural",
+                  "title": "אברי | Avri",
                   "enum": [
                     "avri"
                   ]
                 },
                 {
-                  "title": "אברי — קול עמוק | Avri — deep",
+                  "title": "Zephyr — בהיר | Zephyr — bright",
                   "enum": [
-                    "avri-deep"
+                    "gemini-zephyr"
                   ]
                 },
                 {
-                  "title": "אברי — רגוע ואיטי | Avri — calm & slow",
+                  "title": "Kore — יציב | Kore — firm",
                   "enum": [
-                    "avri-calm"
+                    "gemini-kore"
                   ]
                 },
                 {
-                  "title": "אברי — מהיר ונמרץ | Avri — quick & energetic",
+                  "title": "Leda — צעיר | Leda — youthful",
                   "enum": [
-                    "avri-fast"
+                    "gemini-leda"
                   ]
                 },
                 {
-                  "title": "אווה — רב-לשוני (ניסיוני) | Ava — multilingual (experimental)",
+                  "title": "Aoede — קליל | Aoede — breezy",
+                  "enum": [
+                    "gemini-aoede"
+                  ]
+                },
+                {
+                  "title": "Achernar — רך | Achernar — soft",
+                  "enum": [
+                    "gemini-achernar"
+                  ]
+                },
+                {
+                  "title": "Sulafat — חם | Sulafat — warm",
+                  "enum": [
+                    "gemini-sulafat"
+                  ]
+                },
+                {
+                  "title": "Gacrux — בוגר | Gacrux — mature",
+                  "enum": [
+                    "gemini-gacrux"
+                  ]
+                },
+                {
+                  "title": "Vindemiatrix — עדין | Vindemiatrix — gentle",
+                  "enum": [
+                    "gemini-vindemiatrix"
+                  ]
+                },
+                {
+                  "title": "Puck — שמח | Puck — upbeat",
+                  "enum": [
+                    "gemini-puck"
+                  ]
+                },
+                {
+                  "title": "Charon — קריין | Charon — informative",
+                  "enum": [
+                    "gemini-charon"
+                  ]
+                },
+                {
+                  "title": "Fenrir — נלהב | Fenrir — excitable",
+                  "enum": [
+                    "gemini-fenrir"
+                  ]
+                },
+                {
+                  "title": "Algenib — צרוד | Algenib — gravelly",
+                  "enum": [
+                    "gemini-algenib"
+                  ]
+                },
+                {
+                  "title": "Enceladus — נושם | Enceladus — breathy",
+                  "enum": [
+                    "gemini-enceladus"
+                  ]
+                },
+                {
+                  "title": "Achird — ידידותי | Achird — friendly",
+                  "enum": [
+                    "gemini-achird"
+                  ]
+                },
+                {
+                  "title": "Sadaltager — מלומד | Sadaltager — knowledgeable",
+                  "enum": [
+                    "gemini-sadaltager"
+                  ]
+                },
+                {
+                  "title": "Iapetus — צלול | Iapetus — clear",
+                  "enum": [
+                    "gemini-iapetus"
+                  ]
+                },
+                {
+                  "title": "אווה (רב-לשוני) | Ava (multilingual)",
                   "enum": [
                     "ava"
                   ]
                 },
                 {
-                  "title": "אמה — רב-לשוני (ניסיוני) | Emma — multilingual (experimental)",
+                  "title": "אמה (רב-לשוני) | Emma (multilingual)",
                   "enum": [
                     "emma"
                   ]
                 },
                 {
-                  "title": "סרפינה — רב-לשוני (ניסיוני) | Seraphina — multilingual (experimental)",
-                  "enum": [
-                    "seraphina"
-                  ]
-                },
-                {
-                  "title": "אנדרו — רב-לשוני (ניסיוני) | Andrew — multilingual (experimental)",
+                  "title": "אנדרו (רב-לשוני) | Andrew (multilingual)",
                   "enum": [
                     "andrew"
                   ]
                 },
                 {
-                  "title": "בריאן — רב-לשוני (ניסיוני) | Brian — multilingual (experimental)",
+                  "title": "בריאן (רב-לשוני) | Brian (multilingual)",
                   "enum": [
                     "brian"
                   ]
                 },
                 {
-                  "title": "רמי — רב-לשוני (ניסיוני) | Remy — multilingual (experimental)",
-                  "enum": [
-                    "remy"
-                  ]
-                },
-                {
-                  "title": "Kore — אישה (Google) | Kore — female (Google)",
+                  "title": "Kore | Kore",
                   "enum": [
                     "google-kore"
                   ]
                 },
                 {
-                  "title": "Aoede — אישה (Google) | Aoede — female (Google)",
+                  "title": "Aoede | Aoede",
                   "enum": [
                     "google-aoede"
                   ]
                 },
                 {
-                  "title": "Leda — אישה (Google) | Leda — female (Google)",
+                  "title": "Leda | Leda",
                   "enum": [
                     "google-leda"
                   ]
                 },
                 {
-                  "title": "Zephyr — אישה (Google) | Zephyr — female (Google)",
+                  "title": "Zephyr | Zephyr",
                   "enum": [
                     "google-zephyr"
                   ]
                 },
                 {
-                  "title": "Callirrhoe — אישה (Google) | Callirrhoe — female (Google)",
+                  "title": "Callirrhoe | Callirrhoe",
                   "enum": [
                     "google-callirrhoe"
                   ]
                 },
                 {
-                  "title": "Despina — אישה (Google) | Despina — female (Google)",
+                  "title": "Despina | Despina",
                   "enum": [
                     "google-despina"
                   ]
                 },
                 {
-                  "title": "Gacrux — אישה (Google) | Gacrux — female (Google)",
-                  "enum": [
-                    "google-gacrux"
-                  ]
-                },
-                {
-                  "title": "Sulafat — אישה (Google) | Sulafat — female (Google)",
-                  "enum": [
-                    "google-sulafat"
-                  ]
-                },
-                {
-                  "title": "Charon — גבר (Google) | Charon — male (Google)",
+                  "title": "Charon | Charon",
                   "enum": [
                     "google-charon"
                   ]
                 },
                 {
-                  "title": "Puck — גבר (Google) | Puck — male (Google)",
+                  "title": "Puck | Puck",
                   "enum": [
                     "google-puck"
                   ]
                 },
                 {
-                  "title": "Fenrir — גבר (Google) | Fenrir — male (Google)",
+                  "title": "Fenrir | Fenrir",
                   "enum": [
                     "google-fenrir"
                   ]
                 },
                 {
-                  "title": "Orus — גבר (Google) | Orus — male (Google)",
+                  "title": "Orus | Orus",
                   "enum": [
                     "google-orus"
                   ]
                 },
                 {
-                  "title": "Enceladus — גבר (Google) | Enceladus — male (Google)",
+                  "title": "Enceladus | Enceladus",
                   "enum": [
                     "google-enceladus"
                   ]
                 },
                 {
-                  "title": "Iapetus — גבר (Google) | Iapetus — male (Google)",
+                  "title": "Iapetus | Iapetus",
                   "enum": [
                     "google-iapetus"
                   ]
                 },
                 {
-                  "title": "Algieba — גבר (Google) | Algieba — male (Google)",
-                  "enum": [
-                    "google-algieba"
-                  ]
-                },
-                {
-                  "title": "Umbriel — גבר (Google) | Umbriel — male (Google)",
-                  "enum": [
-                    "google-umbriel"
-                  ]
-                },
-                {
-                  "title": "ElevenLabs — הקול שבחרת | ElevenLabs — your chosen voice",
+                  "title": "הקול שבחרת ב-ElevenLabs | Your ElevenLabs voice",
                   "enum": [
                     "elevenlabs"
                   ]
@@ -280,6 +304,66 @@
               "type": "integer",
               "minimum": 0,
               "maximum": 100
+            },
+            "style": {
+              "title": "סגנון | Style",
+              "type": "string",
+              "oneOf": [
+                {
+                  "title": "רגיל | Normal",
+                  "enum": [
+                    "normal"
+                  ]
+                },
+                {
+                  "title": "שמח ועליז | Cheerful",
+                  "enum": [
+                    "cheerful"
+                  ]
+                },
+                {
+                  "title": "רגוע ושקט | Calm & quiet",
+                  "enum": [
+                    "calm"
+                  ]
+                },
+                {
+                  "title": "לחישה | Whisper",
+                  "enum": [
+                    "whisper"
+                  ]
+                },
+                {
+                  "title": "כרוז רשמי | Announcer",
+                  "enum": [
+                    "announcer"
+                  ]
+                },
+                {
+                  "title": "דחוף / אזהרה | Urgent warning",
+                  "enum": [
+                    "urgent"
+                  ]
+                },
+                {
+                  "title": "חם ואוהב | Warm & loving",
+                  "enum": [
+                    "warm"
+                  ]
+                },
+                {
+                  "title": "נרגש ומלא אנרגיה | Excited",
+                  "enum": [
+                    "excited"
+                  ]
+                },
+                {
+                  "title": "מצחיק ושובב | Playful",
+                  "enum": [
+                    "funny"
+                  ]
+                }
+              ]
             }
           }
         }
@@ -290,189 +374,274 @@
         "default": "hila",
         "oneOf": [
           {
-            "title": "הילה — רגיל | Hila — natural",
+            "title": "הילה | Hila",
             "enum": [
               "hila"
             ]
           },
           {
-            "title": "הילה — רגוע ואיטי | Hila — calm & slow",
-            "enum": [
-              "hila-calm"
-            ]
-          },
-          {
-            "title": "הילה — עליז ואנרגטי | Hila — bright & lively",
-            "enum": [
-              "hila-bright"
-            ]
-          },
-          {
-            "title": "הילה — רך ונמוך | Hila — soft & low",
-            "enum": [
-              "hila-soft"
-            ]
-          },
-          {
-            "title": "אברי — רגיל | Avri — natural",
+            "title": "אברי | Avri",
             "enum": [
               "avri"
             ]
           },
           {
-            "title": "אברי — קול עמוק | Avri — deep",
+            "title": "Zephyr — בהיר | Zephyr — bright",
             "enum": [
-              "avri-deep"
+              "gemini-zephyr"
             ]
           },
           {
-            "title": "אברי — רגוע ואיטי | Avri — calm & slow",
+            "title": "Kore — יציב | Kore — firm",
             "enum": [
-              "avri-calm"
+              "gemini-kore"
             ]
           },
           {
-            "title": "אברי — מהיר ונמרץ | Avri — quick & energetic",
+            "title": "Leda — צעיר | Leda — youthful",
             "enum": [
-              "avri-fast"
+              "gemini-leda"
             ]
           },
           {
-            "title": "אווה — רב-לשוני (ניסיוני) | Ava — multilingual (experimental)",
+            "title": "Aoede — קליל | Aoede — breezy",
+            "enum": [
+              "gemini-aoede"
+            ]
+          },
+          {
+            "title": "Achernar — רך | Achernar — soft",
+            "enum": [
+              "gemini-achernar"
+            ]
+          },
+          {
+            "title": "Sulafat — חם | Sulafat — warm",
+            "enum": [
+              "gemini-sulafat"
+            ]
+          },
+          {
+            "title": "Gacrux — בוגר | Gacrux — mature",
+            "enum": [
+              "gemini-gacrux"
+            ]
+          },
+          {
+            "title": "Vindemiatrix — עדין | Vindemiatrix — gentle",
+            "enum": [
+              "gemini-vindemiatrix"
+            ]
+          },
+          {
+            "title": "Puck — שמח | Puck — upbeat",
+            "enum": [
+              "gemini-puck"
+            ]
+          },
+          {
+            "title": "Charon — קריין | Charon — informative",
+            "enum": [
+              "gemini-charon"
+            ]
+          },
+          {
+            "title": "Fenrir — נלהב | Fenrir — excitable",
+            "enum": [
+              "gemini-fenrir"
+            ]
+          },
+          {
+            "title": "Algenib — צרוד | Algenib — gravelly",
+            "enum": [
+              "gemini-algenib"
+            ]
+          },
+          {
+            "title": "Enceladus — נושם | Enceladus — breathy",
+            "enum": [
+              "gemini-enceladus"
+            ]
+          },
+          {
+            "title": "Achird — ידידותי | Achird — friendly",
+            "enum": [
+              "gemini-achird"
+            ]
+          },
+          {
+            "title": "Sadaltager — מלומד | Sadaltager — knowledgeable",
+            "enum": [
+              "gemini-sadaltager"
+            ]
+          },
+          {
+            "title": "Iapetus — צלול | Iapetus — clear",
+            "enum": [
+              "gemini-iapetus"
+            ]
+          },
+          {
+            "title": "אווה (רב-לשוני) | Ava (multilingual)",
             "enum": [
               "ava"
             ]
           },
           {
-            "title": "אמה — רב-לשוני (ניסיוני) | Emma — multilingual (experimental)",
+            "title": "אמה (רב-לשוני) | Emma (multilingual)",
             "enum": [
               "emma"
             ]
           },
           {
-            "title": "סרפינה — רב-לשוני (ניסיוני) | Seraphina — multilingual (experimental)",
-            "enum": [
-              "seraphina"
-            ]
-          },
-          {
-            "title": "אנדרו — רב-לשוני (ניסיוני) | Andrew — multilingual (experimental)",
+            "title": "אנדרו (רב-לשוני) | Andrew (multilingual)",
             "enum": [
               "andrew"
             ]
           },
           {
-            "title": "בריאן — רב-לשוני (ניסיוני) | Brian — multilingual (experimental)",
+            "title": "בריאן (רב-לשוני) | Brian (multilingual)",
             "enum": [
               "brian"
             ]
           },
           {
-            "title": "רמי — רב-לשוני (ניסיוני) | Remy — multilingual (experimental)",
-            "enum": [
-              "remy"
-            ]
-          },
-          {
-            "title": "Kore — אישה (Google) | Kore — female (Google)",
+            "title": "Kore | Kore",
             "enum": [
               "google-kore"
             ]
           },
           {
-            "title": "Aoede — אישה (Google) | Aoede — female (Google)",
+            "title": "Aoede | Aoede",
             "enum": [
               "google-aoede"
             ]
           },
           {
-            "title": "Leda — אישה (Google) | Leda — female (Google)",
+            "title": "Leda | Leda",
             "enum": [
               "google-leda"
             ]
           },
           {
-            "title": "Zephyr — אישה (Google) | Zephyr — female (Google)",
+            "title": "Zephyr | Zephyr",
             "enum": [
               "google-zephyr"
             ]
           },
           {
-            "title": "Callirrhoe — אישה (Google) | Callirrhoe — female (Google)",
+            "title": "Callirrhoe | Callirrhoe",
             "enum": [
               "google-callirrhoe"
             ]
           },
           {
-            "title": "Despina — אישה (Google) | Despina — female (Google)",
+            "title": "Despina | Despina",
             "enum": [
               "google-despina"
             ]
           },
           {
-            "title": "Gacrux — אישה (Google) | Gacrux — female (Google)",
-            "enum": [
-              "google-gacrux"
-            ]
-          },
-          {
-            "title": "Sulafat — אישה (Google) | Sulafat — female (Google)",
-            "enum": [
-              "google-sulafat"
-            ]
-          },
-          {
-            "title": "Charon — גבר (Google) | Charon — male (Google)",
+            "title": "Charon | Charon",
             "enum": [
               "google-charon"
             ]
           },
           {
-            "title": "Puck — גבר (Google) | Puck — male (Google)",
+            "title": "Puck | Puck",
             "enum": [
               "google-puck"
             ]
           },
           {
-            "title": "Fenrir — גבר (Google) | Fenrir — male (Google)",
+            "title": "Fenrir | Fenrir",
             "enum": [
               "google-fenrir"
             ]
           },
           {
-            "title": "Orus — גבר (Google) | Orus — male (Google)",
+            "title": "Orus | Orus",
             "enum": [
               "google-orus"
             ]
           },
           {
-            "title": "Enceladus — גבר (Google) | Enceladus — male (Google)",
+            "title": "Enceladus | Enceladus",
             "enum": [
               "google-enceladus"
             ]
           },
           {
-            "title": "Iapetus — גבר (Google) | Iapetus — male (Google)",
+            "title": "Iapetus | Iapetus",
             "enum": [
               "google-iapetus"
             ]
           },
           {
-            "title": "Algieba — גבר (Google) | Algieba — male (Google)",
-            "enum": [
-              "google-algieba"
-            ]
-          },
-          {
-            "title": "Umbriel — גבר (Google) | Umbriel — male (Google)",
-            "enum": [
-              "google-umbriel"
-            ]
-          },
-          {
-            "title": "ElevenLabs — הקול שבחרת | ElevenLabs — your chosen voice",
+            "title": "הקול שבחרת ב-ElevenLabs | Your ElevenLabs voice",
             "enum": [
               "elevenlabs"
+            ]
+          }
+        ]
+      },
+      "style": {
+        "title": "סגנון ברירת מחדל | Default style",
+        "type": "string",
+        "default": "normal",
+        "oneOf": [
+          {
+            "title": "רגיל | Normal",
+            "enum": [
+              "normal"
+            ]
+          },
+          {
+            "title": "שמח ועליז | Cheerful",
+            "enum": [
+              "cheerful"
+            ]
+          },
+          {
+            "title": "רגוע ושקט | Calm & quiet",
+            "enum": [
+              "calm"
+            ]
+          },
+          {
+            "title": "לחישה | Whisper",
+            "enum": [
+              "whisper"
+            ]
+          },
+          {
+            "title": "כרוז רשמי | Announcer",
+            "enum": [
+              "announcer"
+            ]
+          },
+          {
+            "title": "דחוף / אזהרה | Urgent warning",
+            "enum": [
+              "urgent"
+            ]
+          },
+          {
+            "title": "חם ואוהב | Warm & loving",
+            "enum": [
+              "warm"
+            ]
+          },
+          {
+            "title": "נרגש ומלא אנרגיה | Excited",
+            "enum": [
+              "excited"
+            ]
+          },
+          {
+            "title": "מצחיק ושובב | Playful",
+            "enum": [
+              "funny"
             ]
           }
         ]
@@ -481,6 +650,15 @@
         "title": "קולות פרימיום | Premium voices",
         "type": "object",
         "properties": {
+          "geminiApiKey": {
+            "title": "Gemini API key (free — aistudio.google.com/apikey)",
+            "type": "string"
+          },
+          "geminiModel": {
+            "title": "Gemini TTS model (advanced)",
+            "type": "string",
+            "placeholder": "gemini-3.1-flash-tts-preview"
+          },
           "elevenlabsApiKey": {
             "title": "ElevenLabs API key",
             "type": "string"

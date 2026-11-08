@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/icon.png" width="140" alt="HomePod Israel Hebrew"></p>
+
 <p align="center">
   <a href="https://www.npmjs.com/package/homebridge-homepod-israel-hebrew"><img src="https://img.shields.io/npm/v/homebridge-homepod-israel-hebrew?color=F99211" /></a>
   <a href="https://paypal.me/orenasher"><img src="https://img.shields.io/badge/donate-PayPal-red" /></a>
@@ -16,7 +18,7 @@ Type a sentence → it becomes a switch in Apple Home → turn it on and the Hom
 - 🇮🇱 **Made for Israelis** — Hebrew by default, bilingual settings screen (Hebrew / English toggle).
 - 💬 **One phrase = one switch.**
 - 🔊 **Pick the HomePods per phrase** — kitchen only, bedroom only, or both together.
-- 🎙️ **Many voices** — free Hila & Avri in several styles (natural, calm, bright, deep), multilingual voices, 16 Google Chirp 3 HD voices and ElevenLabs.
+- 🎙️ **Voice + style per phrase** — 16 truly different Gemini voices (free key), Microsoft's Hila & Avri, Google and ElevenLabs; 9 styles: cheerful, calm, whisper, announcer, urgent, warm, excited, playful.
 - ▶️ **Test playback** right from the settings screen.
 - 🔍 **Automatic HomePod discovery** — no IP hunting.
 - 🔁 **Cache & fallback** — each phrase is generated once; if a voice service fails it falls back to a free voice.
@@ -42,21 +44,26 @@ Type a sentence → it becomes a switch in Apple Home → turn it on and the Hom
 
 ---
 
-## Voices
+## Voices & styles
 
-| Voice | Type | Cost |
+Every phrase has a **voice** (who speaks) and a **style** (how they speak).
+
+| Voices | How many | Cost |
 |---|---|---|
-| 👩 Hila — natural / calm / bright / soft | Native Hebrew | Free |
-| 👨 Avri — natural / deep / calm / quick | Native Hebrew | Free |
-| 👩👨 Ava, Emma, Seraphina, Andrew, Brian, Remy | Multilingual (may have an accent) | Free |
-| 👩👨 16 Google Chirp 3 HD voices | Very clear Hebrew | Google key (free tier) |
-| ⭐ ElevenLabs | Most human | ElevenLabs key (free tier) |
+| 🎙️ **Gemini** — Zephyr, Kore, Leda, Sulafat, Puck, Charon, Algenib… | 16 truly different voices, 8 female / 8 male | **Free key** (no credit card) |
+| 👩👨 **Microsoft** — Hila, Avri | 2 native Hebrew voices | Free, no key |
+| 👩👨 Multilingual — Ava, Emma, Andrew, Brian | 4 (may have an accent) | Free |
+| 👩👨 Google Chirp 3 HD | 12 | Google Cloud key |
+| ⭐ ElevenLabs | any voice from the library | ElevenLabs key |
 
-Thanks to the cache each phrase is generated only once, so even paid voices cost almost nothing.
+**Styles:** normal · cheerful · calm · whisper · announcer · urgent · warm · excited · playful.
+Gemini voices really *perform* the style; for Microsoft voices a style is only a speed/pitch change — so for real variety use Gemini.
 
-**ElevenLabs:** sign up at [elevenlabs.io](https://elevenlabs.io) → **API Keys** → create a key; pick a voice in the **Voice Library** and copy its **Voice ID**; paste both under **Premium voices** and choose the **ElevenLabs** voice.
+**Gemini (free, 2 minutes):** open [aistudio.google.com/apikey](https://aistudio.google.com/apikey) → **Create API key** → paste it in the yellow box in the settings → pick a Gemini voice.
 
-**Google Chirp 3 HD:** in [Google Cloud Console](https://console.cloud.google.com) enable **Cloud Text-to-Speech API**, create an API key (restrict it to Text-to-Speech), paste it under **Premium voices** and choose a Google voice.
+**ElevenLabs:** [elevenlabs.io](https://elevenlabs.io) → **API Keys**; copy a **Voice ID** from the Voice Library; paste both under **Premium voices**.
+
+**Google Chirp 3 HD:** enable **Cloud Text-to-Speech API** in [Google Cloud Console](https://console.cloud.google.com), create an API key, paste it under **Premium voices**.
 
 ---
 

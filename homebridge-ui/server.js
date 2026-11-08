@@ -6,7 +6,7 @@ const path = require('path');
 const { PyatvEnv } = require('../src/pyatv-env');
 const { TtsService } = require('../src/tts');
 const { Speaker } = require('../src/player');
-const { listVoices } = require('../src/voices');
+const { listVoices, listStyles } = require('../src/voices');
 const { CACHE_DIR } = require('../src/platform');
 
 const quietLog = {
@@ -26,6 +26,7 @@ const quietLog = {
       this.env = new PyatvEnv(quietLog);
 
       this.onRequest('/voices', async () => listVoices());
+      this.onRequest('/styles', async () => listStyles());
 
       this.onRequest('/status', async (body = {}) => {
         if (body.pythonPath) this.env = new PyatvEnv(quietLog, { pythonPath: body.pythonPath });
@@ -58,7 +59,7 @@ const quietLog = {
           const speakers = (body.speakers || []).filter((s) => s && (s.host || s.id));
           if (!speakers.length) throw new Error('no HomePod selected');
           const tts = new TtsService(body.tts || {}, path.join(this.homebridgeStoragePath, CACHE_DIR), quietLog);
-          const audio = await tts.getAudio(text, body.voice);
+          const audio = await tts.getAudio(text, body.voice, body.style);
           await this.env.ensure();
           const results = await Promise.allSettled(speakers.map((s) => new Speaker(s, this.env, quietLog)
             .play(audio.file, { volume: body.volume, restoreVolume: body.restoreVolume !== false })));

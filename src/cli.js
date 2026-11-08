@@ -41,14 +41,14 @@ function loadConfig(file) {
       console.log(`${d.homepod ? '🔊' : '  '} ${d.name}  ${d.host}  ${d.id}  ${d.model}${d.needsPairing ? '  (needs pairing — not supported)' : ''}`);
     }
   } else if (cmd === 'say') {
-    const [text, names, voice] = rest;
-    if (!text) throw new Error('usage: say "text" [speaker,speaker] [voice]');
+    const [text, names, voice, style] = rest;
+    if (!text) throw new Error('usage: say "text" [speaker,speaker] [voice] [style]');
     const cfg = loadConfig(configFile);
     const wanted = names ? names.split(',').map((s) => s.trim()) : [];
     const speakers = (cfg.speakers || []).filter((s) => !wanted.length || wanted.includes(s.name));
     if (!speakers.length) throw new Error('no HomePods configured in config.json');
     const tts = new TtsService(cfg.tts || {}, path.join(path.dirname(configFile), CACHE_DIR), log);
-    const audio = await tts.getAudio(text, voice || cfg.voice);
+    const audio = await tts.getAudio(text, voice || cfg.voice, style || cfg.style);
     console.log(`voice: ${audio.voice}${audio.cached ? ' (cached)' : ''}`);
     await env.ensure();
     const results = await Promise.allSettled(speakers.map((s) => new Speaker(s, env, log).play(audio.file)));

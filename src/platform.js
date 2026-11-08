@@ -164,19 +164,21 @@ class HomePodIsraelHebrewPlatform {
 
   /** A configured phrase (from a switch or the webhook). */
   announce(item) {
-    return this.say(item.text, { speakers: item.speakers, volume: item.volume, voice: item.voice, label: item.name });
+    return this.say(item.text, {
+      speakers: item.speakers, volume: item.volume, voice: item.voice, style: item.style, label: item.name,
+    });
   }
 
   /**
    * Say any text.
    * @returns {Promise<{voice: string, cached: boolean, speakers: string[], failed: string[]}>}
    */
-  async say(text, { speakers, volume, voice, label } = {}) {
+  async say(text, { speakers, volume, voice, style, label } = {}) {
     const targets = this.resolveSpeakers(speakers);
     if (!targets.length) throw new Error('no matching HomePods');
 
     const started = Date.now();
-    const audio = await this.tts.getAudio(text, voice || this.defaultVoice);
+    const audio = await this.tts.getAudio(text, voice || this.defaultVoice, style || this.config.style);
     const tag = label ? `"${label}"` : `"${String(text).slice(0, 40)}"`;
     this.log.info(`Speaking ${tag} on ${targets.map((s) => s.name).join(' + ')} `
       + `(${audio.voice}${audio.cached ? ', cached' : ''}, ready in ${Date.now() - started} ms)`);
@@ -198,7 +200,7 @@ class HomePodIsraelHebrewPlatform {
   async pregenerate() {
     for (const item of this.items()) {
       try {
-        const a = await this.tts.getAudio(item.text, item.voice || this.defaultVoice);
+        const a = await this.tts.getAudio(item.text, item.voice || this.defaultVoice, item.style || this.config.style);
         if (!a.cached) this.log.info(`Prepared audio for "${item.name}" (${a.voice})`);
       } catch (err) {
         this.log.warn(`Could not prepare "${item.name}": ${err.message}`);

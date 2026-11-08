@@ -91,6 +91,7 @@ function startWebhook(platform, cfg, log) {
           speakers: params.speakers || params.speaker,
           volume: params.volume,
           voice: params.voice,
+          style: params.style,
         });
       } else if (route === '/announce') {
         const item = platform.items()

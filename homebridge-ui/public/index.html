@@ -17,6 +17,7 @@
   #hih details summary { cursor: pointer; font-weight: 600; }
   #hih .scan-item { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px dashed rgba(128,128,128,.3); }
   #hih input[type=range] { width: 140px; vertical-align: middle; }
+  #hih .tip { border: 1px dashed #f9a825; border-radius: 10px; padding: 10px; background: rgba(249,168,37,.08); }
 </style>
 
 <div id="hih" dir="rtl">
@@ -59,9 +60,18 @@
     <h5 data-t="voiceTitle"></h5>
     <div class="row-flex">
       <select id="defaultVoice" class="form-control grow"></select>
+      <select id="defaultStyle" class="form-control grow"></select>
       <button id="previewVoice" class="btn btn-outline-primary btn-sm" data-t="preview"></button>
     </div>
     <div class="muted" style="margin-top:6px" data-t="voiceHelp"></div>
+    <div id="geminiTip" class="tip" style="margin-top:10px">
+      <b data-t="geminiTipTitle"></b><br>
+      <span data-t="geminiTipText"></span>
+      <a href="https://aistudio.google.com/apikey" target="_blank" data-t="geminiTipLink"></a>
+      <div class="row-flex" style="margin-top:6px">
+        <input id="geminiKey" type="password" class="form-control grow" autocomplete="off" data-ph="geminiKey">
+      </div>
+    </div>
 
     <details style="margin-top:12px">
       <summary data-t="premiumTitle"></summary>
@@ -136,10 +146,15 @@
       who: 'מי ידבר:', allIfNone: '(אם לא סומן — כולם)', voice: 'קול', defaultOpt: 'ברירת המחדל',
       useVol: 'ווליום מיוחד', test: '▶️ השמע עכשיו', testing: 'משמיע…', played: 'הושמע ✓',
       voiceTitle: '🎙️ קול ברירת המחדל', preview: '▶️ השמע דוגמה',
-      voiceHelp: 'הילה ואברי — קולות עבריים טבעיים בחינם, בכמה סגנונות. קולות Google ו-ElevenLabs דורשים מפתח (למטה).',
+      voiceHelp: 'בוחרים קול (מי מדבר) וסגנון (איך הוא מדבר). לכל משפט אפשר לבחור קול וסגנון משלו.',
+      style: 'סגנון', defaultStyleOpt: 'סגנון ברירת המחדל',
+      geminiTipTitle: '🎙️ רוצה הרבה קולות שונים באמת?',
+      geminiTipText: 'למיקרוסופט יש רק שני קולות עבריים (הילה ואברי). עם מפתח Gemini חינמי (בלי כרטיס אשראי, 2 דקות) תקבל 16 קולות שונים לגמרי — גברים ונשים — שגם באמת לוחשים, צוחקים, מכריזים ומתלהבים לפי הסגנון.',
+      geminiTipLink: 'לקבלת מפתח חינמי ←', geminiKey: 'הדבק כאן את מפתח ה-Gemini',
+      g_gemini: 'Gemini — 16 קולות שונים (מפתח חינמי)',
       sample: 'שלום! ככה אני נשמעת. ההכרזות שלך יישמעו בדיוק כך.',
       sampleM: 'שלום! ככה אני נשמע. ההכרזות שלך יישמעו בדיוק כך.',
-      g_free: 'עברית — חינם', g_multi: 'רב-לשוני — חינם (ניסיוני)', g_google: 'Google Chirp 3 HD — דורש מפתח', g_elevenlabs: 'ElevenLabs — דורש מפתח',
+      g_free: 'מיקרוסופט — חינם, בלי מפתח', g_multi: 'רב-לשוני — חינם (ניסיוני)', g_google: 'Google Chirp 3 HD — דורש מפתח', g_elevenlabs: 'ElevenLabs — דורש מפתח',
       premiumTitle: '⭐ קולות פרימיום (לא חובה)',
       premiumHelp: 'ElevenLabs — הקול הכי אנושי. Google — ברור מאוד. לכל משפט נוצר קובץ פעם אחת ונשמר, אז העלות כמעט אפסית.',
       elKey: 'ElevenLabs API key', elVoice: 'ElevenLabs Voice ID', gKey: 'Google Cloud API key',
@@ -168,10 +183,15 @@
       who: 'Who speaks:', allIfNone: '(none checked = all)', voice: 'Voice', defaultOpt: 'Default',
       useVol: 'Custom volume', test: '▶️ Play now', testing: 'Playing…', played: 'Played ✓',
       voiceTitle: '🎙️ Default voice', preview: '▶️ Play sample',
-      voiceHelp: 'Hila and Avri are free natural Hebrew voices in several styles. Google and ElevenLabs voices need a key (below).',
+      voiceHelp: 'Pick a voice (who speaks) and a style (how they speak). Every phrase can have its own voice and style.',
+      style: 'Style', defaultStyleOpt: 'Default style',
+      geminiTipTitle: '🎙️ Want many truly different voices?',
+      geminiTipText: 'Microsoft has only two Hebrew voices (Hila and Avri). With a free Gemini key (no credit card, 2 minutes) you get 16 completely different voices — men and women — that really whisper, laugh, announce and get excited according to the style.',
+      geminiTipLink: 'Get a free key →', geminiKey: 'Paste your Gemini key here',
+      g_gemini: 'Gemini — 16 different voices (free key)',
       sample: 'Hi! This is how I sound. Your announcements will sound just like this.',
       sampleM: 'Hi! This is how I sound. Your announcements will sound just like this.',
-      g_free: 'Hebrew — free', g_multi: 'Multilingual — free (experimental)', g_google: 'Google Chirp 3 HD — needs key', g_elevenlabs: 'ElevenLabs — needs key',
+      g_free: 'Microsoft — free, no key', g_multi: 'Multilingual — free (experimental)', g_google: 'Google Chirp 3 HD — needs key', g_elevenlabs: 'ElevenLabs — needs key',
       premiumTitle: '⭐ Premium voices (optional)',
       premiumHelp: 'ElevenLabs is the most human. Google is very clear. Each phrase is generated once and cached, so cost is close to zero.',
       elKey: 'ElevenLabs API key', elVoice: 'ElevenLabs Voice ID', gKey: 'Google Cloud API key',
@@ -215,6 +235,15 @@
     cfg.phrases.push(...cfg.announcements.map((a) => ({ text: a.text, name: a.name, speakers: a.speakers, volume: a.volume, voice: a.voice || a.engine })));
     delete cfg.announcements;
   }
+  // 1.1 voice presets → voice + style
+  const LEGACY = { 'hila-calm': ['hila', 'calm'], 'hila-bright': ['hila', 'cheerful'], 'hila-soft': ['hila', 'warm'],
+    'avri-deep': ['avri', 'announcer'], 'avri-calm': ['avri', 'calm'], 'avri-fast': ['avri', 'urgent'],
+    seraphina: ['emma', 'normal'], remy: ['brian', 'normal'], edge: ['hila', 'normal'] };
+  const upgrade = (o) => {
+    if (o && o.voice && LEGACY[o.voice]) { const [v, st] = LEGACY[o.voice]; o.voice = v; if (!o.style && st !== 'normal') o.style = st; }
+  };
+  cfg.phrases.forEach(upgrade);
+  upgrade(cfg);
   if (!cfg.voice) cfg.voice = (cfg.tts && cfg.tts.engine && cfg.tts.engine !== 'edge') ? cfg.tts.engine : 'hila';
   cfg.tts = cfg.tts || {};
   delete cfg.tts.engine;
@@ -225,6 +254,8 @@
   let lang = cfg.language;
   const t = (k) => (T[lang] && T[lang][k]) || T.he[k] || k;
   const voices = await homebridge.request('/voices');
+  let styles = [];
+  try { styles = await homebridge.request('/styles'); } catch { styles = [{ id: 'normal', he: 'רגיל', en: 'Normal' }]; }
 
   const save = () => homebridge.updatePluginConfig([cfg]);
 
@@ -235,7 +266,9 @@
     root.querySelectorAll('[data-lang]').forEach((b) => {
       b.className = `btn btn-sm ${b.dataset.lang === lang ? 'btn-primary' : 'btn-outline-primary'}`;
     });
-    renderSpeakers(); renderPhrases(); renderVoiceSelect($('defaultVoice'), cfg.voice, false); refreshState(); renderWebhookExample();
+    root.querySelectorAll('[data-ph]').forEach((el) => { el.placeholder = t(el.dataset.ph); });
+    renderSpeakers(); renderPhrases(); renderVoiceSelect($('defaultVoice'), cfg.voice, false);
+    renderStyleSelect($('defaultStyle'), cfg.style || 'normal', false); refreshState(); renderWebhookExample();
   }
   root.querySelectorAll('[data-lang]').forEach((b) => b.addEventListener('click', () => {
     lang = b.dataset.lang; cfg.language = lang; save(); applyLang();
@@ -333,27 +366,33 @@
 
   /* ---------- voices ---------- */
   function renderVoiceSelect(sel, value, withDefault) {
-    const groups = ['free', 'multi', 'google', 'elevenlabs'];
+    const groups = ['free', 'gemini', 'multi', 'google', 'elevenlabs'];
     sel.innerHTML = (withDefault ? `<option value="">${esc(t('defaultOpt'))}</option>` : '')
       + groups.map((g) => `<optgroup label="${esc(t(`g_${g}`))}">${voices.filter((v) => v.group === g)
         .map((v) => `<option value="${esc(v.id)}">${v.gender === 'f' ? '👩 ' : v.gender === 'm' ? '👨 ' : '⭐ '}${esc(lang === 'he' ? v.he : v.en)}</option>`).join('')}</optgroup>`).join('');
     sel.value = value || '';
   }
   $('defaultVoice').addEventListener('change', (e) => { cfg.voice = e.target.value; save(); });
+  function renderStyleSelect(sel, value, withDefault) {
+    sel.innerHTML = (withDefault ? `<option value="">${esc(t('defaultStyleOpt'))}</option>` : '')
+      + styles.map((s) => `<option value="${esc(s.id)}">🎭 ${esc(lang === 'he' ? s.he : s.en)}</option>`).join('');
+    sel.value = value || (withDefault ? '' : 'normal');
+  }
+  $('defaultStyle').addEventListener('change', (e) => { cfg.style = e.target.value; save(); });
 
   function ttsBlock() { return { ...cfg.tts }; }
   function speakerObjs(names) {
     const list = names && names.length ? cfg.speakers.filter((s) => names.includes(s.name)) : cfg.speakers;
     return list.map((s) => ({ name: s.name, host: s.host, id: s.id, volume: s.volume }));
   }
-  async function playTest(text, voice, names, volume, btn) {
+  async function playTest(text, voice, names, volume, btn, style) {
     if (!cfg.speakers.length) return homebridge.toast.warning(t('errNoSpeaker'));
     if (!String(text || '').trim()) return homebridge.toast.warning(t('errEmpty'));
     const label = btn.textContent;
     btn.disabled = true; btn.textContent = t('testing');
     try {
       const r = await homebridge.request('/test', {
-        text, voice: voice || cfg.voice, speakers: speakerObjs(names), volume,
+        text, voice: voice || cfg.voice, style: style || cfg.style, speakers: speakerObjs(names), volume,
         tts: ttsBlock(), restoreVolume: cfg.restoreVolume !== false,
       });
       homebridge.toast.success(`${t('played')} (${r.voice})`);
@@ -366,7 +405,7 @@
   }
   $('previewVoice').addEventListener('click', (e) => {
     const v = voices.find((x) => x.id === cfg.voice);
-    playTest(v && v.gender === 'm' ? t('sampleM') : t('sample'), cfg.voice, [cfg.speakers[0] && cfg.speakers[0].name].filter(Boolean), undefined, e.target);
+    playTest(v && v.gender === 'm' ? t('sampleM') : t('sample'), cfg.voice, [cfg.speakers[0] && cfg.speakers[0].name].filter(Boolean), undefined, e.target, cfg.style);
   });
 
   /* ---------- phrases ---------- */
@@ -378,6 +417,7 @@
         <div class="row-flex" style="margin-top:6px">
           <input class="form-control grow" data-k="name" value="${esc(p.name || '')}" placeholder="${esc(t('switchName'))}">
           <select class="form-control grow" data-k="voice" title="${esc(t('voice'))}"></select>
+          <select class="form-control grow" data-k="style" title="${esc(t('style'))}"></select>
         </div>
         <div class="row-flex chips" style="margin-top:8px">
           <span>${esc(t('who'))}</span>
@@ -403,6 +443,9 @@
       const sel = el.querySelector('[data-k=voice]');
       renderVoiceSelect(sel, p.voice || '', true);
       sel.addEventListener('change', () => { if (sel.value) p.voice = sel.value; else delete p.voice; save(); });
+      const ssel = el.querySelector('[data-k=style]');
+      renderStyleSelect(ssel, p.style || '', true);
+      ssel.addEventListener('change', () => { if (ssel.value) p.style = ssel.value; else delete p.style; save(); });
       el.querySelector('[data-k=text]').addEventListener('input', (e) => { p.text = e.target.value; save(); });
       el.querySelector('[data-k=name]').addEventListener('change', (e) => { const v = e.target.value.trim(); if (v) p.name = v; else delete p.name; save(); });
       el.querySelectorAll('[data-sp]').forEach((cb) => cb.addEventListener('change', () => {
@@ -420,7 +463,7 @@
       });
       range.addEventListener('input', () => { p.volume = Number(range.value); vv.textContent = range.value; save(); });
       el.querySelector('[data-act=del]').addEventListener('click', () => { cfg.phrases.splice(i, 1); save(); renderPhrases(); });
-      el.querySelector('[data-act=test]').addEventListener('click', (e) => playTest(p.text, p.voice, p.speakers, p.volume, e.target));
+      el.querySelector('[data-act=test]').addEventListener('click', (e) => playTest(p.text, p.voice, p.speakers, p.volume, e.target, p.style));
     });
   }
   $('addPhraseBtn').addEventListener('click', () => {
@@ -435,6 +478,7 @@
   bind('elKey', (el) => { el.value = cfg.tts.elevenlabsApiKey || ''; }, (el) => { cfg.tts.elevenlabsApiKey = el.value.trim(); });
   bind('elVoice', (el) => { el.value = cfg.tts.elevenlabsVoiceId || ''; }, (el) => { cfg.tts.elevenlabsVoiceId = el.value.trim(); });
   bind('gKey', (el) => { el.value = cfg.tts.googleApiKey || ''; }, (el) => { cfg.tts.googleApiKey = el.value.trim(); });
+  bind('geminiKey', (el) => { el.value = cfg.tts.geminiApiKey || ''; }, (el) => { cfg.tts.geminiApiKey = el.value.trim(); });
   bind('fallback', (el) => { el.checked = cfg.tts.fallback !== false; }, (el) => { cfg.tts.fallback = el.checked; });
   bind('whEnabled', (el) => { el.checked = !!cfg.webhook.enabled; }, (el) => { cfg.webhook.enabled = el.checked; });
   bind('whPort', (el) => { el.value = cfg.webhook.port || 8095; }, (el) => { cfg.webhook.port = Number(el.value) || 8095; });
