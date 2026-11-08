@@ -64,7 +64,8 @@ Homebridge UI → **Plugins** → search **homebridge-homepod-israel-hebrew** �
 In the plugin settings:
 
 1. **Speakers** — add each HomePod: a name you choose (e.g. `Kitchen`), its IP, its ID, and an optional default volume.
-2. **Announcements** — add sentences: switch name (`Laundry done`), the text, which speakers (empty = all) and volume.
+2. **Phrases** — just type what the HomePod should say. Each phrase automatically becomes its own switch (named after the text) and plays on all speakers.
+   Need a custom switch name, specific speakers, volume or a different voice? Use **Advanced announcements**.
 3. **Voice** — pick the engine (see below). The free Edge voice works without any key.
 
 Save and restart Homebridge. The switches appear in Apple Home.
@@ -126,6 +127,7 @@ Extra parameters: `engine`, `voice`, `wait=0` (answer immediately without waitin
     { "name": "Kitchen", "host": "192.168.1.50", "id": "AA:BB:CC:DD:EE:FF", "volume": 45 },
     { "name": "Bedroom", "host": "192.168.1.51", "id": "11:22:33:44:55:66" }
   ],
+  "phrases": ["The laundry is done", "Someone is at the door"],
   "announcements": [
     { "name": "Laundry done", "text": "The laundry is done", "speakers": ["Kitchen"], "volume": 60 },
     { "name": "Dinner", "text": "Dinner is ready!" }

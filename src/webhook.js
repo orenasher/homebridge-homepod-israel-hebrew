@@ -80,7 +80,7 @@ function startWebhook(platform, cfg, log) {
           ok: true,
           atvremote: platform.bin || null,
           speakers: [...platform.speakers.keys()],
-          announcements: (platform.config.announcements || []).map((a) => a.name),
+          announcements: platform.items().map((a) => a.name),
         });
       }
 
@@ -94,7 +94,7 @@ function startWebhook(platform, cfg, log) {
           voice: params.voice,
         });
       } else if (route === '/announce') {
-        const item = (platform.config.announcements || [])
+        const item = platform.items()
           .find((a) => a.name === params.name || (a.name || '').toLowerCase() === String(params.name || '').toLowerCase());
         if (!item) return send(res, 404, { ok: false, error: `no announcement named "${params.name || ''}"` });
         job = platform.announce({

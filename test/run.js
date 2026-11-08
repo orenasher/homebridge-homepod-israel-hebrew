@@ -71,6 +71,7 @@ const config = {
   platform: 'HomePodIsraelHebrew',
   atvremotePath: fakeBin,
   speakers: [{ name: 'Kitchen', id: 'AA:BB', host: '10.0.0.5', volume: 40 }, { name: 'Bedroom', id: 'CC:DD' }, { name: 'Broken' }],
+  phrases: ['ארוחת ערב מוכנה! כולם לשולחן, עכשיו!!', '  '],
   announcements: [
     { name: 'Laundry', text: 'הכביסה מוכנה', speakers: ['Kitchen'], volume: 70 },
     { name: 'Dinner', text: 'ארוחת ערב!' },
@@ -97,7 +98,8 @@ const calls = () => (fs.existsSync(callsLog) ? fs.readFileSync(callsLog, 'utf8')
   api.emit('didFinishLaunching');
   await sleep(300);
 
-  assert.strictEqual(registered.length, 2, 'two switches registered');
+  assert.strictEqual(registered.length, 3, 'three switches registered');
+  assert.ok(registered.some((a) => a.displayName === 'ארוחת ערב מוכנה כולם לשולחן עכשיו'), 'phrase switch name sanitized: ' + registered.map((a) => a.displayName));
   assert.ok(generated.some((g) => g[1] === 'he-IL-AvriNeural'), 'pregenerated with configured voice');
   const before = generated.length;
 
@@ -149,8 +151,10 @@ const calls = () => (fs.existsSync(callsLog) ? fs.readFileSync(callsLog, 'utf8')
 
   // 7. status
   r = await req('GET', '/status?token=secret');
-  assert.deepStrictEqual(r.json.announcements, ['Laundry', 'Dinner']);
+  assert.deepStrictEqual(r.json.announcements, ['ארוחת ערב מוכנה כולם לשולחן עכשיו', 'Laundry', 'Dinner']);
 
+  const { switchName } = require('../src/platform');
+  assert.strictEqual(switchName('מזגן דולק וחלון פתוח בחדר של תומר, נא לסגור את החלון בבקשה'), 'מזגן דולק וחלון פתוח בחדר של תומר נא');
   // 8. splitText
   const parts = tts.splitText('מילה '.repeat(100), 180);
   assert.ok(parts.every((p) => p.length <= 180) && parts.join(' ').split(' ').length === 100);

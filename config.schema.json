@@ -54,8 +54,18 @@
           }
         }
       },
+      "phrases": {
+        "title": "מה ההום פוד יגיד — Phrases",
+        "type": "array",
+        "description": "פשוט כותבים את המשפט. כל משפט הופך למתג משלו בבית של אפל, ומושמע בכל הרמקולים. | Just type what to say — each phrase becomes its own switch.",
+        "items": {
+          "type": "string",
+          "title": "משפט",
+          "placeholder": "הכביסה מוכנה, אפשר לתלות"
+        }
+      },
       "announcements": {
-        "title": "Announcements",
+        "title": "Advanced announcements — הכרזות מתקדמות",
         "type": "array",
         "items": {
           "type": "object",
@@ -92,10 +102,30 @@
               "type": "string",
               "description": "Leave empty to use the main engine.",
               "oneOf": [
-                { "title": "ElevenLabs", "enum": ["elevenlabs"] },
-                { "title": "Google Chirp 3 HD", "enum": ["googlecloud"] },
-                { "title": "Microsoft Edge (free)", "enum": ["edge"] },
-                { "title": "Google Translate (free, basic)", "enum": ["googletranslate"] }
+                {
+                  "title": "ElevenLabs",
+                  "enum": [
+                    "elevenlabs"
+                  ]
+                },
+                {
+                  "title": "Google Chirp 3 HD",
+                  "enum": [
+                    "googlecloud"
+                  ]
+                },
+                {
+                  "title": "Microsoft Edge (free)",
+                  "enum": [
+                    "edge"
+                  ]
+                },
+                {
+                  "title": "Google Translate (free, basic)",
+                  "enum": [
+                    "googletranslate"
+                  ]
+                }
               ]
             },
             "voice": {
@@ -104,7 +134,8 @@
               "description": "A voice name/ID for the engine above, e.g. he-IL-AvriNeural or an ElevenLabs voice ID."
             }
           }
-        }
+        },
+        "description": "For a custom switch name, specific speakers, volume or voice. | לשם מתג אחר, רמקולים מסוימים, ווליום או קול אחר."
       },
       "tts": {
         "title": "Voice",
@@ -115,10 +146,30 @@
             "type": "string",
             "default": "edge",
             "oneOf": [
-              { "title": "ElevenLabs — most human-like (API key, free tier)", "enum": ["elevenlabs"] },
-              { "title": "Google Chirp 3 HD — very clear (API key, free tier)", "enum": ["googlecloud"] },
-              { "title": "Microsoft Edge neural — free, no key", "enum": ["edge"] },
-              { "title": "Google Translate — free, basic", "enum": ["googletranslate"] }
+              {
+                "title": "ElevenLabs — most human-like (API key, free tier)",
+                "enum": [
+                  "elevenlabs"
+                ]
+              },
+              {
+                "title": "Google Chirp 3 HD — very clear (API key, free tier)",
+                "enum": [
+                  "googlecloud"
+                ]
+              },
+              {
+                "title": "Microsoft Edge neural — free, no key",
+                "enum": [
+                  "edge"
+                ]
+              },
+              {
+                "title": "Google Translate — free, basic",
+                "enum": [
+                  "googletranslate"
+                ]
+              }
             ]
           },
           "fallback": {
@@ -131,10 +182,30 @@
             "type": "string",
             "default": "he-IL-HilaNeural",
             "oneOf": [
-              { "title": "Hila — Hebrew, female", "enum": ["he-IL-HilaNeural"] },
-              { "title": "Avri — Hebrew, male", "enum": ["he-IL-AvriNeural"] },
-              { "title": "Ava — English (US), female", "enum": ["en-US-AvaNeural"] },
-              { "title": "Andrew — English (US), male", "enum": ["en-US-AndrewNeural"] }
+              {
+                "title": "Hila — Hebrew, female",
+                "enum": [
+                  "he-IL-HilaNeural"
+                ]
+              },
+              {
+                "title": "Avri — Hebrew, male",
+                "enum": [
+                  "he-IL-AvriNeural"
+                ]
+              },
+              {
+                "title": "Ava — English (US), female",
+                "enum": [
+                  "en-US-AvaNeural"
+                ]
+              },
+              {
+                "title": "Andrew — English (US), male",
+                "enum": [
+                  "en-US-AndrewNeural"
+                ]
+              }
             ]
           },
           "edgeRate": {
@@ -186,14 +257,54 @@
             "default": "he-IL-Chirp3-HD-Kore",
             "description": "Hebrew Chirp 3 HD voices. Try a few — they differ a lot.",
             "oneOf": [
-              { "title": "Kore — female", "enum": ["he-IL-Chirp3-HD-Kore"] },
-              { "title": "Aoede — female", "enum": ["he-IL-Chirp3-HD-Aoede"] },
-              { "title": "Leda — female", "enum": ["he-IL-Chirp3-HD-Leda"] },
-              { "title": "Zephyr — female", "enum": ["he-IL-Chirp3-HD-Zephyr"] },
-              { "title": "Charon — male", "enum": ["he-IL-Chirp3-HD-Charon"] },
-              { "title": "Puck — male", "enum": ["he-IL-Chirp3-HD-Puck"] },
-              { "title": "Fenrir — male", "enum": ["he-IL-Chirp3-HD-Fenrir"] },
-              { "title": "Orus — male", "enum": ["he-IL-Chirp3-HD-Orus"] }
+              {
+                "title": "Kore — female",
+                "enum": [
+                  "he-IL-Chirp3-HD-Kore"
+                ]
+              },
+              {
+                "title": "Aoede — female",
+                "enum": [
+                  "he-IL-Chirp3-HD-Aoede"
+                ]
+              },
+              {
+                "title": "Leda — female",
+                "enum": [
+                  "he-IL-Chirp3-HD-Leda"
+                ]
+              },
+              {
+                "title": "Zephyr — female",
+                "enum": [
+                  "he-IL-Chirp3-HD-Zephyr"
+                ]
+              },
+              {
+                "title": "Charon — male",
+                "enum": [
+                  "he-IL-Chirp3-HD-Charon"
+                ]
+              },
+              {
+                "title": "Puck — male",
+                "enum": [
+                  "he-IL-Chirp3-HD-Puck"
+                ]
+              },
+              {
+                "title": "Fenrir — male",
+                "enum": [
+                  "he-IL-Chirp3-HD-Fenrir"
+                ]
+              },
+              {
+                "title": "Orus — male",
+                "enum": [
+                  "he-IL-Chirp3-HD-Orus"
+                ]
+              }
             ]
           },
           "googleSpeakingRate": {
@@ -265,22 +376,78 @@
       "orderable": false,
       "buttonText": "Add speaker",
       "items": [
-        { "type": "flex", "flex-flow": "row wrap", "items": ["speakers[].name", "speakers[].host"] },
-        { "type": "flex", "flex-flow": "row wrap", "items": ["speakers[].id", "speakers[].volume"] },
-        { "type": "fieldset", "title": "Advanced", "expandable": true, "items": ["speakers[].credentials"] }
+        {
+          "type": "flex",
+          "flex-flow": "row wrap",
+          "items": [
+            "speakers[].name",
+            "speakers[].host"
+          ]
+        },
+        {
+          "type": "flex",
+          "flex-flow": "row wrap",
+          "items": [
+            "speakers[].id",
+            "speakers[].volume"
+          ]
+        },
+        {
+          "type": "fieldset",
+          "title": "Advanced",
+          "expandable": true,
+          "items": [
+            "speakers[].credentials"
+          ]
+        }
       ]
     },
     {
-      "key": "announcements",
+      "key": "phrases",
       "type": "array",
       "orderable": true,
-      "buttonText": "Add announcement",
+      "buttonText": "➕ הוסף משפט",
       "items": [
-        "announcements[].name",
-        "announcements[].text",
-        { "key": "announcements[].speakers", "type": "array", "buttonText": "Add speaker", "items": ["announcements[].speakers[]"] },
-        "announcements[].volume",
-        { "type": "fieldset", "title": "Different voice for this one", "expandable": true, "items": ["announcements[].engine", "announcements[].voice"] }
+        {
+          "key": "phrases[]",
+          "type": "textarea",
+          "notitle": true
+        }
+      ]
+    },
+    {
+      "type": "fieldset",
+      "title": "Advanced announcements — הכרזות מתקדמות",
+      "expandable": true,
+      "items": [
+        {
+          "key": "announcements",
+          "type": "array",
+          "orderable": true,
+          "buttonText": "Add announcement",
+          "items": [
+            "announcements[].name",
+            "announcements[].text",
+            {
+              "key": "announcements[].speakers",
+              "type": "array",
+              "buttonText": "Add speaker",
+              "items": [
+                "announcements[].speakers[]"
+              ]
+            },
+            "announcements[].volume",
+            {
+              "type": "fieldset",
+              "title": "Different voice for this one",
+              "expandable": true,
+              "items": [
+                "announcements[].engine",
+                "announcements[].voice"
+              ]
+            }
+          ]
+        }
       ]
     },
     {
@@ -291,23 +458,68 @@
       "items": [
         "tts.engine",
         "tts.fallback",
-        { "type": "fieldset", "title": "Microsoft Edge", "expandable": true, "items": ["tts.edgeVoice", "tts.edgeRate"] },
-        { "type": "fieldset", "title": "ElevenLabs", "expandable": true, "items": ["tts.elevenlabsApiKey", "tts.elevenlabsVoiceId", "tts.elevenlabsModel", "tts.elevenlabsLanguage", "tts.elevenlabsStability", "tts.elevenlabsSpeed"] },
-        { "type": "fieldset", "title": "Google Cloud", "expandable": true, "items": ["tts.googleApiKey", "tts.googleVoice", "tts.googleSpeakingRate"] },
-        { "type": "fieldset", "title": "Google Translate", "expandable": true, "items": ["tts.translateLanguage"] }
+        {
+          "type": "fieldset",
+          "title": "Microsoft Edge",
+          "expandable": true,
+          "items": [
+            "tts.edgeVoice",
+            "tts.edgeRate"
+          ]
+        },
+        {
+          "type": "fieldset",
+          "title": "ElevenLabs",
+          "expandable": true,
+          "items": [
+            "tts.elevenlabsApiKey",
+            "tts.elevenlabsVoiceId",
+            "tts.elevenlabsModel",
+            "tts.elevenlabsLanguage",
+            "tts.elevenlabsStability",
+            "tts.elevenlabsSpeed"
+          ]
+        },
+        {
+          "type": "fieldset",
+          "title": "Google Cloud",
+          "expandable": true,
+          "items": [
+            "tts.googleApiKey",
+            "tts.googleVoice",
+            "tts.googleSpeakingRate"
+          ]
+        },
+        {
+          "type": "fieldset",
+          "title": "Google Translate",
+          "expandable": true,
+          "items": [
+            "tts.translateLanguage"
+          ]
+        }
       ]
     },
     {
       "type": "fieldset",
       "title": "Webhook",
       "expandable": true,
-      "items": ["webhook.enabled", "webhook.port", "webhook.token"]
+      "items": [
+        "webhook.enabled",
+        "webhook.port",
+        "webhook.token"
+      ]
     },
     {
       "type": "fieldset",
       "title": "Advanced",
       "expandable": true,
-      "items": ["restoreVolume", "pregenerate", "cacheDays", "atvremotePath"]
+      "items": [
+        "restoreVolume",
+        "pregenerate",
+        "cacheDays",
+        "atvremotePath"
+      ]
     }
   ]
 }

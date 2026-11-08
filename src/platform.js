@@ -66,11 +66,24 @@ class HomePodIsraelHebrewPlatform {
 
   /* ------------------------------------------------------------ accessories */
 
+  /** All announcements: quick phrases (text only) + detailed announcements. */
+  items() {
+    const list = [];
+    for (const p of this.config.phrases || []) {
+      const text = typeof p === 'string' ? p : (p && p.text);
+      if (text && text.trim()) list.push({ name: switchName(text), text: text.trim() });
+    }
+    for (const a of this.config.announcements || []) {
+      if (a && a.text) list.push({ ...a, name: a.name ? switchName(a.name) : switchName(a.text) });
+    }
+    return list;
+  }
+
   syncAccessories() {
     const { Service, Characteristic } = this.api.hap;
     const wanted = new Set();
 
-    for (const item of this.config.announcements || []) {
+    for (const item of this.items()) {
       if (!item || !item.name || !item.text) continue;
       const uuid = this.api.hap.uuid.generate(`${PLATFORM_NAME}:${item.name}`);
       if (wanted.has(uuid)) {
@@ -180,8 +193,7 @@ class HomePodIsraelHebrewPlatform {
 
   /** Create audio for all configured phrases in the background so the first trigger is instant. */
   async pregenerate() {
-    for (const item of this.config.announcements || []) {
-      if (!item || !item.text) continue;
+    for (const item of this.items()) {
       try {
         const a = await this.tts.getAudio(item.text, { engine: item.engine, voice: item.voice });
         if (!a.cached) this.log.info(`Prepared audio for "${item.name}" (${a.engine})`);
@@ -192,4 +204,18 @@ class HomePodIsraelHebrewPlatform {
   }
 }
 
-module.exports = { HomePodIsraelHebrewPlatform, PLUGIN_NAME, PLATFORM_NAME };
+/**
+ * HomeKit-friendly switch name from any text: letters, digits, spaces and apostrophes only,
+ * starting and ending with a letter or digit, max ~40 characters on a word boundary.
+ */
+function switchName(text) {
+  let s = String(text).replace(/[^\p{L}\p{N}\s']/gu, ' ').replace(/\s+/g, ' ').trim();
+  if (s.length > 40) {
+    const cut = s.lastIndexOf(' ', 40);
+    s = s.slice(0, cut > 15 ? cut : 40).trim();
+  }
+  s = s.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '');
+  return s || 'Announcement';
+}
+
+module.exports = { HomePodIsraelHebrewPlatform, PLUGIN_NAME, PLATFORM_NAME, switchName };
