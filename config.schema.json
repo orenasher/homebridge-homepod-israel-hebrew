@@ -2,524 +2,556 @@
   "pluginAlias": "HomePodIsraelHebrew",
   "pluginType": "platform",
   "singular": true,
-  "headerDisplay": "Natural-sounding announcements on your HomePods. Each announcement becomes a switch in Apple Home — turn it on (manually, by Siri or from an automation) and the HomePod speaks. Requires pyatv — see the [README](https://github.com/orenasher/homebridge-homepod-israel-hebrew#readme). | הכרזות קוליות טבעיות בהום פוד — [מדריך בעברית](https://github.com/orenasher/homebridge-homepod-israel-hebrew/blob/main/README.he.md)",
-  "footerDisplay": "Like it? [Buy me a coffee ☕](https://paypal.me/orenasher)",
+  "customUi": true,
+  "headerDisplay": "הכרזות קוליות טבעיות בעברית בהום פוד | Natural-voice announcements on your HomePods. [מדריך](https://github.com/orenasher/homebridge-homepod-israel-hebrew/blob/main/README.he.md) · [Guide](https://github.com/orenasher/homebridge-homepod-israel-hebrew#readme)",
+  "footerDisplay": "☕ [PayPal](https://paypal.me/orenasher)",
   "schema": {
     "type": "object",
     "properties": {
       "name": {
-        "title": "Name",
+        "title": "שם | Name",
         "type": "string",
         "default": "HomePod Israel Hebrew",
         "required": true
       },
+      "language": {
+        "title": "שפת ההגדרות | Settings language",
+        "type": "string",
+        "default": "he",
+        "oneOf": [
+          {
+            "title": "עברית",
+            "enum": [
+              "he"
+            ]
+          },
+          {
+            "title": "English",
+            "enum": [
+              "en"
+            ]
+          }
+        ]
+      },
       "speakers": {
-        "title": "Speakers (HomePods)",
+        "title": "הום פודים | HomePods",
         "type": "array",
         "items": {
           "type": "object",
           "properties": {
             "name": {
-              "title": "Name",
+              "title": "שם | Name",
               "type": "string",
-              "required": true,
-              "placeholder": "Kitchen",
-              "description": "Your own name for this speaker, used in announcements and the webhook."
-            },
-            "id": {
-              "title": "Device ID",
-              "type": "string",
-              "placeholder": "AA:BB:CC:DD:EE:FF",
-              "description": "From 'atvremote scan'. If empty, the name above must match the HomePod's name exactly."
+              "required": true
             },
             "host": {
-              "title": "IP address (recommended)",
-              "type": "string",
-              "format": "ipv4",
-              "placeholder": "192.168.1.50",
-              "description": "Faster and more reliable than network discovery. Give the HomePod a fixed IP in your router."
+              "title": "כתובת IP | IP address",
+              "type": "string"
+            },
+            "id": {
+              "title": "מזהה | Device ID",
+              "type": "string"
             },
             "volume": {
-              "title": "Default volume",
+              "title": "ווליום ברירת מחדל | Default volume",
               "type": "integer",
               "minimum": 0,
-              "maximum": 100,
-              "description": "Leave empty to keep the current volume."
-            },
-            "credentials": {
-              "title": "RAOP credentials (rarely needed)",
-              "type": "string",
-              "description": "Only if your HomePod requires pairing (Home app → Allow Speaker & TV Access is restricted)."
+              "maximum": 100
             }
           }
         }
       },
       "phrases": {
-        "title": "מה ההום פוד יגיד — Phrases",
-        "type": "array",
-        "description": "פשוט כותבים את המשפט. כל משפט הופך למתג משלו בבית של אפל, ומושמע בכל הרמקולים. | Just type what to say — each phrase becomes its own switch.",
-        "items": {
-          "type": "string",
-          "title": "משפט",
-          "placeholder": "הכביסה מוכנה, אפשר לתלות"
-        }
-      },
-      "announcements": {
-        "title": "Advanced announcements — הכרזות מתקדמות",
+        "title": "מה ההום פוד יגיד | Phrases",
         "type": "array",
         "items": {
           "type": "object",
           "properties": {
-            "name": {
-              "title": "Switch name",
-              "type": "string",
-              "required": true,
-              "placeholder": "Laundry done"
-            },
             "text": {
-              "title": "Text to say",
+              "title": "טקסט | Text",
               "type": "string",
-              "required": true,
-              "placeholder": "הכביסה מוכנה, אפשר לתלות"
+              "required": true
+            },
+            "name": {
+              "title": "שם המתג | Switch name",
+              "type": "string"
             },
             "speakers": {
-              "title": "Speakers",
+              "title": "הום פודים (ריק = כולם) | HomePods (empty = all)",
               "type": "array",
-              "description": "Names from the Speakers list. Leave empty for all speakers.",
               "items": {
                 "type": "string"
               }
             },
-            "volume": {
-              "title": "Volume",
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 100,
-              "description": "Overrides the speaker's default. The previous volume is restored afterwards."
-            },
-            "engine": {
-              "title": "Voice engine (optional)",
+            "voice": {
+              "title": "קול | Voice",
               "type": "string",
-              "description": "Leave empty to use the main engine.",
               "oneOf": [
                 {
-                  "title": "ElevenLabs",
+                  "title": "הילה — רגיל | Hila — natural",
+                  "enum": [
+                    "hila"
+                  ]
+                },
+                {
+                  "title": "הילה — רגוע ואיטי | Hila — calm & slow",
+                  "enum": [
+                    "hila-calm"
+                  ]
+                },
+                {
+                  "title": "הילה — עליז ואנרגטי | Hila — bright & lively",
+                  "enum": [
+                    "hila-bright"
+                  ]
+                },
+                {
+                  "title": "הילה — רך ונמוך | Hila — soft & low",
+                  "enum": [
+                    "hila-soft"
+                  ]
+                },
+                {
+                  "title": "אברי — רגיל | Avri — natural",
+                  "enum": [
+                    "avri"
+                  ]
+                },
+                {
+                  "title": "אברי — קול עמוק | Avri — deep",
+                  "enum": [
+                    "avri-deep"
+                  ]
+                },
+                {
+                  "title": "אברי — רגוע ואיטי | Avri — calm & slow",
+                  "enum": [
+                    "avri-calm"
+                  ]
+                },
+                {
+                  "title": "אברי — מהיר ונמרץ | Avri — quick & energetic",
+                  "enum": [
+                    "avri-fast"
+                  ]
+                },
+                {
+                  "title": "אווה — רב-לשוני (ניסיוני) | Ava — multilingual (experimental)",
+                  "enum": [
+                    "ava"
+                  ]
+                },
+                {
+                  "title": "אמה — רב-לשוני (ניסיוני) | Emma — multilingual (experimental)",
+                  "enum": [
+                    "emma"
+                  ]
+                },
+                {
+                  "title": "סרפינה — רב-לשוני (ניסיוני) | Seraphina — multilingual (experimental)",
+                  "enum": [
+                    "seraphina"
+                  ]
+                },
+                {
+                  "title": "אנדרו — רב-לשוני (ניסיוני) | Andrew — multilingual (experimental)",
+                  "enum": [
+                    "andrew"
+                  ]
+                },
+                {
+                  "title": "בריאן — רב-לשוני (ניסיוני) | Brian — multilingual (experimental)",
+                  "enum": [
+                    "brian"
+                  ]
+                },
+                {
+                  "title": "רמי — רב-לשוני (ניסיוני) | Remy — multilingual (experimental)",
+                  "enum": [
+                    "remy"
+                  ]
+                },
+                {
+                  "title": "Kore — אישה (Google) | Kore — female (Google)",
+                  "enum": [
+                    "google-kore"
+                  ]
+                },
+                {
+                  "title": "Aoede — אישה (Google) | Aoede — female (Google)",
+                  "enum": [
+                    "google-aoede"
+                  ]
+                },
+                {
+                  "title": "Leda — אישה (Google) | Leda — female (Google)",
+                  "enum": [
+                    "google-leda"
+                  ]
+                },
+                {
+                  "title": "Zephyr — אישה (Google) | Zephyr — female (Google)",
+                  "enum": [
+                    "google-zephyr"
+                  ]
+                },
+                {
+                  "title": "Callirrhoe — אישה (Google) | Callirrhoe — female (Google)",
+                  "enum": [
+                    "google-callirrhoe"
+                  ]
+                },
+                {
+                  "title": "Despina — אישה (Google) | Despina — female (Google)",
+                  "enum": [
+                    "google-despina"
+                  ]
+                },
+                {
+                  "title": "Gacrux — אישה (Google) | Gacrux — female (Google)",
+                  "enum": [
+                    "google-gacrux"
+                  ]
+                },
+                {
+                  "title": "Sulafat — אישה (Google) | Sulafat — female (Google)",
+                  "enum": [
+                    "google-sulafat"
+                  ]
+                },
+                {
+                  "title": "Charon — גבר (Google) | Charon — male (Google)",
+                  "enum": [
+                    "google-charon"
+                  ]
+                },
+                {
+                  "title": "Puck — גבר (Google) | Puck — male (Google)",
+                  "enum": [
+                    "google-puck"
+                  ]
+                },
+                {
+                  "title": "Fenrir — גבר (Google) | Fenrir — male (Google)",
+                  "enum": [
+                    "google-fenrir"
+                  ]
+                },
+                {
+                  "title": "Orus — גבר (Google) | Orus — male (Google)",
+                  "enum": [
+                    "google-orus"
+                  ]
+                },
+                {
+                  "title": "Enceladus — גבר (Google) | Enceladus — male (Google)",
+                  "enum": [
+                    "google-enceladus"
+                  ]
+                },
+                {
+                  "title": "Iapetus — גבר (Google) | Iapetus — male (Google)",
+                  "enum": [
+                    "google-iapetus"
+                  ]
+                },
+                {
+                  "title": "Algieba — גבר (Google) | Algieba — male (Google)",
+                  "enum": [
+                    "google-algieba"
+                  ]
+                },
+                {
+                  "title": "Umbriel — גבר (Google) | Umbriel — male (Google)",
+                  "enum": [
+                    "google-umbriel"
+                  ]
+                },
+                {
+                  "title": "ElevenLabs — הקול שבחרת | ElevenLabs — your chosen voice",
                   "enum": [
                     "elevenlabs"
-                  ]
-                },
-                {
-                  "title": "Google Chirp 3 HD",
-                  "enum": [
-                    "googlecloud"
-                  ]
-                },
-                {
-                  "title": "Microsoft Edge (free)",
-                  "enum": [
-                    "edge"
-                  ]
-                },
-                {
-                  "title": "Google Translate (free, basic)",
-                  "enum": [
-                    "googletranslate"
                   ]
                 }
               ]
             },
-            "voice": {
-              "title": "Voice override (optional)",
-              "type": "string",
-              "description": "A voice name/ID for the engine above, e.g. he-IL-AvriNeural or an ElevenLabs voice ID."
+            "volume": {
+              "title": "ווליום | Volume",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
             }
           }
-        },
-        "description": "For a custom switch name, specific speakers, volume or voice. | לשם מתג אחר, רמקולים מסוימים, ווליום או קול אחר."
+        }
+      },
+      "voice": {
+        "title": "קול ברירת מחדל | Default voice",
+        "type": "string",
+        "default": "hila",
+        "oneOf": [
+          {
+            "title": "הילה — רגיל | Hila — natural",
+            "enum": [
+              "hila"
+            ]
+          },
+          {
+            "title": "הילה — רגוע ואיטי | Hila — calm & slow",
+            "enum": [
+              "hila-calm"
+            ]
+          },
+          {
+            "title": "הילה — עליז ואנרגטי | Hila — bright & lively",
+            "enum": [
+              "hila-bright"
+            ]
+          },
+          {
+            "title": "הילה — רך ונמוך | Hila — soft & low",
+            "enum": [
+              "hila-soft"
+            ]
+          },
+          {
+            "title": "אברי — רגיל | Avri — natural",
+            "enum": [
+              "avri"
+            ]
+          },
+          {
+            "title": "אברי — קול עמוק | Avri — deep",
+            "enum": [
+              "avri-deep"
+            ]
+          },
+          {
+            "title": "אברי — רגוע ואיטי | Avri — calm & slow",
+            "enum": [
+              "avri-calm"
+            ]
+          },
+          {
+            "title": "אברי — מהיר ונמרץ | Avri — quick & energetic",
+            "enum": [
+              "avri-fast"
+            ]
+          },
+          {
+            "title": "אווה — רב-לשוני (ניסיוני) | Ava — multilingual (experimental)",
+            "enum": [
+              "ava"
+            ]
+          },
+          {
+            "title": "אמה — רב-לשוני (ניסיוני) | Emma — multilingual (experimental)",
+            "enum": [
+              "emma"
+            ]
+          },
+          {
+            "title": "סרפינה — רב-לשוני (ניסיוני) | Seraphina — multilingual (experimental)",
+            "enum": [
+              "seraphina"
+            ]
+          },
+          {
+            "title": "אנדרו — רב-לשוני (ניסיוני) | Andrew — multilingual (experimental)",
+            "enum": [
+              "andrew"
+            ]
+          },
+          {
+            "title": "בריאן — רב-לשוני (ניסיוני) | Brian — multilingual (experimental)",
+            "enum": [
+              "brian"
+            ]
+          },
+          {
+            "title": "רמי — רב-לשוני (ניסיוני) | Remy — multilingual (experimental)",
+            "enum": [
+              "remy"
+            ]
+          },
+          {
+            "title": "Kore — אישה (Google) | Kore — female (Google)",
+            "enum": [
+              "google-kore"
+            ]
+          },
+          {
+            "title": "Aoede — אישה (Google) | Aoede — female (Google)",
+            "enum": [
+              "google-aoede"
+            ]
+          },
+          {
+            "title": "Leda — אישה (Google) | Leda — female (Google)",
+            "enum": [
+              "google-leda"
+            ]
+          },
+          {
+            "title": "Zephyr — אישה (Google) | Zephyr — female (Google)",
+            "enum": [
+              "google-zephyr"
+            ]
+          },
+          {
+            "title": "Callirrhoe — אישה (Google) | Callirrhoe — female (Google)",
+            "enum": [
+              "google-callirrhoe"
+            ]
+          },
+          {
+            "title": "Despina — אישה (Google) | Despina — female (Google)",
+            "enum": [
+              "google-despina"
+            ]
+          },
+          {
+            "title": "Gacrux — אישה (Google) | Gacrux — female (Google)",
+            "enum": [
+              "google-gacrux"
+            ]
+          },
+          {
+            "title": "Sulafat — אישה (Google) | Sulafat — female (Google)",
+            "enum": [
+              "google-sulafat"
+            ]
+          },
+          {
+            "title": "Charon — גבר (Google) | Charon — male (Google)",
+            "enum": [
+              "google-charon"
+            ]
+          },
+          {
+            "title": "Puck — גבר (Google) | Puck — male (Google)",
+            "enum": [
+              "google-puck"
+            ]
+          },
+          {
+            "title": "Fenrir — גבר (Google) | Fenrir — male (Google)",
+            "enum": [
+              "google-fenrir"
+            ]
+          },
+          {
+            "title": "Orus — גבר (Google) | Orus — male (Google)",
+            "enum": [
+              "google-orus"
+            ]
+          },
+          {
+            "title": "Enceladus — גבר (Google) | Enceladus — male (Google)",
+            "enum": [
+              "google-enceladus"
+            ]
+          },
+          {
+            "title": "Iapetus — גבר (Google) | Iapetus — male (Google)",
+            "enum": [
+              "google-iapetus"
+            ]
+          },
+          {
+            "title": "Algieba — גבר (Google) | Algieba — male (Google)",
+            "enum": [
+              "google-algieba"
+            ]
+          },
+          {
+            "title": "Umbriel — גבר (Google) | Umbriel — male (Google)",
+            "enum": [
+              "google-umbriel"
+            ]
+          },
+          {
+            "title": "ElevenLabs — הקול שבחרת | ElevenLabs — your chosen voice",
+            "enum": [
+              "elevenlabs"
+            ]
+          }
+        ]
       },
       "tts": {
-        "title": "Voice",
+        "title": "קולות פרימיום | Premium voices",
         "type": "object",
         "properties": {
-          "engine": {
-            "title": "Main voice engine",
-            "type": "string",
-            "default": "edge",
-            "oneOf": [
-              {
-                "title": "ElevenLabs — most human-like (API key, free tier)",
-                "enum": [
-                  "elevenlabs"
-                ]
-              },
-              {
-                "title": "Google Chirp 3 HD — very clear (API key, free tier)",
-                "enum": [
-                  "googlecloud"
-                ]
-              },
-              {
-                "title": "Microsoft Edge neural — free, no key",
-                "enum": [
-                  "edge"
-                ]
-              },
-              {
-                "title": "Google Translate — free, basic",
-                "enum": [
-                  "googletranslate"
-                ]
-              }
-            ]
-          },
-          "fallback": {
-            "title": "Fall back to free voices if the main engine fails",
-            "type": "boolean",
-            "default": true
-          },
-          "edgeVoice": {
-            "title": "Edge voice",
-            "type": "string",
-            "default": "he-IL-HilaNeural",
-            "oneOf": [
-              {
-                "title": "Hila — Hebrew, female",
-                "enum": [
-                  "he-IL-HilaNeural"
-                ]
-              },
-              {
-                "title": "Avri — Hebrew, male",
-                "enum": [
-                  "he-IL-AvriNeural"
-                ]
-              },
-              {
-                "title": "Ava — English (US), female",
-                "enum": [
-                  "en-US-AvaNeural"
-                ]
-              },
-              {
-                "title": "Andrew — English (US), male",
-                "enum": [
-                  "en-US-AndrewNeural"
-                ]
-              }
-            ]
-          },
-          "edgeRate": {
-            "title": "Edge speed",
-            "type": "string",
-            "placeholder": "-5%",
-            "description": "e.g. -10% slower, +10% faster."
-          },
           "elevenlabsApiKey": {
             "title": "ElevenLabs API key",
             "type": "string"
           },
           "elevenlabsVoiceId": {
             "title": "ElevenLabs voice ID",
-            "type": "string",
-            "description": "From the ElevenLabs Voice Library (or your own cloned voice)."
+            "type": "string"
           },
           "elevenlabsModel": {
             "title": "ElevenLabs model",
             "type": "string",
-            "default": "eleven_v3",
-            "description": "eleven_v3 speaks Hebrew well. You can enter a newer model ID."
+            "default": "eleven_v3"
           },
           "elevenlabsLanguage": {
-            "title": "ElevenLabs language code",
+            "title": "ElevenLabs language",
             "type": "string",
-            "default": "he",
-            "description": "Keep 'he' for Hebrew — it makes pronunciation much better. Empty = auto."
-          },
-          "elevenlabsStability": {
-            "title": "ElevenLabs stability (0–1)",
-            "type": "number",
-            "minimum": 0,
-            "maximum": 1
-          },
-          "elevenlabsSpeed": {
-            "title": "ElevenLabs speed (0.7–1.2)",
-            "type": "number",
-            "minimum": 0.7,
-            "maximum": 1.2
+            "default": "he"
           },
           "googleApiKey": {
             "title": "Google Cloud API key",
             "type": "string"
           },
-          "googleVoice": {
-            "title": "Google voice",
-            "type": "string",
-            "default": "he-IL-Chirp3-HD-Kore",
-            "description": "Hebrew Chirp 3 HD voices. Try a few — they differ a lot.",
-            "oneOf": [
-              {
-                "title": "Kore — female",
-                "enum": [
-                  "he-IL-Chirp3-HD-Kore"
-                ]
-              },
-              {
-                "title": "Aoede — female",
-                "enum": [
-                  "he-IL-Chirp3-HD-Aoede"
-                ]
-              },
-              {
-                "title": "Leda — female",
-                "enum": [
-                  "he-IL-Chirp3-HD-Leda"
-                ]
-              },
-              {
-                "title": "Zephyr — female",
-                "enum": [
-                  "he-IL-Chirp3-HD-Zephyr"
-                ]
-              },
-              {
-                "title": "Charon — male",
-                "enum": [
-                  "he-IL-Chirp3-HD-Charon"
-                ]
-              },
-              {
-                "title": "Puck — male",
-                "enum": [
-                  "he-IL-Chirp3-HD-Puck"
-                ]
-              },
-              {
-                "title": "Fenrir — male",
-                "enum": [
-                  "he-IL-Chirp3-HD-Fenrir"
-                ]
-              },
-              {
-                "title": "Orus — male",
-                "enum": [
-                  "he-IL-Chirp3-HD-Orus"
-                ]
-              }
-            ]
-          },
-          "googleSpeakingRate": {
-            "title": "Google speed (0.25–2)",
-            "type": "number",
-            "minimum": 0.25,
-            "maximum": 2
-          },
-          "translateLanguage": {
-            "title": "Google Translate language",
-            "type": "string",
-            "default": "iw",
-            "description": "iw = Hebrew, en = English."
+          "fallback": {
+            "title": "גיבוי לקול חינמי | Fall back to a free voice",
+            "type": "boolean",
+            "default": true
           }
         }
       },
       "webhook": {
-        "title": "Webhook (say any text from Shortcuts)",
+        "title": "Webhook",
         "type": "object",
         "properties": {
           "enabled": {
-            "title": "Enable webhook",
+            "title": "הפעל | Enable",
             "type": "boolean",
             "default": false
           },
           "port": {
-            "title": "Port",
+            "title": "פורט | Port",
             "type": "integer",
             "default": 8095,
             "minimum": 1024,
             "maximum": 65535
           },
           "token": {
-            "title": "Token (recommended)",
-            "type": "string",
-            "description": "When set, every request must include ?token=... or 'Authorization: Bearer ...'."
+            "title": "טוקן | Token",
+            "type": "string"
           }
         }
       },
       "restoreVolume": {
-        "title": "Restore the previous volume after announcing",
+        "title": "החזר ווליום קודם | Restore previous volume",
         "type": "boolean",
         "default": true
       },
       "pregenerate": {
-        "title": "Prepare audio at startup (instant first play)",
+        "title": "הכן קבצי קול מראש | Prepare audio in advance",
         "type": "boolean",
         "default": true
       },
       "cacheDays": {
-        "title": "Delete unused audio after (days)",
+        "title": "מחיקת קבצים לא בשימוש (ימים) | Delete unused audio after (days)",
         "type": "integer",
         "default": 90,
         "minimum": 1
       },
-      "atvremotePath": {
-        "title": "Path to atvremote (advanced)",
-        "type": "string",
-        "placeholder": "/opt/pyatv/bin/atvremote",
-        "description": "Leave empty to detect automatically."
+      "pythonPath": {
+        "title": "נתיב Python (מתקדם) | Python path (advanced)",
+        "type": "string"
       }
     }
-  },
-  "layout": [
-    "name",
-    {
-      "key": "speakers",
-      "type": "array",
-      "orderable": false,
-      "buttonText": "Add speaker",
-      "items": [
-        {
-          "type": "flex",
-          "flex-flow": "row wrap",
-          "items": [
-            "speakers[].name",
-            "speakers[].host"
-          ]
-        },
-        {
-          "type": "flex",
-          "flex-flow": "row wrap",
-          "items": [
-            "speakers[].id",
-            "speakers[].volume"
-          ]
-        },
-        {
-          "type": "fieldset",
-          "title": "Advanced",
-          "expandable": true,
-          "items": [
-            "speakers[].credentials"
-          ]
-        }
-      ]
-    },
-    {
-      "key": "phrases",
-      "type": "array",
-      "orderable": true,
-      "buttonText": "➕ הוסף משפט",
-      "items": [
-        {
-          "key": "phrases[]",
-          "type": "textarea",
-          "notitle": true
-        }
-      ]
-    },
-    {
-      "type": "fieldset",
-      "title": "Advanced announcements — הכרזות מתקדמות",
-      "expandable": true,
-      "items": [
-        {
-          "key": "announcements",
-          "type": "array",
-          "orderable": true,
-          "buttonText": "Add announcement",
-          "items": [
-            "announcements[].name",
-            "announcements[].text",
-            {
-              "key": "announcements[].speakers",
-              "type": "array",
-              "buttonText": "Add speaker",
-              "items": [
-                "announcements[].speakers[]"
-              ]
-            },
-            "announcements[].volume",
-            {
-              "type": "fieldset",
-              "title": "Different voice for this one",
-              "expandable": true,
-              "items": [
-                "announcements[].engine",
-                "announcements[].voice"
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "type": "fieldset",
-      "title": "Voice",
-      "expandable": true,
-      "expanded": true,
-      "items": [
-        "tts.engine",
-        "tts.fallback",
-        {
-          "type": "fieldset",
-          "title": "Microsoft Edge",
-          "expandable": true,
-          "items": [
-            "tts.edgeVoice",
-            "tts.edgeRate"
-          ]
-        },
-        {
-          "type": "fieldset",
-          "title": "ElevenLabs",
-          "expandable": true,
-          "items": [
-            "tts.elevenlabsApiKey",
-            "tts.elevenlabsVoiceId",
-            "tts.elevenlabsModel",
-            "tts.elevenlabsLanguage",
-            "tts.elevenlabsStability",
-            "tts.elevenlabsSpeed"
-          ]
-        },
-        {
-          "type": "fieldset",
-          "title": "Google Cloud",
-          "expandable": true,
-          "items": [
-            "tts.googleApiKey",
-            "tts.googleVoice",
-            "tts.googleSpeakingRate"
-          ]
-        },
-        {
-          "type": "fieldset",
-          "title": "Google Translate",
-          "expandable": true,
-          "items": [
-            "tts.translateLanguage"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "fieldset",
-      "title": "Webhook",
-      "expandable": true,
-      "items": [
-        "webhook.enabled",
-        "webhook.port",
-        "webhook.token"
-      ]
-    },
-    {
-      "type": "fieldset",
-      "title": "Advanced",
-      "expandable": true,
-      "items": [
-        "restoreVolume",
-        "pregenerate",
-        "cacheDays",
-        "atvremotePath"
-      ]
-    }
-  ]
+  }
 }

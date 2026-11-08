@@ -1,8 +1,8 @@
 {
   "name": "homebridge-homepod-israel-hebrew",
   "displayName": "HomePod Israel Hebrew",
-  "version": "1.0.0",
-  "description": "Natural-sounding spoken announcements on HomePod / AirPlay speakers from HomeKit switches, automations and a webhook. Premium voices (ElevenLabs, Google Chirp 3 HD) with free Microsoft Edge fallback, audio cache, per-announcement volume. Great Hebrew support.",
+  "version": "1.1.0",
+  "description": "הכרזות קוליות טבעיות בעברית בהום פוד — Natural-sounding Hebrew (and English) announcements on HomePods: a switch per phrase, choose which HomePod speaks, many voices (Hila, Avri, Google, ElevenLabs), bilingual settings screen. Fully self-contained.",
   "main": "index.js",
   "license": "MIT",
   "author": "Oren Asher",
@@ -38,6 +38,7 @@
   "files": [
     "index.js",
     "src",
+    "homebridge-ui",
     "config.schema.json",
     "README.md",
     "README.he.md",
@@ -48,6 +49,7 @@
     "test": "node test/run.js"
   },
   "dependencies": {
+    "@homebridge/plugin-ui-utils": "^1.0.3 || ^2.0.0",
     "node-edge-tts": "^1.2.12"
   }
 }

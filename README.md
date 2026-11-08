@@ -5,148 +5,106 @@
 
 # HomePod Israel Hebrew
 
-**Natural-sounding spoken announcements on your HomePods — from Apple Home switches, automations, Siri and iPhone Shortcuts.**
+**Natural-voice spoken announcements on your HomePods — from Apple Home switches, Siri and automations. Built for Hebrew, works in English too.**
 
-🇮🇱 [מדריך מלא בעברית](README.he.md)
+🇮🇱 [מדריך בעברית](README.he.md) (default language of the plugin)
 
-Every announcement you configure becomes a **switch** in Apple Home. Turn it on — by tapping, by Siri, or from any automation (washing machine finished, door opened, AC on with a window open…) — and your HomePod speaks the sentence in a natural voice, then the switch turns itself off.
+Type a sentence → it becomes a switch in Apple Home → turn it on and the HomePod says it. For every sentence you choose which HomePod speaks (one, several or all together), which voice and what volume.
 
 ## Highlights
 
-- **Voices that sound like people, not like Siri** — choose ElevenLabs (most human), Google Chirp 3 HD (very clear) or free Microsoft Edge neural voices. Excellent Hebrew.
-- **Automatic fallback** — if your main voice service fails, it falls back to a free voice so the announcement still happens.
-- **Audio cache** — every sentence is generated once and stored. Repeats are instant, work even if the voice service is down, and premium services cost you almost nothing.
-- **Any text from Shortcuts** — an optional webhook lets you announce dynamic text (`"Yotam just got home"`, weather, reminders).
-- **Volume per announcement** — speaks at the level you choose, then restores the previous volume.
-- **Several HomePods at once**, with a queue so announcements never talk over each other.
-- **Nothing is installed behind your back** — no install scripts. The plugin tells you exactly what to install.
+- 🇮🇱 **Made for Israelis** — Hebrew by default, bilingual settings screen (Hebrew / English toggle).
+- 💬 **One phrase = one switch.**
+- 🔊 **Pick the HomePods per phrase** — kitchen only, bedroom only, or both together.
+- 🎙️ **Many voices** — free Hila & Avri in several styles (natural, calm, bright, deep), multilingual voices, 16 Google Chirp 3 HD voices and ElevenLabs.
+- ▶️ **Test playback** right from the settings screen.
+- 🔍 **Automatic HomePod discovery** — no IP hunting.
+- 🔁 **Cache & fallback** — each phrase is generated once; if a voice service fails it falls back to a free voice.
+- 🔗 **Webhook** — say any text from iPhone Shortcuts.
+- 🧩 **Fully self-contained** — no other plugins, nothing to install by hand.
 
-## How it works
+## Independence & backup
 
-```
-HomeKit switch / Siri / automation / webhook
-        → text-to-speech (ElevenLabs / Google / Edge)  → cached MP3
-        → pyatv streams it over AirPlay → HomePod speaks
-```
-
-Apple doesn't let third parties use the HomePod Intercom, so the plugin streams audio over AirPlay (like playing music). Whatever was playing on the HomePod stops for the announcement.
+- The plugin **installs and maintains its own AirPlay engine** (pyatv) in a private environment with pinned, known-good versions. No commands to run.
+- **Settings** live in the Homebridge config and **audio files** in the Homebridge storage folder — both are part of the Homebridge **backup**.
+- Restore Homebridge from a backup and everything comes back; the voice engine rebuilds itself on first start.
 
 ---
 
 ## Step-by-step setup
 
-### 1. Install pyatv (one time)
-
-pyatv is the free Python library that talks AirPlay to HomePods. Open the **Homebridge terminal** (Homebridge UI → ⋮ menu → Terminal) or SSH, and paste:
-
-```bash
-sudo apt install -y python3-venv
-sudo python3 -m venv /opt/pyatv
-sudo /opt/pyatv/bin/pip install pyatv
-```
-
-This installs it in its own folder (`/opt/pyatv`) so it can't break anything else. The plugin finds it automatically.
-
-### 2. Find your HomePods
-
-```bash
-/opt/pyatv/bin/atvremote scan
-```
-
-For each HomePod note the **Name**, **Address** (IP) and one of the **Identifiers**. Tip: give each HomePod a fixed IP in your router.
-
-### 3. Install the plugin
-
-Homebridge UI → **Plugins** → search **homebridge-homepod-israel-hebrew** → Install.
-
-### 4. Configure
-
-In the plugin settings:
-
-1. **Speakers** — add each HomePod: a name you choose (e.g. `Kitchen`), its IP, its ID, and an optional default volume.
-2. **Phrases** — just type what the HomePod should say. Each phrase automatically becomes its own switch (named after the text) and plays on all speakers.
-   Need a custom switch name, specific speakers, volume or a different voice? Use **Advanced announcements**.
-3. **Voice** — pick the engine (see below). The free Edge voice works without any key.
-
-Save and restart Homebridge. The switches appear in Apple Home.
-
-### 5. Use it
-
-- Tap the switch, or say *"Hey Siri, turn on Laundry done"*.
-- Apple Home → Automation → e.g. *"When the washing machine power drops"* → turn on **Laundry done**.
+1. **Install** — Homebridge UI → **Plugins** → search **homebridge-homepod-israel-hebrew** → **Install**.
+2. **Voice engine** — open the plugin settings (⚙️). If the badge says *"Voice engine not installed"*, tap **Install voice engine** and wait a few minutes (one time).
+3. **Add HomePods** — tap **🔍 Find HomePods**, then **Add** next to each. Rename them and set a default volume if you like. Tip: give each HomePod a fixed IP in your router.
+4. **Write phrases** — tap **➕ Add phrase**. Type the text, tick **who speaks** (none ticked = all), pick a voice, optionally a custom volume, and tap **▶️ Play now** to hear it.
+5. **Save** and restart Homebridge. The switches appear in Apple Home.
+6. **Use it** — tap the switch, ask Siri, or trigger it from an Apple Home automation.
 
 ---
 
-## Choosing a voice
+## Voices
 
-| Engine | Quality | Cost | What you need |
-|---|---|---|---|
-| **ElevenLabs** | Most human, expressive | Free tier, then paid | API key + voice ID |
-| **Google Chirp 3 HD** | Very clear, natural | Free monthly tier | Google Cloud API key |
-| **Microsoft Edge** | Good, clear (Hila / Avri for Hebrew) | Free | Nothing |
-| **Google Translate** | Basic | Free | Nothing (used as last-resort fallback) |
+| Voice | Type | Cost |
+|---|---|---|
+| 👩 Hila — natural / calm / bright / soft | Native Hebrew | Free |
+| 👨 Avri — natural / deep / calm / quick | Native Hebrew | Free |
+| 👩👨 Ava, Emma, Seraphina, Andrew, Brian, Remy | Multilingual (may have an accent) | Free |
+| 👩👨 16 Google Chirp 3 HD voices | Very clear Hebrew | Google key (free tier) |
+| ⭐ ElevenLabs | Most human | ElevenLabs key (free tier) |
 
-Because of the cache, fixed announcements are generated only once — so even a paid voice costs almost nothing.
+Thanks to the cache each phrase is generated only once, so even paid voices cost almost nothing.
 
-### ElevenLabs
-1. Sign up at [elevenlabs.io](https://elevenlabs.io) → profile → **API Keys** → create a key.
-2. Pick a voice in the **Voice Library**, add it to your voices and copy its **Voice ID**.
-3. In the plugin: engine = ElevenLabs, paste the key and voice ID. Keep model `eleven_v3` and language `he` for Hebrew.
+**ElevenLabs:** sign up at [elevenlabs.io](https://elevenlabs.io) → **API Keys** → create a key; pick a voice in the **Voice Library** and copy its **Voice ID**; paste both under **Premium voices** and choose the **ElevenLabs** voice.
 
-### Google Chirp 3 HD
-1. In [Google Cloud Console](https://console.cloud.google.com) create a project and enable **Cloud Text-to-Speech API** (billing account required; the free tier covers home use).
-2. **APIs & Services → Credentials → Create API key** (restrict it to the Text-to-Speech API).
-3. In the plugin: engine = Google, paste the key, choose a voice (Kore, Aoede, Charon…).
+**Google Chirp 3 HD:** in [Google Cloud Console](https://console.cloud.google.com) enable **Cloud Text-to-Speech API**, create an API key (restrict it to Text-to-Speech), paste it under **Premium voices** and choose a Google voice.
 
 ---
 
 ## Webhook — say any text from iPhone Shortcuts
 
-Enable **Webhook** in the settings (port `8095`) and set a token.
+Enable **Webhook** in the settings (default port `8095`) and set a token.
 
 | Request | What it does |
 |---|---|
-| `GET /say?text=Hello&speakers=Kitchen,Bedroom&volume=50&token=…` | Say any text |
+| `GET /say?text=Hello&speakers=Kitchen,Bedroom&voice=avri&volume=50&token=…` | Say any text |
 | `POST /say` with JSON `{"text":"…","speakers":"Kitchen"}` | Same, for long text |
-| `GET /announce?name=Laundry done&token=…` | Play a configured announcement |
-| `GET /status?token=…` | Speakers and announcements |
+| `GET /announce?name=Laundry done&token=…` | Play a configured phrase |
+| `GET /status?token=…` | State, HomePods and phrases |
 
-Extra parameters: `engine`, `voice`, `wait=0` (answer immediately without waiting for playback).
-
-**Shortcut example:** *Text* → *Get Contents of URL* `http://<homebridge-ip>:8095/say`, Method **POST**, Request Body **JSON**: `text` = the text, `token` = your token.
+Shortcut: *Text* → *Get Contents of URL* `http://<homebridge-ip>:8095/say`, Method **POST**, Request Body **JSON** with `text` and `token`.
 
 ---
 
-## Example config
+## Config example (for reference — the settings screen writes this for you)
 
 ```json
 {
   "platform": "HomePodIsraelHebrew",
   "name": "HomePod Israel Hebrew",
+  "language": "he",
+  "voice": "hila",
   "speakers": [
-    { "name": "Kitchen", "host": "192.168.1.50", "id": "AA:BB:CC:DD:EE:FF", "volume": 45 },
+    { "name": "Kitchen", "host": "192.168.1.50", "id": "AA:BB:CC:DD:EE:FF", "volume": 50 },
     { "name": "Bedroom", "host": "192.168.1.51", "id": "11:22:33:44:55:66" }
   ],
-  "phrases": ["The laundry is done", "Someone is at the door"],
-  "announcements": [
-    { "name": "Laundry done", "text": "The laundry is done", "speakers": ["Kitchen"], "volume": 60 },
-    { "name": "Dinner", "text": "Dinner is ready!" }
+  "phrases": [
+    { "text": "The laundry is done", "speakers": ["Kitchen"], "voice": "avri-deep", "volume": 60 },
+    { "text": "Good night everyone", "name": "Good night", "speakers": ["Kitchen", "Bedroom"] },
+    { "text": "Dinner is ready" }
   ],
-  "tts": { "engine": "edge", "edgeVoice": "en-US-AvaNeural" },
   "webhook": { "enabled": true, "port": 8095, "token": "change-me" }
 }
 ```
 
 ## Troubleshooting
 
-- **"pyatv (atvremote) was not found"** — do step 1, then restart Homebridge.
-- **"Could not find any device"** — set the HomePod's IP in `host`, and check that Homebridge and the HomePod are on the same network.
-- **Pairing/permission error** — Home app → Home Settings → *Allow Speaker & TV Access* → *Everyone on the same network*.
-- **Changed a voice and still hear the old one?** — the cache is keyed by voice, so changes take effect immediately; old files are cleaned automatically.
-- Audio files are stored in `<homebridge storage>/homepod-israel-hebrew-cache` — safe to delete anytime.
+- **Voice engine can't install** — run once in the terminal: `sudo apt install -y python3-venv`, then tap *Install voice engine* again.
+- **"HomePod not found on the network"** — check the IP and that Homebridge and the HomePod are on the same network.
+- **Permission error** — Home app → Home Settings → *Allow Speaker & TV Access* → *Everyone on the same network*.
+- **Devices marked "needs pairing"** (TVs, Apple TV) are not supported — HomePods and open AirPlay speakers only.
 
 ## Support
 
-If this plugin is useful to you, [buy me a coffee ☕](https://paypal.me/orenasher). Issues and ideas: [GitHub](https://github.com/orenasher/homebridge-homepod-israel-hebrew/issues).
+If this plugin helps you, [buy me a coffee ☕](https://paypal.me/orenasher). Issues and ideas: [GitHub](https://github.com/orenasher/homebridge-homepod-israel-hebrew/issues).
 
 MIT © Oren Asher

@@ -2,11 +2,14 @@
 
 const path = require('path');
 const { TtsService } = require('./tts');
-const { Speaker, findAtvremote } = require('./player');
+const { Speaker } = require('./player');
+const { PyatvEnv } = require('./pyatv-env');
 const { startWebhook } = require('./webhook');
+const { DEFAULT_VOICE } = require('./voices');
 
 const PLUGIN_NAME = 'homebridge-homepod-israel-hebrew';
 const PLATFORM_NAME = 'HomePodIsraelHebrew';
+const CACHE_DIR = 'homepod-israel-hebrew-cache';
 
 class HomePodIsraelHebrewPlatform {
   constructor(log, config, api) {
@@ -34,25 +37,21 @@ class HomePodIsraelHebrewPlatform {
     this.cached.set(accessory.UUID, accessory);
   }
 
+  get defaultVoice() {
+    const c = this.config;
+    return c.voice || (c.tts && c.tts.engine) || DEFAULT_VOICE;
+  }
+
   async setup() {
     const cfg = this.config;
-    this.tts = new TtsService(cfg.tts || {}, path.join(this.api.user.storagePath(), 'homepod-israel-hebrew-cache'), this.log);
-
-    this.bin = findAtvremote(cfg.atvremotePath);
-    if (!this.bin) {
-      this.log.error('pyatv (atvremote) was not found, so nothing can be played yet.');
-      this.log.error('Install it once from the Homebridge terminal:');
-      this.log.error('  sudo apt install -y python3-venv && sudo python3 -m venv /opt/pyatv && sudo /opt/pyatv/bin/pip install pyatv');
-      this.log.error('Then restart Homebridge. See the README for details.');
-    } else {
-      this.log.info(`Using ${this.bin}`);
-    }
+    this.tts = new TtsService(cfg.tts || {}, path.join(this.api.user.storagePath(), CACHE_DIR), this.log);
+    this.env = new PyatvEnv(this.log, { pythonPath: cfg.pythonPath });
 
     for (const s of cfg.speakers || []) {
       if (!s || !s.name) continue;
-      this.speakers.set(s.name, new Speaker(s, this.bin, this.log));
+      this.speakers.set(s.name, new Speaker(s, this.env, this.log));
     }
-    if (!this.speakers.size) this.log.warn('No speakers configured — add at least one HomePod in the settings.');
+    if (!this.speakers.size) this.log.warn('No HomePods configured yet — open the plugin settings and tap "Find HomePods".');
 
     this.syncAccessories();
 
@@ -60,22 +59,32 @@ class HomePodIsraelHebrewPlatform {
       this.server = startWebhook(this, cfg.webhook, this.log);
     }
 
+    // Prepare the voice engine and audio in the background.
+    this.env.ensure().catch((err) => this.log.error(`Voice engine setup failed: ${err.message}`));
     if (cfg.pregenerate !== false) this.pregenerate();
     this.tts.prune(cfg.cacheDays || 90).catch(() => {});
   }
 
-  /* ------------------------------------------------------------ accessories */
+  /* ------------------------------------------------------------ phrases */
 
-  /** All announcements: quick phrases (text only) + detailed announcements. */
+  /** All phrases: from "phrases" (strings or objects) plus legacy 1.0 "announcements". */
   items() {
     const list = [];
-    for (const p of this.config.phrases || []) {
-      const text = typeof p === 'string' ? p : (p && p.text);
-      if (text && text.trim()) list.push({ name: switchName(text), text: text.trim() });
-    }
-    for (const a of this.config.announcements || []) {
-      if (a && a.text) list.push({ ...a, name: a.name ? switchName(a.name) : switchName(a.text) });
-    }
+    const seen = new Set();
+    const add = (raw) => {
+      const p = typeof raw === 'string' ? { text: raw } : (raw || {});
+      const text = String(p.text || '').trim();
+      if (!text || p.enabled === false) return;
+      const name = switchName(p.name || text);
+      if (seen.has(name)) {
+        this.log.warn(`Two phrases share the switch name "${name}" — the second one was skipped. Give it a different name.`);
+        return;
+      }
+      seen.add(name);
+      list.push({ ...p, text, name });
+    };
+    (this.config.phrases || []).forEach(add);
+    (this.config.announcements || []).forEach(add);
     return list;
   }
 
@@ -84,19 +93,12 @@ class HomePodIsraelHebrewPlatform {
     const wanted = new Set();
 
     for (const item of this.items()) {
-      if (!item || !item.name || !item.text) continue;
       const uuid = this.api.hap.uuid.generate(`${PLATFORM_NAME}:${item.name}`);
-      if (wanted.has(uuid)) {
-        this.log.warn(`Duplicate announcement name "${item.name}" — skipped.`);
-        continue;
-      }
       wanted.add(uuid);
 
       let accessory = this.cached.get(uuid);
       const isNew = !accessory;
-      if (isNew) {
-        accessory = new this.api.platformAccessory(item.name, uuid);
-      }
+      if (isNew) accessory = new this.api.platformAccessory(item.name, uuid);
       accessory.context.item = item;
 
       accessory.getService(Service.AccessoryInformation)
@@ -106,21 +108,25 @@ class HomePodIsraelHebrewPlatform {
 
       const service = accessory.getService(Service.Switch) || accessory.addService(Service.Switch, item.name);
       service.setCharacteristic(Characteristic.Name, item.name);
+      if (Characteristic.ConfiguredName) {
+        try {
+          if (!service.testCharacteristic(Characteristic.ConfiguredName)) service.addOptionalCharacteristic(Characteristic.ConfiguredName);
+          service.setCharacteristic(Characteristic.ConfiguredName, item.name);
+        } catch { /* older HAP */ }
+      }
       const on = service.getCharacteristic(Characteristic.On);
-      on.removeAllListeners('set');
-      on.removeAllListeners('get');
       on.onGet(() => false);
       on.onSet((value) => {
         if (!value) return;
-        // momentary: report "off" again shortly so the next trigger works
+        // momentary: report "off" again so the next trigger works
         setTimeout(() => on.updateValue(false), 1000);
-        this.announce(accessory.context.item).catch((err) => this.log.error(`"${item.name}": ${err.message}`));
+        this.announce(accessory.context.item).catch((err) => this.log.error(`"${accessory.context.item.name}": ${err.message}`));
       });
       on.updateValue(false);
 
       if (isNew) {
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
-        this.log.info(`Added "${item.name}"`);
+        this.log.info(`Added switch "${item.name}"`);
       } else {
         this.api.updatePlatformAccessories([accessory]);
       }
@@ -131,7 +137,7 @@ class HomePodIsraelHebrewPlatform {
       this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, stale);
       for (const a of stale) {
         this.cached.delete(a.UUID);
-        this.log.info(`Removed "${a.displayName}"`);
+        this.log.info(`Removed switch "${a.displayName}"`);
       }
     }
   }
@@ -141,42 +147,35 @@ class HomePodIsraelHebrewPlatform {
   resolveSpeakers(names) {
     const list = Array.isArray(names) ? names : (names ? String(names).split(',') : []);
     const clean = list.map((n) => String(n).trim()).filter(Boolean);
-    if (!clean.length || clean.some((n) => n.toLowerCase() === 'all')) return [...this.speakers.values()];
+    if (!clean.length || clean.some((n) => ['all', 'הכל', 'כולם'].includes(n.toLowerCase()))) return [...this.speakers.values()];
     const found = [];
     for (const n of clean) {
       const s = this.speakers.get(n)
         || [...this.speakers.values()].find((x) => x.name.toLowerCase() === n.toLowerCase());
-      if (s) found.push(s);
-      else this.log.warn(`Unknown speaker "${n}"`);
+      if (s && !found.includes(s)) found.push(s);
+      else if (!s) this.log.warn(`Unknown HomePod "${n}"`);
     }
     return found;
   }
 
-  /** Configured announcement (from a switch or the webhook). */
+  /** A configured phrase (from a switch or the webhook). */
   announce(item) {
-    return this.say(item.text, {
-      speakers: item.speakers,
-      volume: item.volume,
-      engine: item.engine,
-      voice: item.voice,
-      label: item.name,
-    });
+    return this.say(item.text, { speakers: item.speakers, volume: item.volume, voice: item.voice, label: item.name });
   }
 
   /**
    * Say any text.
-   * @returns {Promise<{engine: string, cached: boolean, speakers: string[]}>}
+   * @returns {Promise<{voice: string, cached: boolean, speakers: string[], failed: string[]}>}
    */
-  async say(text, { speakers, volume, engine, voice, label } = {}) {
-    if (!this.bin) throw new Error('pyatv (atvremote) is not installed — see the log at startup');
+  async say(text, { speakers, volume, voice, label } = {}) {
     const targets = this.resolveSpeakers(speakers);
-    if (!targets.length) throw new Error('no matching speakers');
+    if (!targets.length) throw new Error('no matching HomePods');
 
     const started = Date.now();
-    const audio = await this.tts.getAudio(text, { engine, voice });
+    const audio = await this.tts.getAudio(text, voice || this.defaultVoice);
     const tag = label ? `"${label}"` : `"${String(text).slice(0, 40)}"`;
-    this.log.info(`Speaking ${tag} on ${targets.map((s) => s.name).join(', ')} `
-      + `(${audio.engine}${audio.cached ? ', cached' : ''}, ready in ${Date.now() - started} ms)`);
+    this.log.info(`Speaking ${tag} on ${targets.map((s) => s.name).join(' + ')} `
+      + `(${audio.voice}${audio.cached ? ', cached' : ''}, ready in ${Date.now() - started} ms)`);
 
     const restore = this.config.restoreVolume !== false;
     const results = await Promise.allSettled(targets.map((s) => s.play(audio.file, { volume, restoreVolume: restore })));
@@ -184,19 +183,19 @@ class HomePodIsraelHebrewPlatform {
     results.forEach((r, i) => {
       if (r.status === 'rejected') {
         failed.push(targets[i].name);
-        this.log.error(`[${targets[i].name}] playback failed: ${r.reason.message}`);
+        this.log.error(`[${targets[i].name}] ${r.reason.message}`);
       }
     });
     if (failed.length === targets.length) throw new Error(`playback failed on ${failed.join(', ')}`);
-    return { engine: audio.engine, cached: audio.cached, speakers: targets.map((s) => s.name), failed };
+    return { voice: audio.voice, cached: audio.cached, speakers: targets.map((s) => s.name), failed };
   }
 
-  /** Create audio for all configured phrases in the background so the first trigger is instant. */
+  /** Create audio for all phrases in the background so the first trigger is instant. */
   async pregenerate() {
     for (const item of this.items()) {
       try {
-        const a = await this.tts.getAudio(item.text, { engine: item.engine, voice: item.voice });
-        if (!a.cached) this.log.info(`Prepared audio for "${item.name}" (${a.engine})`);
+        const a = await this.tts.getAudio(item.text, item.voice || this.defaultVoice);
+        if (!a.cached) this.log.info(`Prepared audio for "${item.name}" (${a.voice})`);
       } catch (err) {
         this.log.warn(`Could not prepare "${item.name}": ${err.message}`);
       }
@@ -218,4 +217,4 @@ function switchName(text) {
   return s || 'Announcement';
 }
 
-module.exports = { HomePodIsraelHebrewPlatform, PLUGIN_NAME, PLATFORM_NAME, switchName };
+module.exports = { HomePodIsraelHebrewPlatform, PLUGIN_NAME, PLATFORM_NAME, CACHE_DIR, switchName };

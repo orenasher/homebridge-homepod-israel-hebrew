@@ -1,0 +1,442 @@
+<style>
+  #hih { --gap: 12px; font-size: 15px; }
+  #hih .card { border: 1px solid rgba(128,128,128,.35); border-radius: 12px; padding: 14px; margin-bottom: 14px; }
+  #hih h5 { margin: 0 0 10px; font-weight: 600; }
+  #hih .row-flex { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  #hih .grow { flex: 1 1 180px; min-width: 0; }
+  #hih .muted { opacity: .7; font-size: 13px; }
+  #hih .phrase { border: 1px solid rgba(128,128,128,.3); border-radius: 10px; padding: 10px; margin-bottom: 10px; }
+  #hih .phrase textarea { width: 100%; min-height: 54px; resize: vertical; }
+  #hih .chips label { border: 1px solid rgba(128,128,128,.45); border-radius: 16px; padding: 3px 10px; margin: 0; cursor: pointer; user-select: none; }
+  #hih .chips input { margin-inline-end: 5px; }
+  #hih .badge-state { font-size: 13px; padding: 4px 10px; border-radius: 12px; }
+  #hih .st-ready { background: #2e7d32; color: #fff; }
+  #hih .st-installing, #hih .st-missing { background: #f9a825; color: #000; }
+  #hih .st-error { background: #c62828; color: #fff; }
+  #hih .lang button { min-width: 74px; }
+  #hih details summary { cursor: pointer; font-weight: 600; }
+  #hih .scan-item { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px dashed rgba(128,128,128,.3); }
+  #hih input[type=range] { width: 140px; vertical-align: middle; }
+</style>
+
+<div id="hih" dir="rtl">
+  <div class="row-flex" style="justify-content: space-between; margin-bottom: 12px;">
+    <div>
+      <h4 style="margin:0" data-t="title"></h4>
+      <div class="muted" data-t="subtitle"></div>
+    </div>
+    <div class="row-flex">
+      <span id="engineState" class="badge-state"></span>
+      <button id="installBtn" class="btn btn-sm btn-warning" style="display:none" data-t="install"></button>
+      <div class="btn-group lang">
+        <button type="button" class="btn btn-sm" data-lang="he">עברית</button>
+        <button type="button" class="btn btn-sm" data-lang="en">English</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HomePods -->
+  <div class="card">
+    <h5 data-t="speakersTitle"></h5>
+    <div id="speakers"></div>
+    <div class="row-flex" style="margin-top:8px">
+      <button id="scanBtn" class="btn btn-primary btn-sm" data-t="scan"></button>
+      <button id="addSpeakerBtn" class="btn btn-outline-secondary btn-sm" data-t="addManual"></button>
+    </div>
+    <div id="scanResults" style="margin-top:10px"></div>
+  </div>
+
+  <!-- Phrases -->
+  <div class="card">
+    <h5 data-t="phrasesTitle"></h5>
+    <div class="muted" style="margin-bottom:8px" data-t="phrasesHelp"></div>
+    <div id="phrases"></div>
+    <button id="addPhraseBtn" class="btn btn-primary btn-sm" data-t="addPhrase"></button>
+  </div>
+
+  <!-- Default voice -->
+  <div class="card">
+    <h5 data-t="voiceTitle"></h5>
+    <div class="row-flex">
+      <select id="defaultVoice" class="form-control grow"></select>
+      <button id="previewVoice" class="btn btn-outline-primary btn-sm" data-t="preview"></button>
+    </div>
+    <div class="muted" style="margin-top:6px" data-t="voiceHelp"></div>
+
+    <details style="margin-top:12px">
+      <summary data-t="premiumTitle"></summary>
+      <div class="muted" style="margin:6px 0" data-t="premiumHelp"></div>
+      <label data-t="elKey"></label>
+      <input id="elKey" type="password" class="form-control" autocomplete="off">
+      <label data-t="elVoice" style="margin-top:6px"></label>
+      <input id="elVoice" type="text" class="form-control" autocomplete="off">
+      <label data-t="gKey" style="margin-top:6px"></label>
+      <input id="gKey" type="password" class="form-control" autocomplete="off">
+      <div class="form-check" style="margin-top:8px">
+        <input id="fallback" type="checkbox" class="form-check-input">
+        <label for="fallback" class="form-check-label" data-t="fallback"></label>
+      </div>
+    </details>
+  </div>
+
+  <!-- Webhook + advanced -->
+  <div class="card">
+    <details>
+      <summary data-t="webhookTitle"></summary>
+      <div class="muted" style="margin:6px 0" data-t="webhookHelp"></div>
+      <div class="form-check">
+        <input id="whEnabled" type="checkbox" class="form-check-input">
+        <label for="whEnabled" class="form-check-label" data-t="enable"></label>
+      </div>
+      <div class="row-flex" style="margin-top:6px">
+        <div class="grow"><label data-t="port"></label><input id="whPort" type="number" class="form-control" min="1024" max="65535"></div>
+        <div class="grow"><label data-t="token"></label><input id="whToken" type="text" class="form-control" autocomplete="off"></div>
+      </div>
+      <div class="muted" id="whExample" dir="ltr" style="margin-top:6px; word-break: break-all;"></div>
+    </details>
+    <details style="margin-top:10px">
+      <summary data-t="advancedTitle"></summary>
+      <div class="form-check" style="margin-top:6px">
+        <input id="restoreVolume" type="checkbox" class="form-check-input">
+        <label for="restoreVolume" class="form-check-label" data-t="restoreVolume"></label>
+      </div>
+      <div class="form-check">
+        <input id="pregenerate" type="checkbox" class="form-check-input">
+        <label for="pregenerate" class="form-check-label" data-t="pregenerate"></label>
+      </div>
+      <label data-t="cacheDays" style="margin-top:6px"></label>
+      <input id="cacheDays" type="number" class="form-control" min="1">
+      <label data-t="pythonPath" style="margin-top:6px"></label>
+      <input id="pythonPath" type="text" class="form-control" dir="ltr" placeholder="/path/to/python">
+    </details>
+  </div>
+
+  <div class="muted" style="text-align:center">
+    <span data-t="saveHint"></span> ·
+    <a href="https://github.com/orenasher/homebridge-homepod-israel-hebrew" target="_blank" data-t="guide"></a> ·
+    <a href="https://paypal.me/orenasher" target="_blank">☕ PayPal</a>
+  </div>
+</div>
+
+<script>
+(async () => {
+  const T = {
+    he: {
+      title: 'HomePod Israel Hebrew', subtitle: 'הכרזות קוליות טבעיות בעברית בהום פוד',
+      install: 'התקן מנוע קול',
+      st_ready: 'מנוע הקול מוכן ✓', st_installing: 'מתקין מנוע קול… (כמה דקות)', st_missing: 'מנוע הקול לא מותקן', st_error: 'שגיאה במנוע הקול',
+      speakersTitle: '🔊 ההום פודים שלך', scan: '🔍 חפש הום פודים', addManual: 'הוסף ידנית',
+      scanning: 'מחפש ברשת…', noneFound: 'לא נמצאו מכשירים. ודא ש-Homebridge וההום פודים באותה רשת.',
+      add: 'הוסף', added: 'נוסף ✓', needsPairing: 'דורש צימוד — לא נתמך',
+      name: 'שם', ip: 'כתובת IP', id: 'מזהה', vol: 'ווליום ברירת מחדל', none: 'ללא', remove: 'מחק',
+      noSpeakers: 'עדיין אין הום פודים. לחץ "חפש הום פודים".',
+      phrasesTitle: '💬 מה ההום פוד יגיד',
+      phrasesHelp: 'כל משפט הופך למתג בבית של אפל. בוחרים איזה הום פוד ידבר (אחד, כמה או כולם), קול וווליום.',
+      addPhrase: '➕ הוסף משפט', phraseText: 'הטקסט שיוקרא', switchName: 'שם המתג (לא חובה)',
+      who: 'מי ידבר:', allIfNone: '(אם לא סומן — כולם)', voice: 'קול', defaultOpt: 'ברירת המחדל',
+      useVol: 'ווליום מיוחד', test: '▶️ השמע עכשיו', testing: 'משמיע…', played: 'הושמע ✓',
+      voiceTitle: '🎙️ קול ברירת המחדל', preview: '▶️ השמע דוגמה',
+      voiceHelp: 'הילה ואברי — קולות עבריים טבעיים בחינם, בכמה סגנונות. קולות Google ו-ElevenLabs דורשים מפתח (למטה).',
+      sample: 'שלום! ככה אני נשמעת. ההכרזות שלך יישמעו בדיוק כך.',
+      sampleM: 'שלום! ככה אני נשמע. ההכרזות שלך יישמעו בדיוק כך.',
+      g_free: 'עברית — חינם', g_multi: 'רב-לשוני — חינם (ניסיוני)', g_google: 'Google Chirp 3 HD — דורש מפתח', g_elevenlabs: 'ElevenLabs — דורש מפתח',
+      premiumTitle: '⭐ קולות פרימיום (לא חובה)',
+      premiumHelp: 'ElevenLabs — הקול הכי אנושי. Google — ברור מאוד. לכל משפט נוצר קובץ פעם אחת ונשמר, אז העלות כמעט אפסית.',
+      elKey: 'ElevenLabs API key', elVoice: 'ElevenLabs Voice ID', gKey: 'Google Cloud API key',
+      fallback: 'אם הקול שנבחר לא זמין — עבור אוטומטית לקול חינמי',
+      webhookTitle: '🔗 Webhook — הקראת כל טקסט מקיצורים באייפון',
+      webhookHelp: 'מאפשר לשלוח טקסט חופשי מאפליקציית קיצורים. מומלץ להגדיר טוקן.',
+      enable: 'הפעל', port: 'פורט', token: 'טוקן',
+      advancedTitle: '⚙️ מתקדם', restoreVolume: 'החזר את הווליום הקודם אחרי ההכרזה',
+      pregenerate: 'הכן את קבצי הקול מראש (השמעה מיידית)', cacheDays: 'מחק קבצי קול שלא בשימוש אחרי (ימים)',
+      pythonPath: 'נתיב Python עם pyatv (רק אם אתה יודע מה זה — השאר ריק)',
+      saveHint: 'אחרי שינויים לחץ Save והפעל מחדש את Homebridge', guide: 'מדריך מלא',
+      errNoSpeaker: 'הוסף קודם הום פוד', errEmpty: 'כתוב טקסט קודם',
+    },
+    en: {
+      title: 'HomePod Israel Hebrew', subtitle: 'Natural-voice announcements on your HomePods',
+      install: 'Install voice engine',
+      st_ready: 'Voice engine ready ✓', st_installing: 'Installing voice engine… (a few minutes)', st_missing: 'Voice engine not installed', st_error: 'Voice engine error',
+      speakersTitle: '🔊 Your HomePods', scan: '🔍 Find HomePods', addManual: 'Add manually',
+      scanning: 'Searching the network…', noneFound: 'No devices found. Make sure Homebridge and the HomePods are on the same network.',
+      add: 'Add', added: 'Added ✓', needsPairing: 'needs pairing — not supported',
+      name: 'Name', ip: 'IP address', id: 'ID', vol: 'Default volume', none: 'none', remove: 'Remove',
+      noSpeakers: 'No HomePods yet. Tap "Find HomePods".',
+      phrasesTitle: '💬 What the HomePod will say',
+      phrasesHelp: 'Each phrase becomes a switch in Apple Home. Choose which HomePod speaks (one, several or all), the voice and the volume.',
+      addPhrase: '➕ Add phrase', phraseText: 'Text to say', switchName: 'Switch name (optional)',
+      who: 'Who speaks:', allIfNone: '(none checked = all)', voice: 'Voice', defaultOpt: 'Default',
+      useVol: 'Custom volume', test: '▶️ Play now', testing: 'Playing…', played: 'Played ✓',
+      voiceTitle: '🎙️ Default voice', preview: '▶️ Play sample',
+      voiceHelp: 'Hila and Avri are free natural Hebrew voices in several styles. Google and ElevenLabs voices need a key (below).',
+      sample: 'Hi! This is how I sound. Your announcements will sound just like this.',
+      sampleM: 'Hi! This is how I sound. Your announcements will sound just like this.',
+      g_free: 'Hebrew — free', g_multi: 'Multilingual — free (experimental)', g_google: 'Google Chirp 3 HD — needs key', g_elevenlabs: 'ElevenLabs — needs key',
+      premiumTitle: '⭐ Premium voices (optional)',
+      premiumHelp: 'ElevenLabs is the most human. Google is very clear. Each phrase is generated once and cached, so cost is close to zero.',
+      elKey: 'ElevenLabs API key', elVoice: 'ElevenLabs Voice ID', gKey: 'Google Cloud API key',
+      fallback: 'If the chosen voice is unavailable, fall back to a free voice automatically',
+      webhookTitle: '🔗 Webhook — say any text from iPhone Shortcuts',
+      webhookHelp: 'Lets Shortcuts send free text. Setting a token is recommended.',
+      enable: 'Enable', port: 'Port', token: 'Token',
+      advancedTitle: '⚙️ Advanced', restoreVolume: 'Restore the previous volume after announcing',
+      pregenerate: 'Prepare audio in advance (instant playback)', cacheDays: 'Delete unused audio after (days)',
+      pythonPath: 'Path to a Python with pyatv (leave empty unless you know you need it)',
+      saveHint: 'After changes, tap Save and restart Homebridge', guide: 'Full guide',
+      errNoSpeaker: 'Add a HomePod first', errEmpty: 'Type some text first',
+    },
+  };
+
+  const root = document.getElementById('hih');
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  let configs = await homebridge.getPluginConfig();
+  if (!configs.length) configs = [{ platform: 'HomePodIsraelHebrew', name: 'HomePod Israel Hebrew' }];
+  const cfg = configs[0];
+  cfg.speakers = cfg.speakers || [];
+  // upgrade 1.0 config: strings → objects, announcements → phrases
+  cfg.phrases = (cfg.phrases || []).map((p) => (typeof p === 'string' ? { text: p } : p));
+  if (cfg.announcements && cfg.announcements.length) {
+    cfg.phrases.push(...cfg.announcements.map((a) => ({ text: a.text, name: a.name, speakers: a.speakers, volume: a.volume, voice: a.voice || a.engine })));
+    delete cfg.announcements;
+  }
+  if (!cfg.voice) cfg.voice = (cfg.tts && cfg.tts.engine && cfg.tts.engine !== 'edge') ? cfg.tts.engine : 'hila';
+  cfg.tts = cfg.tts || {};
+  delete cfg.tts.engine;
+  cfg.webhook = cfg.webhook || { enabled: false, port: 8095 };
+  cfg.language = cfg.language || 'he';
+  delete cfg.atvremotePath;
+
+  let lang = cfg.language;
+  const t = (k) => (T[lang] && T[lang][k]) || T.he[k] || k;
+  const voices = await homebridge.request('/voices');
+
+  const save = () => homebridge.updatePluginConfig([cfg]);
+
+  /* ---------- language ---------- */
+  function applyLang() {
+    root.dir = lang === 'he' ? 'rtl' : 'ltr';
+    root.querySelectorAll('[data-t]').forEach((el) => { el.textContent = t(el.dataset.t); });
+    root.querySelectorAll('[data-lang]').forEach((b) => {
+      b.className = `btn btn-sm ${b.dataset.lang === lang ? 'btn-primary' : 'btn-outline-primary'}`;
+    });
+    renderSpeakers(); renderPhrases(); renderVoiceSelect($('defaultVoice'), cfg.voice, false); refreshState(); renderWebhookExample();
+  }
+  root.querySelectorAll('[data-lang]').forEach((b) => b.addEventListener('click', () => {
+    lang = b.dataset.lang; cfg.language = lang; save(); applyLang();
+  }));
+
+  /* ---------- engine state ---------- */
+  let state = 'missing';
+  async function refreshState() {
+    try {
+      const r = await homebridge.request('/status', { pythonPath: cfg.pythonPath || '' });
+      state = r.engine;
+    } catch { state = 'error'; }
+    const el = $('engineState');
+    el.className = `badge-state st-${state}`;
+    el.textContent = t(`st_${state}`);
+    $('installBtn').style.display = (state === 'missing' || state === 'error') ? '' : 'none';
+    if (state === 'installing') setTimeout(refreshState, 5000);
+  }
+  $('installBtn').addEventListener('click', async () => {
+    state = 'installing';
+    $('engineState').className = 'badge-state st-installing';
+    $('engineState').textContent = t('st_installing');
+    $('installBtn').style.display = 'none';
+    try {
+      await homebridge.request('/install');
+      homebridge.toast.success(t('st_ready'));
+    } catch (e) {
+      homebridge.toast.error(e.message || String(e), t('st_error'));
+    }
+    refreshState();
+  });
+
+  /* ---------- speakers ---------- */
+  function renderSpeakers() {
+    const box = $('speakers');
+    if (!cfg.speakers.length) { box.innerHTML = `<div class="muted">${esc(t('noSpeakers'))}</div>`; return; }
+    box.innerHTML = cfg.speakers.map((s, i) => `
+      <div class="row-flex" style="margin-bottom:8px" data-i="${i}">
+        <input class="form-control grow" data-k="name" value="${esc(s.name)}" placeholder="${esc(t('name'))}">
+        <input class="form-control" style="max-width:150px" dir="ltr" data-k="host" value="${esc(s.host)}" placeholder="${esc(t('ip'))}">
+        <input class="form-control" style="max-width:190px" dir="ltr" data-k="id" value="${esc(s.id)}" placeholder="${esc(t('id'))}">
+        <input class="form-control" style="max-width:140px" type="number" min="0" max="100" data-k="volume" value="${esc(s.volume ?? '')}" placeholder="${esc(t('vol'))}" title="${esc(t('vol'))}">
+        <button class="btn btn-sm btn-outline-danger" data-act="del">${esc(t('remove'))}</button>
+      </div>`).join('');
+    box.querySelectorAll('[data-i]').forEach((row) => {
+      const i = Number(row.dataset.i);
+      row.querySelectorAll('input').forEach((inp) => inp.addEventListener('change', () => {
+        const k = inp.dataset.k;
+        const old = cfg.speakers[i][k];
+        if (k === 'volume') {
+          if (inp.value === '') delete cfg.speakers[i].volume; else cfg.speakers[i].volume = Number(inp.value);
+        } else cfg.speakers[i][k] = inp.value.trim();
+        if (k === 'name') cfg.phrases.forEach((p) => { if (p.speakers) p.speakers = p.speakers.map((n) => (n === old ? inp.value.trim() : n)); });
+        save(); if (k === 'name') renderPhrases();
+      }));
+      row.querySelector('[data-act=del]').addEventListener('click', () => {
+        const name = cfg.speakers[i].name;
+        cfg.speakers.splice(i, 1);
+        cfg.phrases.forEach((p) => { if (p.speakers) p.speakers = p.speakers.filter((n) => n !== name); });
+        save(); renderSpeakers(); renderPhrases();
+      });
+    });
+  }
+  $('addSpeakerBtn').addEventListener('click', () => {
+    cfg.speakers.push({ name: `HomePod ${cfg.speakers.length + 1}`, host: '', id: '' });
+    save(); renderSpeakers(); renderPhrases();
+  });
+  $('scanBtn').addEventListener('click', async () => {
+    const box = $('scanResults');
+    box.innerHTML = `<div class="muted">${esc(t('scanning'))}</div>`;
+    homebridge.showSpinner();
+    try {
+      const devices = await homebridge.request('/scan');
+      if (!devices.length) { box.innerHTML = `<div class="muted">${esc(t('noneFound'))}</div>`; return; }
+      box.innerHTML = devices.map((d, i) => {
+        const exists = cfg.speakers.some((s) => s.id === d.id || (s.host && s.host === d.host));
+        const btn = d.needsPairing ? `<span class="muted">${esc(t('needsPairing'))}</span>`
+          : `<button class="btn btn-sm ${exists ? 'btn-success' : 'btn-outline-primary'}" data-d="${i}" ${exists ? 'disabled' : ''}>${esc(exists ? t('added') : t('add'))}</button>`;
+        return `<div class="scan-item"><div><b>${esc(d.name)}</b> <span class="muted">${esc(d.model)} · <span dir="ltr">${esc(d.host)}</span></span></div>${btn}</div>`;
+      }).join('');
+      box.querySelectorAll('[data-d]').forEach((b) => b.addEventListener('click', () => {
+        const d = devices[Number(b.dataset.d)];
+        cfg.speakers.push({ name: d.name, host: d.host, id: d.id });
+        b.disabled = true; b.className = 'btn btn-sm btn-success'; b.textContent = t('added');
+        save(); renderSpeakers(); renderPhrases();
+      }));
+      refreshState();
+    } catch (e) {
+      box.innerHTML = '';
+      homebridge.toast.error(e.message || String(e));
+    } finally {
+      homebridge.hideSpinner();
+    }
+  });
+
+  /* ---------- voices ---------- */
+  function renderVoiceSelect(sel, value, withDefault) {
+    const groups = ['free', 'multi', 'google', 'elevenlabs'];
+    sel.innerHTML = (withDefault ? `<option value="">${esc(t('defaultOpt'))}</option>` : '')
+      + groups.map((g) => `<optgroup label="${esc(t(`g_${g}`))}">${voices.filter((v) => v.group === g)
+        .map((v) => `<option value="${esc(v.id)}">${v.gender === 'f' ? '👩 ' : v.gender === 'm' ? '👨 ' : '⭐ '}${esc(lang === 'he' ? v.he : v.en)}</option>`).join('')}</optgroup>`).join('');
+    sel.value = value || '';
+  }
+  $('defaultVoice').addEventListener('change', (e) => { cfg.voice = e.target.value; save(); });
+
+  function ttsBlock() { return { ...cfg.tts }; }
+  function speakerObjs(names) {
+    const list = names && names.length ? cfg.speakers.filter((s) => names.includes(s.name)) : cfg.speakers;
+    return list.map((s) => ({ name: s.name, host: s.host, id: s.id, volume: s.volume }));
+  }
+  async function playTest(text, voice, names, volume, btn) {
+    if (!cfg.speakers.length) return homebridge.toast.warning(t('errNoSpeaker'));
+    if (!String(text || '').trim()) return homebridge.toast.warning(t('errEmpty'));
+    const label = btn.textContent;
+    btn.disabled = true; btn.textContent = t('testing');
+    try {
+      const r = await homebridge.request('/test', {
+        text, voice: voice || cfg.voice, speakers: speakerObjs(names), volume,
+        tts: ttsBlock(), restoreVolume: cfg.restoreVolume !== false,
+      });
+      homebridge.toast.success(`${t('played')} (${r.voice})`);
+      if (r.failed && r.failed.length) homebridge.toast.warning(r.failed.join('\n'));
+    } catch (e) {
+      homebridge.toast.error(e.message || String(e));
+    } finally {
+      btn.disabled = false; btn.textContent = label; refreshState();
+    }
+  }
+  $('previewVoice').addEventListener('click', (e) => {
+    const v = voices.find((x) => x.id === cfg.voice);
+    playTest(v && v.gender === 'm' ? t('sampleM') : t('sample'), cfg.voice, [cfg.speakers[0] && cfg.speakers[0].name].filter(Boolean), undefined, e.target);
+  });
+
+  /* ---------- phrases ---------- */
+  function renderPhrases() {
+    const box = $('phrases');
+    box.innerHTML = cfg.phrases.map((p, i) => `
+      <div class="phrase" data-i="${i}">
+        <textarea class="form-control" data-k="text" placeholder="${esc(t('phraseText'))}">${esc(p.text)}</textarea>
+        <div class="row-flex" style="margin-top:6px">
+          <input class="form-control grow" data-k="name" value="${esc(p.name || '')}" placeholder="${esc(t('switchName'))}">
+          <select class="form-control grow" data-k="voice" title="${esc(t('voice'))}"></select>
+        </div>
+        <div class="row-flex chips" style="margin-top:8px">
+          <span>${esc(t('who'))}</span>
+          ${cfg.speakers.map((s) => `<label><input type="checkbox" data-sp="${esc(s.name)}" ${(p.speakers || []).includes(s.name) ? 'checked' : ''}>${esc(s.name)}</label>`).join('')}
+          <span class="muted">${esc(t('allIfNone'))}</span>
+        </div>
+        <div class="row-flex" style="margin-top:8px; justify-content: space-between;">
+          <div class="row-flex">
+            <label style="margin:0"><input type="checkbox" data-k="useVol" ${p.volume !== undefined && p.volume !== null ? 'checked' : ''}> ${esc(t('useVol'))}</label>
+            <input type="range" min="0" max="100" data-k="volume" value="${esc(p.volume ?? 50)}" ${p.volume !== undefined && p.volume !== null ? '' : 'disabled'}>
+            <span data-volv>${esc(p.volume ?? '')}</span>
+          </div>
+          <div class="row-flex">
+            <button class="btn btn-sm btn-outline-primary" data-act="test">${esc(t('test'))}</button>
+            <button class="btn btn-sm btn-outline-danger" data-act="del">${esc(t('remove'))}</button>
+          </div>
+        </div>
+      </div>`).join('');
+
+    box.querySelectorAll('.phrase').forEach((el) => {
+      const i = Number(el.dataset.i);
+      const p = cfg.phrases[i];
+      const sel = el.querySelector('[data-k=voice]');
+      renderVoiceSelect(sel, p.voice || '', true);
+      sel.addEventListener('change', () => { if (sel.value) p.voice = sel.value; else delete p.voice; save(); });
+      el.querySelector('[data-k=text]').addEventListener('input', (e) => { p.text = e.target.value; save(); });
+      el.querySelector('[data-k=name]').addEventListener('change', (e) => { const v = e.target.value.trim(); if (v) p.name = v; else delete p.name; save(); });
+      el.querySelectorAll('[data-sp]').forEach((cb) => cb.addEventListener('change', () => {
+        p.speakers = [...el.querySelectorAll('[data-sp]:checked')].map((c) => c.dataset.sp);
+        if (!p.speakers.length) delete p.speakers;
+        save();
+      }));
+      const useVol = el.querySelector('[data-k=useVol]');
+      const range = el.querySelector('[data-k=volume]');
+      const vv = el.querySelector('[data-volv]');
+      useVol.addEventListener('change', () => {
+        range.disabled = !useVol.checked;
+        if (useVol.checked) { p.volume = Number(range.value); vv.textContent = range.value; } else { delete p.volume; vv.textContent = ''; }
+        save();
+      });
+      range.addEventListener('input', () => { p.volume = Number(range.value); vv.textContent = range.value; save(); });
+      el.querySelector('[data-act=del]').addEventListener('click', () => { cfg.phrases.splice(i, 1); save(); renderPhrases(); });
+      el.querySelector('[data-act=test]').addEventListener('click', (e) => playTest(p.text, p.voice, p.speakers, p.volume, e.target));
+    });
+  }
+  $('addPhraseBtn').addEventListener('click', () => {
+    cfg.phrases.push({ text: '' });
+    save(); renderPhrases();
+    const areas = $('phrases').querySelectorAll('textarea');
+    if (areas.length) areas[areas.length - 1].focus();
+  });
+
+  /* ---------- premium, webhook, advanced ---------- */
+  const bind = (id, get, set, ev = 'change') => { const el = $(id); get(el); el.addEventListener(ev, () => { set(el); save(); renderWebhookExample(); }); };
+  bind('elKey', (el) => { el.value = cfg.tts.elevenlabsApiKey || ''; }, (el) => { cfg.tts.elevenlabsApiKey = el.value.trim(); });
+  bind('elVoice', (el) => { el.value = cfg.tts.elevenlabsVoiceId || ''; }, (el) => { cfg.tts.elevenlabsVoiceId = el.value.trim(); });
+  bind('gKey', (el) => { el.value = cfg.tts.googleApiKey || ''; }, (el) => { cfg.tts.googleApiKey = el.value.trim(); });
+  bind('fallback', (el) => { el.checked = cfg.tts.fallback !== false; }, (el) => { cfg.tts.fallback = el.checked; });
+  bind('whEnabled', (el) => { el.checked = !!cfg.webhook.enabled; }, (el) => { cfg.webhook.enabled = el.checked; });
+  bind('whPort', (el) => { el.value = cfg.webhook.port || 8095; }, (el) => { cfg.webhook.port = Number(el.value) || 8095; });
+  bind('whToken', (el) => { el.value = cfg.webhook.token || ''; }, (el) => { cfg.webhook.token = el.value.trim(); });
+  bind('restoreVolume', (el) => { el.checked = cfg.restoreVolume !== false; }, (el) => { cfg.restoreVolume = el.checked; });
+  bind('pregenerate', (el) => { el.checked = cfg.pregenerate !== false; }, (el) => { cfg.pregenerate = el.checked; });
+  bind('cacheDays', (el) => { el.value = cfg.cacheDays || 90; }, (el) => { cfg.cacheDays = Number(el.value) || 90; });
+  bind('pythonPath', (el) => { el.value = cfg.pythonPath || ''; }, (el) => { const v = el.value.trim(); if (v) cfg.pythonPath = v; else delete cfg.pythonPath; refreshState(); });
+
+  function renderWebhookExample() {
+    const port = cfg.webhook.port || 8095;
+    const tok = cfg.webhook.token ? `&token=${encodeURIComponent(cfg.webhook.token)}` : '';
+    $('whExample').textContent = `http://<Homebridge-IP>:${port}/say?text=${encodeURIComponent(lang === 'he' ? 'שלום' : 'Hello')}${tok}`;
+  }
+
+  save();
+  applyLang();
+})();
+</script>

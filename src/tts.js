@@ -5,6 +5,8 @@ const fs = require('fs');
 const fsp = fs.promises;
 const path = require('path');
 
+const { resolveVoice, DEFAULT_VOICE } = require('./voices');
+
 const DEFAULT_TIMEOUT_MS = 20000;
 
 const DEFAULTS = {
@@ -70,7 +72,7 @@ const engines = {
     }
     const tts = new EdgeTTS({
       voice: opts.voice || DEFAULTS.edge.voice,
-      lang: (opts.voice || DEFAULTS.edge.voice).split('-').slice(0, 2).join('-'),
+      lang: opts.lang || 'he-IL',
       outputFormat: 'audio-24khz-96kbitrate-mono-mp3',
       rate: opts.rate || 'default',
       pitch: opts.pitch || 'default',
@@ -138,13 +140,12 @@ const engines = {
   },
 };
 
-const ENGINE_NAMES = Object.keys(engines);
 
 /* ---------------------------------------------------------------- service */
 
 class TtsService {
   /**
-   * @param {object} config   the "tts" block of the platform config
+   * @param {object} config   the "tts" block of the platform config (API keys, fallback...)
    * @param {string} cacheDir folder for generated audio
    * @param {object} log      homebridge logger
    */
@@ -156,79 +157,60 @@ class TtsService {
     fs.mkdirSync(cacheDir, { recursive: true });
   }
 
-  /** Engine options for a given engine name, merged with a per-phrase voice override. */
-  engineOptions(engine, override = {}) {
-    const c = this.config;
-    const base = {
-      edge: { voice: c.edgeVoice, rate: c.edgeRate },
-      elevenlabs: {
-        apiKey: c.elevenlabsApiKey, voice: c.elevenlabsVoiceId, model: c.elevenlabsModel,
-        language: c.elevenlabsLanguage, stability: c.elevenlabsStability, speed: c.elevenlabsSpeed,
-      },
-      googlecloud: { apiKey: c.googleApiKey, voice: c.googleVoice, speakingRate: c.googleSpeakingRate },
-      googletranslate: { language: c.translateLanguage },
-    }[engine] || {};
-    const merged = { ...base };
-    if (override.voice) merged.voice = override.voice;
-    return merged;
-  }
-
-  /** Ordered list of engines to try. */
-  chain(primary) {
-    const first = ENGINE_NAMES.includes(primary) ? primary : (this.config.engine || 'edge');
-    const list = [first];
+  /** Ordered list of resolved voices to try: the chosen one, then free fallbacks. */
+  chain(voiceId) {
+    const list = [resolveVoice(voiceId, this.config)];
     if (this.config.fallback !== false) {
-      for (const e of ['edge', 'googletranslate']) if (!list.includes(e)) list.push(e);
+      for (const id of [DEFAULT_VOICE, 'translate']) {
+        if (!list.some((v) => v.id === id)) list.push(resolveVoice(id, this.config));
+      }
     }
     return list;
   }
 
-  cacheFile(engine, opts, text) {
-    const key = JSON.stringify([engine, opts.voice || '', opts.model || '', opts.language || '',
-      opts.rate || '', opts.speakingRate || '', opts.stability ?? '', opts.speed ?? '', text]);
+  cacheFile(opts, text) {
+    const key = JSON.stringify([opts.engine, opts.voice || '', opts.model || '', opts.language || '',
+      opts.rate || '', opts.pitch || '', opts.stability ?? '', opts.speed ?? '', text]);
     const hash = crypto.createHash('sha1').update(key).digest('hex').slice(0, 20);
-    return path.join(this.cacheDir, `${engine}-${hash}.mp3`);
+    return path.join(this.cacheDir, `${opts.engine}-${hash}.mp3`);
   }
 
   /**
    * Returns the path of an MP3 for `text`, generating it if needed.
    * @param {string} text
-   * @param {{engine?: string, voice?: string}} [override]
+   * @param {string} [voiceId] preset id from voices.js
    */
-  async getAudio(text, override = {}) {
+  async getAudio(text, voiceId) {
     const clean = String(text || '').trim();
     if (!clean) throw new Error('nothing to say (empty text)');
 
     const errors = [];
-    const chain = this.chain(override.engine);
-    // A cached file from any engine in the chain is good enough if the primary engine fails,
-    // but we always try the primary engine's cache first.
+    const chain = this.chain(voiceId);
     for (let i = 0; i < chain.length; i++) {
-      const engine = chain[i];
-      const opts = this.engineOptions(engine, i === 0 ? override : {});
-      const file = this.cacheFile(engine, opts, clean);
-      if (await exists(file)) return { file, engine, cached: true };
+      const opts = chain[i];
+      const file = this.cacheFile(opts, clean);
+      if (await exists(file)) return { file, voice: opts.id, engine: opts.engine, cached: true };
       try {
-        await this.generate(engine, clean, opts, file);
-        if (i > 0) this.log.warn(`Used fallback voice "${engine}" (${errors.join('; ')})`);
-        return { file, engine, cached: false };
+        await this.generate(opts, clean, file);
+        if (i > 0) this.log.warn(`Used fallback voice "${opts.id}" (${errors.join('; ')})`);
+        return { file, voice: opts.id, engine: opts.engine, cached: false };
       } catch (err) {
-        errors.push(`${engine}: ${err.message}`);
+        errors.push(`${opts.id}: ${err.message}`);
       }
     }
     throw new Error(`all voices failed — ${errors.join(' | ')}`);
   }
 
-  async generate(engine, text, opts, file) {
+  async generate(opts, text, file) {
     if (this.inflight.has(file)) return this.inflight.get(file);
     const tmp = `${file}.${process.pid}.${Date.now()}.tmp`;
     const job = (async () => {
       try {
-        await engines[engine](text, opts, tmp);
+        await engines[opts.engine](text, opts, tmp);
         const st = await fsp.stat(tmp);
         if (st.size < 200) throw new Error('generated audio is empty');
         await fsp.rename(tmp, file);
-        this.log.debug(`Generated ${path.basename(file)} with ${engine}`);
+        this.log.debug(`Generated ${path.basename(file)} with ${opts.id}`);
       } catch (err) {
         await fsp.rm(tmp, { force: true });
         throw err;
@@ -243,7 +225,7 @@ class TtsService {
   }
 
   /** Deletes cached audio not played for `maxAgeDays`, plus leftover temp files. */
-  async prune(maxAgeDays = 30) {
+  async prune(maxAgeDays = 90) {
     const cutoff = Date.now() - maxAgeDays * 86400000;
     let removed = 0;
     for (const name of await fsp.readdir(this.cacheDir)) {
@@ -272,4 +254,4 @@ async function exists(file) {
   }
 }
 
-module.exports = { TtsService, ENGINE_NAMES, splitText, engines };
+module.exports = { TtsService, splitText, engines };

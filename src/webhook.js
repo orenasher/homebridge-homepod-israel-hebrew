@@ -37,7 +37,7 @@ function send(res, status, obj) {
 
 /**
  * Endpoints:
- *   GET|POST /say?text=...&speakers=Kitchen,Bedroom&volume=50&engine=...&voice=...
+ *   GET|POST /say?text=...&speakers=Kitchen,Bedroom&volume=50&voice=avri-deep
  *   GET|POST /announce?name=<announcement name>
  *   GET      /status
  * Auth: ?token=... or header "Authorization: Bearer ..." when a token is set.
@@ -78,7 +78,7 @@ function startWebhook(platform, cfg, log) {
       if (route === '/status') {
         return send(res, 200, {
           ok: true,
-          atvremote: platform.bin || null,
+          voiceEngine: platform.env ? platform.env.status() : 'missing',
           speakers: [...platform.speakers.keys()],
           announcements: platform.items().map((a) => a.name),
         });
@@ -90,7 +90,6 @@ function startWebhook(platform, cfg, log) {
         job = platform.say(params.text, {
           speakers: params.speakers || params.speaker,
           volume: params.volume,
-          engine: params.engine,
           voice: params.voice,
         });
       } else if (route === '/announce') {
