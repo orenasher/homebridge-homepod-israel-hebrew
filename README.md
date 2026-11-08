@@ -59,7 +59,8 @@ Every phrase has a **voice** (who speaks) and a **style** (how they speak).
 **Styles:** normal · cheerful · calm · whisper · announcer · urgent · warm · excited · playful.
 Gemini voices really *perform* the style; for Microsoft voices a style is only a speed/pitch change — so for real variety use Gemini.
 
-**Gemini (free, 2 minutes):** open [aistudio.google.com/apikey](https://aistudio.google.com/apikey) → **Create API key** → paste it in the yellow box in the settings → pick a Gemini voice.
+**Gemini (free, 2 minutes):** open [aistudio.google.com/apikey](https://aistudio.google.com/apikey) (if an *Import projects* window opens, just close it) → **Create API key** → pick any project → **Copy** → paste it in the yellow box in the settings → pick a Gemini voice.
+The key starts with `AQ.` (Google's new format) or `AIza` (old format) — both work. 🔒 Keep it private; if it was exposed, delete it in AI Studio and create a new one.
 
 **ElevenLabs:** [elevenlabs.io](https://elevenlabs.io) → **API Keys**; copy a **Voice ID** from the Voice Library; paste both under **Premium voices**.
 
