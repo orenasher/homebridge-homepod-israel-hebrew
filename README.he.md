@@ -1,6 +1,6 @@
 <div dir="rtl">
 
-# HomePod Say — הכרזות קוליות בהום פוד
+# HomePod Israel Hebrew — הכרזות קוליות בהום פוד
 
 **ההום פוד מדבר בקול טבעי, בעברית, מתוך מתגים בבית של אפל, אוטומציות, סירי וקיצורים באייפון.**
 
@@ -56,7 +56,7 @@ sudo /opt/pyatv/bin/pip install pyatv
 
 ### שלב 3 — התקנת הפלאגין
 
-ממשק Homebridge → **Plugins** → חפש **homebridge-homepod-say** → Install.
+ממשק Homebridge → **Plugins** → חפש **homebridge-homepod-israel-hebrew** → Install.
 
 ### שלב 4 — הגדרות
 
@@ -130,8 +130,8 @@ sudo /opt/pyatv/bin/pip install pyatv
 
 ```json
 {
-  "platform": "HomePodSay",
-  "name": "HomePod Say",
+  "platform": "HomePodIsraelHebrew",
+  "name": "HomePod Israel Hebrew",
   "speakers": [
     { "name": "מטבח", "host": "192.168.1.50", "id": "AA:BB:CC:DD:EE:FF", "volume": 45 },
     { "name": "חדר שינה", "host": "192.168.1.51", "id": "11:22:33:44:55:66" }
@@ -153,10 +153,10 @@ sudo /opt/pyatv/bin/pip install pyatv
 - **"Could not find any device"** — הכנס את כתובת ה-IP של ההום פוד בשדה `host`, וודא ש-Homebridge וההום פוד באותה רשת.
 - **שגיאת הרשאה/צימוד** — בבית של אפל → הגדרות הבית → *גישה לרמקולים ולטלוויזיות* → *כל מי שנמצא באותה רשת*.
 - **מילה נשמעת לא נכון?** — אפשר לכתוב אותה בכתיב מלא או עם ניקוד חלקי, או לנסות קול אחר.
-- קבצי הקול נשמרים ב-`homepod-say-cache` בתיקיית Homebridge — מותר למחוק בכל זמן.
+- קבצי הקול נשמרים ב-`homepod-israel-hebrew-cache` בתיקיית Homebridge — מותר למחוק בכל זמן.
 
 ## תמיכה
 
-אם הפלאגין עוזר לך, אפשר [לקנות לי קפה ☕](https://paypal.me/orenasher). תקלות ורעיונות: [GitHub](https://github.com/orenasher/homebridge-homepod-say/issues).
+אם הפלאגין עוזר לך, אפשר [לקנות לי קפה ☕](https://paypal.me/orenasher). תקלות ורעיונות: [GitHub](https://github.com/orenasher/homebridge-homepod-israel-hebrew/issues).
 
 </div>

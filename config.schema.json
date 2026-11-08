@@ -1,8 +1,8 @@
 {
-  "pluginAlias": "HomePodSay",
+  "pluginAlias": "HomePodIsraelHebrew",
   "pluginType": "platform",
   "singular": true,
-  "headerDisplay": "Natural-sounding announcements on your HomePods. Each announcement becomes a switch in Apple Home — turn it on (manually, by Siri or from an automation) and the HomePod speaks. Requires pyatv — see the [README](https://github.com/orenasher/homebridge-homepod-say#readme). | הכרזות קוליות טבעיות בהום פוד — [מדריך בעברית](https://github.com/orenasher/homebridge-homepod-say/blob/main/README.he.md)",
+  "headerDisplay": "Natural-sounding announcements on your HomePods. Each announcement becomes a switch in Apple Home — turn it on (manually, by Siri or from an automation) and the HomePod speaks. Requires pyatv — see the [README](https://github.com/orenasher/homebridge-homepod-israel-hebrew#readme). | הכרזות קוליות טבעיות בהום פוד — [מדריך בעברית](https://github.com/orenasher/homebridge-homepod-israel-hebrew/blob/main/README.he.md)",
   "footerDisplay": "Like it? [Buy me a coffee ☕](https://paypal.me/orenasher)",
   "schema": {
     "type": "object",
@@ -10,7 +10,7 @@
       "name": {
         "title": "Name",
         "type": "string",
-        "default": "HomePod Say",
+        "default": "HomePod Israel Hebrew",
         "required": true
       },
       "speakers": {

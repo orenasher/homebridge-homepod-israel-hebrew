@@ -1,18 +1,18 @@
 {
-  "name": "homebridge-homepod-say",
-  "displayName": "HomePod Say",
+  "name": "homebridge-homepod-israel-hebrew",
+  "displayName": "HomePod Israel Hebrew",
   "version": "1.0.0",
   "description": "Natural-sounding spoken announcements on HomePod / AirPlay speakers from HomeKit switches, automations and a webhook. Premium voices (ElevenLabs, Google Chirp 3 HD) with free Microsoft Edge fallback, audio cache, per-announcement volume. Great Hebrew support.",
   "main": "index.js",
   "license": "MIT",
   "author": "Oren Asher",
-  "homepage": "https://github.com/orenasher/homebridge-homepod-say#readme",
+  "homepage": "https://github.com/orenasher/homebridge-homepod-israel-hebrew#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/orenasher/homebridge-homepod-say.git"
+    "url": "git+https://github.com/orenasher/homebridge-homepod-israel-hebrew.git"
   },
   "bugs": {
-    "url": "https://github.com/orenasher/homebridge-homepod-say/issues"
+    "url": "https://github.com/orenasher/homebridge-homepod-israel-hebrew/issues"
   },
   "funding": {
     "type": "paypal",

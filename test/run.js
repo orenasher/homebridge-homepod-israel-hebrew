@@ -68,7 +68,7 @@ let registerFn;
 require('../index')({ registerPlatform: (plugin, name, cls) => { registerFn = cls; } });
 
 const config = {
-  platform: 'HomePodSay',
+  platform: 'HomePodIsraelHebrew',
   atvremotePath: fakeBin,
   speakers: [{ name: 'Kitchen', id: 'AA:BB', host: '10.0.0.5', volume: 40 }, { name: 'Bedroom', id: 'CC:DD' }, { name: 'Broken' }],
   announcements: [

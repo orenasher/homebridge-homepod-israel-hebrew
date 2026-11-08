@@ -5,10 +5,10 @@ const { TtsService } = require('./tts');
 const { Speaker, findAtvremote } = require('./player');
 const { startWebhook } = require('./webhook');
 
-const PLUGIN_NAME = 'homebridge-homepod-say';
-const PLATFORM_NAME = 'HomePodSay';
+const PLUGIN_NAME = 'homebridge-homepod-israel-hebrew';
+const PLATFORM_NAME = 'HomePodIsraelHebrew';
 
-class HomePodSayPlatform {
+class HomePodIsraelHebrewPlatform {
   constructor(log, config, api) {
     this.log = log;
     this.config = config || {};
@@ -36,7 +36,7 @@ class HomePodSayPlatform {
 
   async setup() {
     const cfg = this.config;
-    this.tts = new TtsService(cfg.tts || {}, path.join(this.api.user.storagePath(), 'homepod-say-cache'), this.log);
+    this.tts = new TtsService(cfg.tts || {}, path.join(this.api.user.storagePath(), 'homepod-israel-hebrew-cache'), this.log);
 
     this.bin = findAtvremote(cfg.atvremotePath);
     if (!this.bin) {
@@ -88,7 +88,7 @@ class HomePodSayPlatform {
 
       accessory.getService(Service.AccessoryInformation)
         .setCharacteristic(Characteristic.Manufacturer, 'Oren Asher')
-        .setCharacteristic(Characteristic.Model, 'HomePod Say')
+        .setCharacteristic(Characteristic.Model, 'HomePod Israel Hebrew')
         .setCharacteristic(Characteristic.SerialNumber, uuid.slice(0, 13));
 
       const service = accessory.getService(Service.Switch) || accessory.addService(Service.Switch, item.name);
@@ -192,4 +192,4 @@ class HomePodSayPlatform {
   }
 }
 
-module.exports = { HomePodSayPlatform, PLUGIN_NAME, PLATFORM_NAME };
+module.exports = { HomePodIsraelHebrewPlatform, PLUGIN_NAME, PLATFORM_NAME };

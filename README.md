@@ -1,9 +1,9 @@
 <p align="center">
-  <a href="https://www.npmjs.com/package/homebridge-homepod-say"><img src="https://img.shields.io/npm/v/homebridge-homepod-say?color=F99211" /></a>
+  <a href="https://www.npmjs.com/package/homebridge-homepod-israel-hebrew"><img src="https://img.shields.io/npm/v/homebridge-homepod-israel-hebrew?color=F99211" /></a>
   <a href="https://paypal.me/orenasher"><img src="https://img.shields.io/badge/donate-PayPal-red" /></a>
 </p>
 
-# HomePod Say
+# HomePod Israel Hebrew
 
 **Natural-sounding spoken announcements on your HomePods — from Apple Home switches, automations, Siri and iPhone Shortcuts.**
 
@@ -57,7 +57,7 @@ For each HomePod note the **Name**, **Address** (IP) and one of the **Identifier
 
 ### 3. Install the plugin
 
-Homebridge UI → **Plugins** → search **homebridge-homepod-say** → Install.
+Homebridge UI → **Plugins** → search **homebridge-homepod-israel-hebrew** → Install.
 
 ### 4. Configure
 
@@ -120,8 +120,8 @@ Extra parameters: `engine`, `voice`, `wait=0` (answer immediately without waitin
 
 ```json
 {
-  "platform": "HomePodSay",
-  "name": "HomePod Say",
+  "platform": "HomePodIsraelHebrew",
+  "name": "HomePod Israel Hebrew",
   "speakers": [
     { "name": "Kitchen", "host": "192.168.1.50", "id": "AA:BB:CC:DD:EE:FF", "volume": 45 },
     { "name": "Bedroom", "host": "192.168.1.51", "id": "11:22:33:44:55:66" }
@@ -141,10 +141,10 @@ Extra parameters: `engine`, `voice`, `wait=0` (answer immediately without waitin
 - **"Could not find any device"** — set the HomePod's IP in `host`, and check that Homebridge and the HomePod are on the same network.
 - **Pairing/permission error** — Home app → Home Settings → *Allow Speaker & TV Access* → *Everyone on the same network*.
 - **Changed a voice and still hear the old one?** — the cache is keyed by voice, so changes take effect immediately; old files are cleaned automatically.
-- Audio files are stored in `<homebridge storage>/homepod-say-cache` — safe to delete anytime.
+- Audio files are stored in `<homebridge storage>/homepod-israel-hebrew-cache` — safe to delete anytime.
 
 ## Support
 
-If this plugin is useful to you, [buy me a coffee ☕](https://paypal.me/orenasher). Issues and ideas: [GitHub](https://github.com/orenasher/homebridge-homepod-say/issues).
+If this plugin is useful to you, [buy me a coffee ☕](https://paypal.me/orenasher). Issues and ideas: [GitHub](https://github.com/orenasher/homebridge-homepod-israel-hebrew/issues).
 
 MIT © Oren Asher
