@@ -1,0 +1,53 @@
+{
+  "name": "homebridge-homepod-say",
+  "displayName": "HomePod Say",
+  "version": "1.0.0",
+  "description": "Natural-sounding spoken announcements on HomePod / AirPlay speakers from HomeKit switches, automations and a webhook. Premium voices (ElevenLabs, Google Chirp 3 HD) with free Microsoft Edge fallback, audio cache, per-announcement volume. Great Hebrew support.",
+  "main": "index.js",
+  "license": "MIT",
+  "author": "Oren Asher",
+  "homepage": "https://github.com/orenasher/homebridge-homepod-say#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/orenasher/homebridge-homepod-say.git"
+  },
+  "bugs": {
+    "url": "https://github.com/orenasher/homebridge-homepod-say/issues"
+  },
+  "funding": {
+    "type": "paypal",
+    "url": "https://paypal.me/orenasher"
+  },
+  "keywords": [
+    "homebridge-plugin",
+    "homepod",
+    "homepod-mini",
+    "airplay",
+    "tts",
+    "text-to-speech",
+    "announcement",
+    "intercom",
+    "elevenlabs",
+    "hebrew",
+    "pyatv"
+  ],
+  "engines": {
+    "node": "^18.20.0 || ^20.15.0 || ^22.0.0 || ^24.0.0",
+    "homebridge": "^1.8.0 || ^2.0.0-beta.0"
+  },
+  "files": [
+    "index.js",
+    "src",
+    "config.schema.json",
+    "README.md",
+    "README.he.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node test/run.js"
+  },
+  "dependencies": {
+    "node-edge-tts": "^1.2.12"
+  }
+}

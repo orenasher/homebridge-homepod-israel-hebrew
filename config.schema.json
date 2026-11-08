@@ -1,0 +1,313 @@
+{
+  "pluginAlias": "HomePodSay",
+  "pluginType": "platform",
+  "singular": true,
+  "headerDisplay": "Natural-sounding announcements on your HomePods. Each announcement becomes a switch in Apple Home — turn it on (manually, by Siri or from an automation) and the HomePod speaks. Requires pyatv — see the [README](https://github.com/orenasher/homebridge-homepod-say#readme). | הכרזות קוליות טבעיות בהום פוד — [מדריך בעברית](https://github.com/orenasher/homebridge-homepod-say/blob/main/README.he.md)",
+  "footerDisplay": "Like it? [Buy me a coffee ☕](https://paypal.me/orenasher)",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "title": "Name",
+        "type": "string",
+        "default": "HomePod Say",
+        "required": true
+      },
+      "speakers": {
+        "title": "Speakers (HomePods)",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "title": "Name",
+              "type": "string",
+              "required": true,
+              "placeholder": "Kitchen",
+              "description": "Your own name for this speaker, used in announcements and the webhook."
+            },
+            "id": {
+              "title": "Device ID",
+              "type": "string",
+              "placeholder": "AA:BB:CC:DD:EE:FF",
+              "description": "From 'atvremote scan'. If empty, the name above must match the HomePod's name exactly."
+            },
+            "host": {
+              "title": "IP address (recommended)",
+              "type": "string",
+              "format": "ipv4",
+              "placeholder": "192.168.1.50",
+              "description": "Faster and more reliable than network discovery. Give the HomePod a fixed IP in your router."
+            },
+            "volume": {
+              "title": "Default volume",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Leave empty to keep the current volume."
+            },
+            "credentials": {
+              "title": "RAOP credentials (rarely needed)",
+              "type": "string",
+              "description": "Only if your HomePod requires pairing (Home app → Allow Speaker & TV Access is restricted)."
+            }
+          }
+        }
+      },
+      "announcements": {
+        "title": "Announcements",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "title": "Switch name",
+              "type": "string",
+              "required": true,
+              "placeholder": "Laundry done"
+            },
+            "text": {
+              "title": "Text to say",
+              "type": "string",
+              "required": true,
+              "placeholder": "הכביסה מוכנה, אפשר לתלות"
+            },
+            "speakers": {
+              "title": "Speakers",
+              "type": "array",
+              "description": "Names from the Speakers list. Leave empty for all speakers.",
+              "items": {
+                "type": "string"
+              }
+            },
+            "volume": {
+              "title": "Volume",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Overrides the speaker's default. The previous volume is restored afterwards."
+            },
+            "engine": {
+              "title": "Voice engine (optional)",
+              "type": "string",
+              "description": "Leave empty to use the main engine.",
+              "oneOf": [
+                { "title": "ElevenLabs", "enum": ["elevenlabs"] },
+                { "title": "Google Chirp 3 HD", "enum": ["googlecloud"] },
+                { "title": "Microsoft Edge (free)", "enum": ["edge"] },
+                { "title": "Google Translate (free, basic)", "enum": ["googletranslate"] }
+              ]
+            },
+            "voice": {
+              "title": "Voice override (optional)",
+              "type": "string",
+              "description": "A voice name/ID for the engine above, e.g. he-IL-AvriNeural or an ElevenLabs voice ID."
+            }
+          }
+        }
+      },
+      "tts": {
+        "title": "Voice",
+        "type": "object",
+        "properties": {
+          "engine": {
+            "title": "Main voice engine",
+            "type": "string",
+            "default": "edge",
+            "oneOf": [
+              { "title": "ElevenLabs — most human-like (API key, free tier)", "enum": ["elevenlabs"] },
+              { "title": "Google Chirp 3 HD — very clear (API key, free tier)", "enum": ["googlecloud"] },
+              { "title": "Microsoft Edge neural — free, no key", "enum": ["edge"] },
+              { "title": "Google Translate — free, basic", "enum": ["googletranslate"] }
+            ]
+          },
+          "fallback": {
+            "title": "Fall back to free voices if the main engine fails",
+            "type": "boolean",
+            "default": true
+          },
+          "edgeVoice": {
+            "title": "Edge voice",
+            "type": "string",
+            "default": "he-IL-HilaNeural",
+            "oneOf": [
+              { "title": "Hila — Hebrew, female", "enum": ["he-IL-HilaNeural"] },
+              { "title": "Avri — Hebrew, male", "enum": ["he-IL-AvriNeural"] },
+              { "title": "Ava — English (US), female", "enum": ["en-US-AvaNeural"] },
+              { "title": "Andrew — English (US), male", "enum": ["en-US-AndrewNeural"] }
+            ]
+          },
+          "edgeRate": {
+            "title": "Edge speed",
+            "type": "string",
+            "placeholder": "-5%",
+            "description": "e.g. -10% slower, +10% faster."
+          },
+          "elevenlabsApiKey": {
+            "title": "ElevenLabs API key",
+            "type": "string"
+          },
+          "elevenlabsVoiceId": {
+            "title": "ElevenLabs voice ID",
+            "type": "string",
+            "description": "From the ElevenLabs Voice Library (or your own cloned voice)."
+          },
+          "elevenlabsModel": {
+            "title": "ElevenLabs model",
+            "type": "string",
+            "default": "eleven_v3",
+            "description": "eleven_v3 speaks Hebrew well. You can enter a newer model ID."
+          },
+          "elevenlabsLanguage": {
+            "title": "ElevenLabs language code",
+            "type": "string",
+            "default": "he",
+            "description": "Keep 'he' for Hebrew — it makes pronunciation much better. Empty = auto."
+          },
+          "elevenlabsStability": {
+            "title": "ElevenLabs stability (0–1)",
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "elevenlabsSpeed": {
+            "title": "ElevenLabs speed (0.7–1.2)",
+            "type": "number",
+            "minimum": 0.7,
+            "maximum": 1.2
+          },
+          "googleApiKey": {
+            "title": "Google Cloud API key",
+            "type": "string"
+          },
+          "googleVoice": {
+            "title": "Google voice",
+            "type": "string",
+            "default": "he-IL-Chirp3-HD-Kore",
+            "description": "Hebrew Chirp 3 HD voices. Try a few — they differ a lot.",
+            "oneOf": [
+              { "title": "Kore — female", "enum": ["he-IL-Chirp3-HD-Kore"] },
+              { "title": "Aoede — female", "enum": ["he-IL-Chirp3-HD-Aoede"] },
+              { "title": "Leda — female", "enum": ["he-IL-Chirp3-HD-Leda"] },
+              { "title": "Zephyr — female", "enum": ["he-IL-Chirp3-HD-Zephyr"] },
+              { "title": "Charon — male", "enum": ["he-IL-Chirp3-HD-Charon"] },
+              { "title": "Puck — male", "enum": ["he-IL-Chirp3-HD-Puck"] },
+              { "title": "Fenrir — male", "enum": ["he-IL-Chirp3-HD-Fenrir"] },
+              { "title": "Orus — male", "enum": ["he-IL-Chirp3-HD-Orus"] }
+            ]
+          },
+          "googleSpeakingRate": {
+            "title": "Google speed (0.25–2)",
+            "type": "number",
+            "minimum": 0.25,
+            "maximum": 2
+          },
+          "translateLanguage": {
+            "title": "Google Translate language",
+            "type": "string",
+            "default": "iw",
+            "description": "iw = Hebrew, en = English."
+          }
+        }
+      },
+      "webhook": {
+        "title": "Webhook (say any text from Shortcuts)",
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "title": "Enable webhook",
+            "type": "boolean",
+            "default": false
+          },
+          "port": {
+            "title": "Port",
+            "type": "integer",
+            "default": 8095,
+            "minimum": 1024,
+            "maximum": 65535
+          },
+          "token": {
+            "title": "Token (recommended)",
+            "type": "string",
+            "description": "When set, every request must include ?token=... or 'Authorization: Bearer ...'."
+          }
+        }
+      },
+      "restoreVolume": {
+        "title": "Restore the previous volume after announcing",
+        "type": "boolean",
+        "default": true
+      },
+      "pregenerate": {
+        "title": "Prepare audio at startup (instant first play)",
+        "type": "boolean",
+        "default": true
+      },
+      "cacheDays": {
+        "title": "Delete unused audio after (days)",
+        "type": "integer",
+        "default": 90,
+        "minimum": 1
+      },
+      "atvremotePath": {
+        "title": "Path to atvremote (advanced)",
+        "type": "string",
+        "placeholder": "/opt/pyatv/bin/atvremote",
+        "description": "Leave empty to detect automatically."
+      }
+    }
+  },
+  "layout": [
+    "name",
+    {
+      "key": "speakers",
+      "type": "array",
+      "orderable": false,
+      "buttonText": "Add speaker",
+      "items": [
+        { "type": "flex", "flex-flow": "row wrap", "items": ["speakers[].name", "speakers[].host"] },
+        { "type": "flex", "flex-flow": "row wrap", "items": ["speakers[].id", "speakers[].volume"] },
+        { "type": "fieldset", "title": "Advanced", "expandable": true, "items": ["speakers[].credentials"] }
+      ]
+    },
+    {
+      "key": "announcements",
+      "type": "array",
+      "orderable": true,
+      "buttonText": "Add announcement",
+      "items": [
+        "announcements[].name",
+        "announcements[].text",
+        { "key": "announcements[].speakers", "type": "array", "buttonText": "Add speaker", "items": ["announcements[].speakers[]"] },
+        "announcements[].volume",
+        { "type": "fieldset", "title": "Different voice for this one", "expandable": true, "items": ["announcements[].engine", "announcements[].voice"] }
+      ]
+    },
+    {
+      "type": "fieldset",
+      "title": "Voice",
+      "expandable": true,
+      "expanded": true,
+      "items": [
+        "tts.engine",
+        "tts.fallback",
+        { "type": "fieldset", "title": "Microsoft Edge", "expandable": true, "items": ["tts.edgeVoice", "tts.edgeRate"] },
+        { "type": "fieldset", "title": "ElevenLabs", "expandable": true, "items": ["tts.elevenlabsApiKey", "tts.elevenlabsVoiceId", "tts.elevenlabsModel", "tts.elevenlabsLanguage", "tts.elevenlabsStability", "tts.elevenlabsSpeed"] },
+        { "type": "fieldset", "title": "Google Cloud", "expandable": true, "items": ["tts.googleApiKey", "tts.googleVoice", "tts.googleSpeakingRate"] },
+        { "type": "fieldset", "title": "Google Translate", "expandable": true, "items": ["tts.translateLanguage"] }
+      ]
+    },
+    {
+      "type": "fieldset",
+      "title": "Webhook",
+      "expandable": true,
+      "items": ["webhook.enabled", "webhook.port", "webhook.token"]
+    },
+    {
+      "type": "fieldset",
+      "title": "Advanced",
+      "expandable": true,
+      "items": ["restoreVolume", "pregenerate", "cacheDays", "atvremotePath"]
+    }
+  ]
+}
