@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.5.1
+- Homebridge verification checks: `supports-hap` keyword, standard `required` arrays in the config schema, no environment-variable access.
+
 ## 1.5.0
 - **New (optional): all switches in one group** — one accessory in Apple Home (default name "קבצי הקול שלי") with a switch for each phrase inside. Off by default.
 

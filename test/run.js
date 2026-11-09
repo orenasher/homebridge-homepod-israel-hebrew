@@ -159,8 +159,8 @@ const speakCalls = () => calls().filter((c) => c.cmd === 'speak');
   assert.deepStrictEqual(r0.failed, ['Broken']);
   assert.strictEqual(speakCalls().length, 3);
 
-  assert.strictEqual(platform.env.daemon && platform.env.daemon.alive, true, 'fast-mode helper is running');
-  const pidBefore = platform.env.daemon.child.pid;
+  assert.strictEqual(platform.engine.daemon && platform.engine.daemon.alive, true, 'fast-mode helper is running');
+  const pidBefore = platform.engine.daemon.child.pid;
 
   // 4. webhook
   let r = await req('GET', '/say?text=hi');
@@ -174,13 +174,13 @@ const speakCalls = () => calls().filter((c) => c.cmd === 'speak');
   r = await req('GET', '/status?token=secret');
   assert.strictEqual(r.json.voiceEngine, 'ready');
 
-  assert.strictEqual(platform.env.daemon.child.pid, pidBefore, 'same helper process reused');
+  assert.strictEqual(platform.engine.daemon.child.pid, pidBefore, 'same helper process reused');
   // helper crash → next announcement restarts it transparently
-  platform.env.daemon.child.kill();
+  platform.engine.daemon.child.kill();
   await sleep(200);
   const rr = await platform.say('אחרי קריסה', { speakers: 'מטבח' });
   assert.deepStrictEqual(rr.failed, []);
-  assert.notStrictEqual(platform.env.daemon.child.pid, pidBefore, 'helper restarted');
+  assert.notStrictEqual(platform.engine.daemon.child.pid, pidBefore, 'helper restarted');
 
   // 5. fallback: google without key → hila → translate when edge is down
   const a1 = await platform.tts.getAudio('טקסט', 'google-kore');
@@ -207,19 +207,19 @@ exit 1
 `);
   fs.chmodSync(path.join(fakeSys, 'bin', 'python3'), 0o755);
   const oldPath = process.env.PATH;
-  const env = new PyatvEnv(log, { baseDir: path.join(tmp, 'env') });
-  env.findSystemPython = async () => path.join(fakeSys, 'bin', 'python3');
+  const engine = new PyatvEnv(log, { baseDir: path.join(tmp, 'env') });
+  engine.findSystemPython = async () => path.join(fakeSys, 'bin', 'python3');
   // pip calls go to the fake python, which fails on non-JSON args → make pip a no-op by wrapping
-  const realHelper = env.helper.bind(env);
+  const realHelper = engine.helper.bind(engine);
   const { execFile } = require('child_process');
-  assert.strictEqual(env.status(), 'missing');
+  assert.strictEqual(engine.status(), 'missing');
   // patch: fake venv python treats "-m pip ..." as success
   fs.writeFileSync(fakePython + '-pipok', '');
   const origCp = fs.readFileSync(fakePython, 'utf8');
   fs.writeFileSync(fakePython, origCp.replace('const reply = (a) =>', "if (process.argv[2] === '-m') process.exit(0);\nconst reply = (a) =>"));
-  await env.ensure();
-  assert.strictEqual(env.status(), 'ready');
-  await Promise.all([env.ensure(), env.ensure()]);
+  await engine.ensure();
+  assert.strictEqual(engine.status(), 'ready');
+  await Promise.all([engine.ensure(), engine.ensure()]);
   process.env.PATH = oldPath;
   void realHelper; void execFile;
 
@@ -302,7 +302,7 @@ exit 1
     });
     const gp = new Platform(log, { ...config, webhook: {}, pregenerate: false, groupSwitches: true }, api2);
     for (const a of registered) gp.configureAccessory(a); // the old per-phrase switches are cached
-    gp.speakers = platform.speakers; gp.tts = platform.tts; gp.env = platform.env;
+    gp.speakers = platform.speakers; gp.tts = platform.tts; gp.engine = platform.engine;
     gp.syncAccessories();
     assert.strictEqual(reg2.length, 1, 'one group accessory');
     assert.strictEqual(reg2[0].displayName, 'קבצי הקול שלי');

@@ -11,7 +11,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { PyatvEnv } = require('./pyatv-env');
+const { PyatvEnv } = require('./pyatv-engine');
 const { TtsService } = require('./tts');
 const { Speaker } = require('./player');
 const { CACHE_DIR } = require('./platform');
@@ -28,15 +28,15 @@ function loadConfig(file) {
   const ci = args.indexOf('--config');
   const configFile = ci >= 0 ? args.splice(ci, 2)[1] : '/var/lib/homebridge/config.json';
   const [cmd, ...rest] = args;
-  const env = new PyatvEnv(log, { storagePath: path.dirname(path.resolve(configFile)) });
-  env.noDaemon = true; // one-shot is simpler for a command that exits right away
+  const engine = new PyatvEnv(log, { storagePath: path.dirname(path.resolve(configFile)) });
+  engine.noDaemon = true; // one-shot is simpler for a command that exits right away
 
   if (cmd === 'engine') {
-    await env.ensure();
+    await engine.ensure();
     console.log('OK — voice engine ready');
   } else if (cmd === 'scan') {
-    await env.ensure();
-    const { devices } = await env.helper({ cmd: 'scan', timeout: 6 }, 60000);
+    await engine.ensure();
+    const { devices } = await engine.helper({ cmd: 'scan', timeout: 6 }, 60000);
     for (const d of devices) {
       console.log(`${d.homepod ? '🔊' : '  '} ${d.name}  ${d.host}  ${d.id}  ${d.model}${d.needsPairing ? '  (needs pairing — not supported)' : ''}`);
     }
@@ -50,8 +50,8 @@ function loadConfig(file) {
     const tts = new TtsService(cfg.tts || {}, path.join(path.dirname(configFile), CACHE_DIR), log);
     const audio = await tts.getAudio(text, voice || cfg.voice, style || cfg.style);
     console.log(`voice: ${audio.voice}${audio.cached ? ' (cached)' : ''}`);
-    await env.ensure();
-    const results = await Promise.allSettled(speakers.map((s) => new Speaker(s, env, log).play(audio.file)));
+    await engine.ensure();
+    const results = await Promise.allSettled(speakers.map((s) => new Speaker(s, engine, log).play(audio.file)));
     results.forEach((r, i) => console.log(`${speakers[i].name}: ${r.status === 'fulfilled' ? 'OK ✓' : `FAILED — ${r.reason.message}`}`));
   }
   if (!cmd || !['engine', 'scan', 'say'].includes(cmd)) {

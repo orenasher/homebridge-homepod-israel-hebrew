@@ -32,7 +32,7 @@ class HomePodIsraelHebrewPlatform {
     });
     api.on('shutdown', () => {
       if (this.server) this.server.close();
-      if (this.env) this.env.stopDaemon();
+      if (this.engine) this.engine.stopDaemon();
     });
   }
 
@@ -48,11 +48,11 @@ class HomePodIsraelHebrewPlatform {
   async setup() {
     const cfg = this.config;
     this.tts = new TtsService(cfg.tts || {}, path.join(this.api.user.storagePath(), CACHE_DIR), this.log);
-    this.env = new PyatvEnv(this.log, { pythonPath: cfg.pythonPath, storagePath: this.api.user.storagePath() });
+    this.engine = new PyatvEnv(this.log, { pythonPath: cfg.pythonPath, storagePath: this.api.user.storagePath() });
 
     for (const s of cfg.speakers || []) {
       if (!s || !s.name) continue;
-      this.speakers.set(s.name, new Speaker(s, this.env, this.log));
+      this.speakers.set(s.name, new Speaker(s, this.engine, this.log));
     }
     if (!this.speakers.size) this.log.warn('No HomePods configured yet — open the plugin settings and tap "Find HomePods".');
 
@@ -63,8 +63,8 @@ class HomePodIsraelHebrewPlatform {
     }
 
     // Prepare the voice engine and audio in the background.
-    this.env.ensure()
-      .then(() => this.env.warm([...this.speakers.values()].map((s) => ({ host: s.host, id: s.id }))))
+    this.engine.ensure()
+      .then(() => this.engine.warm([...this.speakers.values()].map((s) => ({ host: s.host, id: s.id }))))
       .then(() => this.log.info('Fast mode ready — HomePods located.'))
       .catch((err) => this.log.error(`Voice engine setup failed: ${err.message}`));
     if (cfg.pregenerate !== false) this.pregenerate();

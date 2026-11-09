@@ -41,7 +41,7 @@ function executable(p) {
 }
 
 const ENGINE_DIR = 'homepod-israel-hebrew-engine';
-const DEFAULT_STORAGE = process.env.UIX_STORAGE_PATH || '/var/lib/homebridge';
+const DEFAULT_STORAGE = '/var/lib/homebridge';
 
 /* Versions before 1.4.0 kept the engine in ~/.homepod-israel-hebrew. It now lives in the
    Homebridge storage directory; once the new one is ready, remove the old copy. */
@@ -118,10 +118,12 @@ class PyatvEnv {
     for (const p of ['/usr/bin/python3', '/usr/local/bin/python3', '/opt/homebrew/bin/python3']) {
       if (executable(p)) return p;
     }
-    for (const dir of (process.env.PATH || '').split(path.delimiter)) {
-      const p = path.join(dir, 'python3');
-      if (executable(p)) return p;
-    }
+    try {
+      // fall back to whatever "python3" resolves to on this system
+      const { stdout } = await run('python3', ['-c', 'import sys; print(sys.executable)'], 15000);
+      const p = stdout.trim();
+      if (p && executable(p)) return p;
+    } catch { /* not found */ }
     throw new Error('Python 3 was not found. Install it with: sudo apt install -y python3 python3-venv');
   }
 

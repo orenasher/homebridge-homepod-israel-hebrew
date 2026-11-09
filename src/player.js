@@ -3,15 +3,15 @@
 class Speaker {
   /**
    * @param {object} cfg {name, id, host, volume}
-   * @param {import('./pyatv-env').PyatvEnv} env
+   * @param {import('./pyatv-env').PyatvEnv} engine
    * @param {object} log
    */
-  constructor(cfg, env, log) {
+  constructor(cfg, engine, log) {
     this.name = cfg.name;
     this.id = cfg.id || '';
     this.host = cfg.host || '';
     this.defaultVolume = numberOrNull(cfg.volume);
-    this.env = env;
+    this.engine = engine;
     this.log = log;
     this.queue = Promise.resolve();
   }
@@ -24,9 +24,9 @@ class Speaker {
   }
 
   async _play(file, { volume, restoreVolume = true } = {}) {
-    await this.env.ensure();
+    await this.engine.ensure();
     const target = numberOrNull(volume) ?? this.defaultVolume;
-    const reply = await this.env.helper({
+    const reply = await this.engine.helper({
       cmd: 'speak', host: this.host, id: this.id, file, volume: target, restore: restoreVolume,
     });
     for (const w of reply.warnings || []) this.log.debug(`[${this.name}] ${w}`);

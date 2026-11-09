@@ -11,8 +11,7 @@
       "name": {
         "title": "שם | Name",
         "type": "string",
-        "default": "HomePod Israel Hebrew",
-        "required": true
+        "default": "HomePod Israel Hebrew"
       },
       "language": {
         "title": "שפת ההגדרות | Settings language",
@@ -41,8 +40,7 @@
           "properties": {
             "name": {
               "title": "שם | Name",
-              "type": "string",
-              "required": true
+              "type": "string"
             },
             "host": {
               "title": "כתובת IP | IP address",
@@ -58,7 +56,10 @@
               "minimum": 0,
               "maximum": 100
             }
-          }
+          },
+          "required": [
+            "name"
+          ]
         }
       },
       "phrases": {
@@ -69,8 +70,7 @@
           "properties": {
             "text": {
               "title": "טקסט | Text",
-              "type": "string",
-              "required": true
+              "type": "string"
             },
             "name": {
               "title": "שם המתג | Switch name",
@@ -154,7 +154,10 @@
                 }
               ]
             }
-          }
+          },
+          "required": [
+            "text"
+          ]
         }
       },
       "groupSwitches": {
@@ -370,6 +373,9 @@
         "title": "נתיב Python (מתקדם) | Python path (advanced)",
         "type": "string"
       }
-    }
+    },
+    "required": [
+      "name"
+    ]
   }
 }

@@ -78,7 +78,7 @@ function startWebhook(platform, cfg, log) {
       if (route === '/status') {
         return send(res, 200, {
           ok: true,
-          voiceEngine: platform.env ? platform.env.status() : 'missing',
+          voiceEngine: platform.engine ? platform.engine.status() : 'missing',
           speakers: [...platform.speakers.keys()],
           announcements: platform.items().map((a) => a.name),
         });

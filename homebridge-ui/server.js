@@ -24,19 +24,19 @@ const quietLog = {
   class UiServer extends HomebridgePluginUiServer {
     constructor() {
       super();
-      this.env = new PyatvEnv(quietLog, { storagePath: this.homebridgeStoragePath });
+      this.engine = new PyatvEnv(quietLog, { storagePath: this.homebridgeStoragePath });
 
       this.onRequest('/voices', async () => listVoices());
       this.onRequest('/styles', async () => listStyles());
 
       this.onRequest('/status', async (body = {}) => {
-        if (body.pythonPath) this.env = new PyatvEnv(quietLog, { pythonPath: body.pythonPath, storagePath: this.homebridgeStoragePath });
-        return { engine: this.env.status(), error: this.env.lastError || '' };
+        if (body.pythonPath) this.engine = new PyatvEnv(quietLog, { pythonPath: body.pythonPath, storagePath: this.homebridgeStoragePath });
+        return { engine: this.engine.status(), error: this.engine.lastError || '' };
       });
 
       this.onRequest('/install', async () => {
         try {
-          await this.env.ensure();
+          await this.engine.ensure();
           return { engine: 'ready' };
         } catch (err) {
           throw new RequestError(err.message, { engine: 'error' });
@@ -64,8 +64,8 @@ const quietLog = {
 
       this.onRequest('/scan', async () => {
         try {
-          await this.env.ensure();
-          const reply = await this.env.helper({ cmd: 'scan', timeout: 6 }, 60000);
+          await this.engine.ensure();
+          const reply = await this.engine.helper({ cmd: 'scan', timeout: 6 }, 60000);
           return reply.devices;
         } catch (err) {
           throw new RequestError(err.message, {});
@@ -80,8 +80,8 @@ const quietLog = {
           if (!speakers.length) throw new Error('no HomePod selected');
           const tts = new TtsService(body.tts || {}, path.join(this.homebridgeStoragePath, CACHE_DIR), quietLog);
           const audio = await tts.getAudio(text, body.voice, body.style);
-          await this.env.ensure();
-          const results = await Promise.allSettled(speakers.map((s) => new Speaker(s, this.env, quietLog)
+          await this.engine.ensure();
+          const results = await Promise.allSettled(speakers.map((s) => new Speaker(s, this.engine, quietLog)
             .play(audio.file, { volume: body.volume, restoreVolume: body.restoreVolume !== false })));
           const failed = results.map((r, i) => (r.status === 'rejected' ? `${speakers[i].name}: ${r.reason.message}` : null))
             .filter(Boolean);
