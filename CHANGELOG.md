@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.2
+- Fix: a burst of triggers on one switch (e.g. an automation loop) no longer makes the HomePod repeat the phrase over and over. Repeats are ignored while it plays and for 10 seconds after (setting: *Repeat guard*), with a warning in the log.
+- At most 5 announcements can wait in line per HomePod.
+
 ## 1.5.1
 - Homebridge verification checks: `supports-hap` keyword, standard `required` arrays in the config schema, no environment-variable access.
 

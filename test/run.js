@@ -292,6 +292,18 @@ exit 1
   const { switchName } = require('../src/platform');
   assert.strictEqual(switchName('מזגן דולק וחלון פתוח בחדר של תומר, נא לסגור את החלון בבקשה'), 'מזגן דולק וחלון פתוח בחדר של תומר נא');
 
+  // 8b. repeat guard: a burst of triggers on one switch speaks only once
+  {
+    const before = speakCalls().length;
+    platform.lastTrigger.clear();
+    const on = registered[1].getService('switch').getCharacteristic('On');
+    for (let i = 0; i < 15; i++) on.setter(true);
+    await sleep(600);
+    const burst = speakCalls().slice(before);
+    assert.strictEqual(burst.length, 1, `burst of 15 triggers played ${burst.length} times`);
+    assert.ok(logs.some((l) => l.includes('triggered again while still playing')), 'repeat warning logged');
+  }
+
   // 9. group mode: one accessory, a switch per phrase
   {
     const reg2 = [];

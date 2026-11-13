@@ -11,6 +11,12 @@ const PLUGIN_NAME = 'homebridge-homepod-israel-hebrew';
 const PLATFORM_NAME = 'HomePodIsraelHebrew';
 const CACHE_DIR = 'homepod-israel-hebrew-cache';
 const DEFAULT_GROUP_NAME = 'קבצי הקול שלי';
+/** Seconds during which repeated triggers of one phrase are ignored (0 = only while playing). */
+function repeatGuardMs(config) {
+  const v = Number(config.repeatGuardSeconds);
+  return (Number.isFinite(v) && v >= 0 ? Math.min(v, 600) : 10) * 1000;
+}
+
 const MAX_GROUP_SWITCHES = 90; // HomeKit allows up to 100 services per accessory
 
 class HomePodIsraelHebrewPlatform {
@@ -19,6 +25,7 @@ class HomePodIsraelHebrewPlatform {
     this.config = config || {};
     this.api = api;
     this.cached = new Map();
+    this.lastTrigger = new Map();
     this.speakers = new Map();
     this.server = null;
 
@@ -188,7 +195,24 @@ class HomePodIsraelHebrewPlatform {
       setTimeout(() => on.updateValue(false), 1000);
       const item = getItem();
       if (!item) return;
-      this.announce(item).catch((err) => this.log.error(`"${item.name}": ${err.message}`));
+      // Guard against repeated triggers (e.g. an automation loop): while a phrase is playing,
+      // and for a few seconds after it started, further triggers of the same phrase are ignored.
+      const now = Date.now();
+      const guardMs = repeatGuardMs(this.config);
+      const last = this.lastTrigger.get(item.name);
+      if (last && (last.busy || now - last.at < guardMs)) {
+        last.ignored = (last.ignored || 0) + 1;
+        if (last.ignored === 1) this.log.warn(`"${item.name}" was triggered again while still playing — ignoring repeats (an automation may be firing it in a loop).`);
+        return;
+      }
+      const entry = { at: now, busy: true, ignored: 0 };
+      this.lastTrigger.set(item.name, entry);
+      this.announce(item)
+        .catch((err) => this.log.error(`"${item.name}": ${err.message}`))
+        .finally(() => {
+          entry.busy = false;
+          if (entry.ignored > 1) this.log.info(`"${item.name}": ignored ${entry.ignored} repeated triggers.`);
+        });
     });
     on.updateValue(false);
   }

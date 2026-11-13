@@ -1,5 +1,7 @@
 'use strict';
 
+const MAX_QUEUE = 5; // never let a burst of triggers pile up on one HomePod
+
 class Speaker {
   /**
    * @param {object} cfg {name, id, host, volume}
@@ -14,11 +16,16 @@ class Speaker {
     this.engine = engine;
     this.log = log;
     this.queue = Promise.resolve();
+    this.pending = 0;
   }
 
   /** Queue an announcement so two announcements never talk over each other on one speaker. */
   play(file, opts = {}) {
-    const job = this.queue.then(() => this._play(file, opts));
+    if (this.pending >= MAX_QUEUE) {
+      return Promise.reject(new Error(`${this.name}: ${this.pending} announcements already waiting — skipped`));
+    }
+    this.pending += 1;
+    const job = this.queue.then(() => this._play(file, opts)).finally(() => { this.pending -= 1; });
     this.queue = job.catch(() => {});
     return job;
   }

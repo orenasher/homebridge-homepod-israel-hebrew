@@ -141,6 +141,7 @@ Shortcut: *Text* → *Get Contents of URL* `http://<homebridge-ip>:8095/say`, Me
 - **Voice engine can't install** — run once in the terminal: `sudo apt install -y python3-venv`, then tap *Install voice engine* again.
 - **"HomePod not found on the network"** — check the IP and that Homebridge and the HomePod are on the same network.
 - **Permission error** — Home app → Home Settings → *Allow Speaker & TV Access* → *Everyone on the same network*.
+- **The HomePod repeats the same phrase over and over** — an automation is probably firing the switch in a loop. The plugin ignores repeat triggers of a phrase while it plays and for 10 seconds after (adjustable under *Advanced*) and logs a warning. Check the automations that turn the switch on.
 - **Devices marked "needs pairing"** (TVs, Apple TV) are not supported — HomePods and open AirPlay speakers only.
 
 ## Support

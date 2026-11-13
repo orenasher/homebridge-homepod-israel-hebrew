@@ -372,6 +372,14 @@
       "pythonPath": {
         "title": "נתיב Python (מתקדם) | Python path (advanced)",
         "type": "string"
+      },
+      "repeatGuardSeconds": {
+        "title": "הגנה מהפעלה חוזרת (שניות) | Repeat guard (seconds)",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 600,
+        "default": 10,
+        "description": "משפט שהופעל לא יושמע שוב במשך הזמן הזה (וגם לא בזמן שהוא מתנגן). 0 = רק בזמן שהוא מתנגן | A phrase won't replay within this time (or while still playing). 0 = only while playing"
       }
     },
     "required": [

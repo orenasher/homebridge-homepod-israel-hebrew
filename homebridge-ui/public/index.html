@@ -150,6 +150,8 @@
       </div>
       <label data-t="cacheDays" style="margin-top:6px"></label>
       <input id="cacheDays" type="number" class="form-control" min="1">
+      <label data-t="repeatGuard" style="margin-top:6px"></label>
+      <input id="repeatGuardSeconds" type="number" class="form-control" min="0" max="600">
       <label data-t="pythonPath" style="margin-top:6px"></label>
       <input id="pythonPath" type="text" class="form-control" dir="ltr" placeholder="/path/to/python">
     </details>
@@ -211,7 +213,7 @@
       webhookHelp: 'מאפשר לשלוח טקסט חופשי מאפליקציית קיצורים. מומלץ להגדיר טוקן.',
       enable: 'הפעל', port: 'פורט', token: 'טוקן',
       advancedTitle: '⚙️ מתקדם', restoreVolume: 'החזר את הווליום הקודם אחרי ההכרזה',
-      pregenerate: 'הכן את קבצי הקול מראש (השמעה מיידית)', cacheDays: 'מחק קבצי קול שלא בשימוש אחרי (ימים)',
+      pregenerate: 'הכן את קבצי הקול מראש (השמעה מיידית)', cacheDays: 'מחק קבצי קול שלא בשימוש אחרי (ימים)', repeatGuard: 'הגנה מהפעלה חוזרת: לא להשמיע שוב את אותו משפט במשך (שניות)',
       pythonPath: 'נתיב Python עם pyatv (רק אם אתה יודע מה זה — השאר ריק)',
       saveHint: 'אחרי שינויים לחץ Save והפעל מחדש את Homebridge', guide: 'מדריך מלא',
       errNoSpeaker: 'הוסף קודם הום פוד', errEmpty: 'כתוב טקסט קודם',
@@ -262,7 +264,7 @@
       webhookHelp: 'Lets Shortcuts send free text. Setting a token is recommended.',
       enable: 'Enable', port: 'Port', token: 'Token',
       advancedTitle: '⚙️ Advanced', restoreVolume: 'Restore the previous volume after announcing',
-      pregenerate: 'Prepare audio in advance (instant playback)', cacheDays: 'Delete unused audio after (days)',
+      pregenerate: 'Prepare audio in advance (instant playback)', cacheDays: 'Delete unused audio after (days)', repeatGuard: 'Repeat guard: don\'t replay the same phrase within (seconds)',
       pythonPath: 'Path to a Python with pyatv (leave empty unless you know you need it)',
       saveHint: 'After changes, tap Save and restart Homebridge', guide: 'Full guide',
       errNoSpeaker: 'Add a HomePod first', errEmpty: 'Type some text first',
@@ -560,6 +562,7 @@
   bind('groupName', (el) => { el.placeholder = 'קבצי הקול שלי'; el.value = cfg.groupName || ''; }, (el) => { const v = el.value.trim(); if (v) cfg.groupName = v; else delete cfg.groupName; });
   bind('restoreVolume', (el) => { el.checked = cfg.restoreVolume !== false; }, (el) => { cfg.restoreVolume = el.checked; });
   bind('pregenerate', (el) => { el.checked = cfg.pregenerate !== false; }, (el) => { cfg.pregenerate = el.checked; });
+  bind('repeatGuardSeconds', (el) => { el.value = cfg.repeatGuardSeconds ?? 10; }, (el) => { const n = Number(el.value); if (Number.isFinite(n) && n >= 0) cfg.repeatGuardSeconds = Math.min(600, Math.round(n)); else delete cfg.repeatGuardSeconds; });
   bind('cacheDays', (el) => { el.value = cfg.cacheDays || 90; }, (el) => { cfg.cacheDays = Number(el.value) || 90; });
   bind('pythonPath', (el) => { el.value = cfg.pythonPath || ''; }, (el) => { const v = el.value.trim(); if (v) cfg.pythonPath = v; else delete cfg.pythonPath; refreshState(); });
 
