@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.3
+- Voices from a provider without an API key (OpenAI, Google Chirp, Gemini, ElevenLabs, Cartesia) are marked 🔒 "key needed" in the voice lists — without a key they fall back to Hila.
+- ▶️ Test now warns when another voice was used instead of the chosen one, and why.
+- Removed "Brian (multilingual)": Microsoft's free service does not speak Hebrew with it (it fell back to Hila). Phrases that used it now use Andrew.
+
 ## 1.5.2
 - Fix: a burst of triggers on one switch (e.g. an automation loop) no longer makes the HomePod repeat the phrase over and over. Repeats are ignored while it plays and for 10 seconds after (setting: *Repeat guard*), with a warning in the log.
 - At most 5 announcements can wait in line per HomePod.

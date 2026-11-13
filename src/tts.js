@@ -266,6 +266,11 @@ const engines = {
 
 /* ---------------------------------------------------------------- service */
 
+/** Describe a fallback so the settings screen can say why another voice was used. */
+function fellBack(chain, i, errors) {
+  return i > 0 ? { requested: chain[0].id, fallbackReason: errors[0] || '' } : {};
+}
+
 class TtsService {
   /**
    * @param {object} config   the "tts" block of the platform config (API keys, fallback...)
@@ -316,11 +321,14 @@ class TtsService {
     for (let i = 0; i < chain.length; i++) {
       const opts = chain[i];
       const file = this.cacheFile(opts, clean);
-      if (await exists(file)) return { file, voice: opts.id, engine: opts.engine, cached: true };
+      if (await exists(file)) {
+        if (i > 0) this.log.warn(`Used fallback voice "${opts.id}" (${errors.join('; ')})`);
+        return { file, voice: opts.id, engine: opts.engine, cached: true, ...fellBack(chain, i, errors) };
+      }
       try {
         await this.generate(opts, clean, file);
         if (i > 0) this.log.warn(`Used fallback voice "${opts.id}" (${errors.join('; ')})`);
-        return { file, voice: opts.id, engine: opts.engine, cached: false };
+        return { file, voice: opts.id, engine: opts.engine, cached: false, ...fellBack(chain, i, errors) };
       } catch (err) {
         errors.push(`${opts.id}: ${err.message}`);
       }

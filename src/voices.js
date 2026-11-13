@@ -47,7 +47,6 @@ const VOICES = [
   { id: 'ava', engine: 'edge', voice: 'en-US-AvaMultilingualNeural', gender: 'f', group: 'multi', he: 'אווה (רב-לשוני)', en: 'Ava (multilingual)' },
   { id: 'emma', engine: 'edge', voice: 'en-US-EmmaMultilingualNeural', gender: 'f', group: 'multi', he: 'אמה (רב-לשוני)', en: 'Emma (multilingual)' },
   { id: 'andrew', engine: 'edge', voice: 'en-US-AndrewMultilingualNeural', gender: 'm', group: 'multi', he: 'אנדרו (רב-לשוני)', en: 'Andrew (multilingual)' },
-  { id: 'brian', engine: 'edge', voice: 'en-US-BrianMultilingualNeural', gender: 'm', group: 'multi', he: 'בריאן (רב-לשוני)', en: 'Brian (multilingual)' },
 
   // ---- Google Chirp 3 HD — Google Cloud key (billing account, free monthly tier).
   ...CHIRP.map(([n, g]) => ({
@@ -94,7 +93,7 @@ const LEGACY = {
   edge: ['hila', 'normal'], googlecloud: ['google-kore', 'normal'], googletranslate: ['translate', 'normal'],
   'hila-calm': ['hila', 'calm'], 'hila-bright': ['hila', 'cheerful'], 'hila-soft': ['hila', 'warm'],
   'avri-deep': ['avri', 'announcer'], 'avri-calm': ['avri', 'calm'], 'avri-fast': ['avri', 'urgent'],
-  seraphina: ['emma', 'normal'], remy: ['brian', 'normal'],
+  seraphina: ['emma', 'normal'], remy: ['andrew', 'normal'], brian: ['andrew', 'normal'],
   'google-gacrux': ['google-kore', 'normal'], 'google-sulafat': ['google-aoede', 'normal'],
   'google-algieba': ['google-charon', 'normal'], 'google-umbriel': ['google-puck', 'normal'],
 };

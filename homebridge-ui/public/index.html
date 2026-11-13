@@ -191,6 +191,7 @@
       geminiTipLink: 'לקבלת מפתח חינמי ←', geminiKey: 'הדבק כאן את מפתח ה-Gemini (מתחיל ב-AQ. או AIza)',
       g_gemini: 'Gemini — 16 קולות שונים (מפתח חינמי)',
       g_clones: '🎤 הקולות המשובטים שלך', g_cartesia: 'Cartesia — עברית מלידה (מפתח)', g_openai: 'OpenAI — הרבה קולות (מפתח, ייתכן מבטא)',
+      needKey: 'דרוש מפתח', fellBack: '⚠️ הקול שבחרת לא זמין (חסר מפתח או שגיאה), הושמע במקומו:',
       oaKey: 'OpenAI API key', oaHelp: 'platform.openai.com → API keys. בתשלום לפי שימוש (זול). מבצע את הסגנון לפי הוראות.',
       caKey: 'Cartesia API key', caLoad: 'טען קולות עבריים', caHelp: 'play.cartesia.ai → API Keys. אחרי הדבקת המפתח לחץ "טען קולות עבריים" והוסף את הקולות שאתה רוצה.',
       caNone: 'לא נמצאו קולות עבריים בחשבון.', caNeedKey: 'הדבק קודם מפתח Cartesia',
@@ -242,6 +243,7 @@
       geminiTipLink: 'Get a free key →', geminiKey: 'Paste your Gemini key here (starts with AQ. or AIza)',
       g_gemini: 'Gemini — 16 different voices (free key)',
       g_clones: '🎤 Your cloned voices', g_cartesia: 'Cartesia — native Hebrew (key)', g_openai: 'OpenAI — many voices (key, may have an accent)',
+      needKey: 'key needed', fellBack: '⚠️ The chosen voice is not available (missing key or error), played instead with:',
       oaKey: 'OpenAI API key', oaHelp: 'platform.openai.com → API keys. Pay-as-you-go (cheap). Follows the style as an instruction.',
       caKey: 'Cartesia API key', caLoad: 'Load Hebrew voices', caHelp: 'play.cartesia.ai → API Keys. After pasting the key tap "Load Hebrew voices" and add the ones you like.',
       caNone: 'No Hebrew voices found in the account.', caNeedKey: 'Paste a Cartesia key first',
@@ -302,7 +304,7 @@
   // 1.1 voice presets → voice + style
   const LEGACY = { 'hila-calm': ['hila', 'calm'], 'hila-bright': ['hila', 'cheerful'], 'hila-soft': ['hila', 'warm'],
     'avri-deep': ['avri', 'announcer'], 'avri-calm': ['avri', 'calm'], 'avri-fast': ['avri', 'urgent'],
-    seraphina: ['emma', 'normal'], remy: ['brian', 'normal'], edge: ['hila', 'normal'] };
+    seraphina: ['emma', 'normal'], remy: ['andrew', 'normal'], brian: ['andrew', 'normal'], edge: ['hila', 'normal'] };
   const upgrade = (o) => {
     if (o && o.voice && LEGACY[o.voice]) { const [v, st] = LEGACY[o.voice]; o.voice = v; if (!o.style && st !== 'normal') o.style = st; }
   };
@@ -436,12 +438,19 @@
     for (const v of cfg.tts.cartesiaVoices || []) extra.push({ id: `cartesia:${v.id}`, group: 'cartesia', gender: v.gender, he: v.name, en: v.name });
     return [...extra, ...voices];
   }
+  /** Voices from a paid/keyed provider whose key is not set yet — they would fall back to Hila. */
+  function needsKey(v) {
+    const k = cfg.tts || {};
+    return (v.group === 'openai' && !k.openaiApiKey) || (v.group === 'google' && !k.googleApiKey)
+      || (v.group === 'gemini' && !k.geminiApiKey) || (v.group === 'elevenlabs' && !k.elevenlabsApiKey)
+      || (v.group === 'clones' && !k.elevenlabsApiKey) || (v.group === 'cartesia' && !k.cartesiaApiKey);
+  }
   function renderVoiceSelect(sel, value, withDefault) {
     const groups = ['clones', 'free', 'gemini', 'cartesia', 'openai', 'multi', 'google', 'elevenlabs'];
     const all = allVoices();
     sel.innerHTML = (withDefault ? `<option value="">${esc(t('defaultOpt'))}</option>` : '')
       + groups.filter((g) => all.some((v) => v.group === g)).map((g) => `<optgroup label="${esc(t(`g_${g}`))}">${all.filter((v) => v.group === g)
-        .map((v) => `<option value="${esc(v.id)}">${v.gender === 'f' ? '👩 ' : v.gender === 'm' ? '👨 ' : '⭐ '}${esc(lang === 'he' ? v.he : v.en)}</option>`).join('')}</optgroup>`).join('');
+        .map((v) => `<option value="${esc(v.id)}">${needsKey(v) ? '🔒 ' : ''}${v.gender === 'f' ? '👩 ' : v.gender === 'm' ? '👨 ' : '⭐ '}${esc(lang === 'he' ? v.he : v.en)}${needsKey(v) ? ` — ${esc(t('needKey'))}` : ''}</option>`).join('')}</optgroup>`).join('');
     sel.value = value || '';
   }
   $('defaultVoice').addEventListener('change', (e) => { cfg.voice = e.target.value; save(); });
@@ -467,7 +476,8 @@
         text, voice: voice || cfg.voice, style: style || cfg.style, speakers: speakerObjs(names), volume,
         tts: ttsBlock(), restoreVolume: cfg.restoreVolume !== false,
       });
-      homebridge.toast.success(`${t('played')} (${r.voice})`);
+      if (r.requested) homebridge.toast.warning(`${t('fellBack')} ${r.voice}\n${r.fallbackReason || ''}`);
+      else homebridge.toast.success(`${t('played')} (${r.voice})`);
       if (r.failed && r.failed.length) homebridge.toast.warning(r.failed.join('\n'));
     } catch (e) {
       homebridge.toast.error(e.message || String(e));
@@ -564,6 +574,7 @@
   bind('pregenerate', (el) => { el.checked = cfg.pregenerate !== false; }, (el) => { cfg.pregenerate = el.checked; });
   bind('repeatGuardSeconds', (el) => { el.value = cfg.repeatGuardSeconds ?? 10; }, (el) => { const n = Number(el.value); if (Number.isFinite(n) && n >= 0) cfg.repeatGuardSeconds = Math.min(600, Math.round(n)); else delete cfg.repeatGuardSeconds; });
   bind('cacheDays', (el) => { el.value = cfg.cacheDays || 90; }, (el) => { cfg.cacheDays = Number(el.value) || 90; });
+  for (const id of ['elKey', 'gKey', 'oaKey', 'caKey', 'geminiKey']) $(id).addEventListener('change', () => refreshVoiceSelects());
   bind('pythonPath', (el) => { el.value = cfg.pythonPath || ''; }, (el) => { const v = el.value.trim(); if (v) cfg.pythonPath = v; else delete cfg.pythonPath; refreshState(); });
 
   /* ---------- Cartesia voices ---------- */

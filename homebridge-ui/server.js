@@ -86,7 +86,7 @@ const quietLog = {
           const failed = results.map((r, i) => (r.status === 'rejected' ? `${speakers[i].name}: ${r.reason.message}` : null))
             .filter(Boolean);
           if (failed.length === speakers.length) throw new Error(failed.join(' | '));
-          return { voice: audio.voice, cached: audio.cached, failed };
+          return { voice: audio.voice, cached: audio.cached, failed, requested: audio.requested, fallbackReason: audio.fallbackReason };
         } catch (err) {
           throw new RequestError(err.message, {});
         }

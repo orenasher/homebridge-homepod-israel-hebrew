@@ -63,7 +63,7 @@ Every phrase has a **voice** (who speaks) and a **style** (how they speak).
 |---|---|---|
 | 🎙️ **Gemini** — Zephyr, Kore, Leda, Sulafat, Puck, Charon, Algenib… | 16 truly different voices, 8 female / 8 male | 🆓 **Free** — free key, no credit card |
 | 👩👨 **Microsoft** — Hila, Avri | 2 native Hebrew voices | 🆓 **Free**, no key |
-| 👩👨 Multilingual — Ava, Emma, Andrew, Brian | 4 (may have an accent) | 🆓 **Free**, no key |
+| 👩👨 Multilingual — Ava, Emma, Andrew | 3 (may have an accent) | 🆓 **Free**, no key |
 | 👩👨 **Cartesia** — native Hebrew voices | from their library | 🆓 **Free up to a quota** — 20,000 characters/month, no credit card |
 | 🎤 **Your own voice** — voice cloning | The HomePod speaks in your voice | 💳 **Paid** — ElevenLabs plan with Voice Cloning |
 | 👩👨 **OpenAI** — Coral, Nova, Onyx, Ash… | 13 voices | 💳 **Paid** — pay-as-you-go, credit card required |

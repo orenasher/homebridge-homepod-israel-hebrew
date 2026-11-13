@@ -292,6 +292,20 @@ exit 1
   const { switchName } = require('../src/platform');
   assert.strictEqual(switchName('מזגן דולק וחלון פתוח בחדר של תומר, נא לסגור את החלון בבקשה'), 'מזגן דולק וחלון פתוח בחדר של תומר נא');
 
+  // 8a. a voice without its API key falls back to Hila and says so
+  {
+    const { TtsService } = require('../src/tts');
+    const t = new TtsService({}, path.join(tmp, 'fb-cache'), log);
+    const a = await t.getAudio('בדיקת מפתח', 'openai-onyx');
+    assert.strictEqual(a.voice, 'hila');
+    assert.strictEqual(a.requested, 'openai-onyx');
+    assert.ok(/key is missing/i.test(a.fallbackReason), a.fallbackReason);
+    const b = await t.getAudio('בדיקת מפתח', 'openai-onyx'); // cached fallback still reports it
+    assert.strictEqual(b.requested, 'openai-onyx');
+    const c = await t.getAudio('בדיקת מפתח', 'hila');
+    assert.strictEqual(c.requested, undefined);
+  }
+
   // 8b. repeat guard: a burst of triggers on one switch speaks only once
   {
     const before = speakCalls().length;
