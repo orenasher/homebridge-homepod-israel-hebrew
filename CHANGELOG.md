@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.5.4
+- Group mode: more than 90 phrases continue automatically in a second group ("קבצי הקול שלי 2", ...), since HomeKit allows about 100 switches per accessory.
+
 ## 1.5.3
 - Voices from a provider without an API key (OpenAI, Google Chirp, Gemini, ElevenLabs, Cartesia) are marked 🔒 "key needed" in the voice lists — without a key they fall back to Hila.
 - ▶️ Test now warns when another voice was used instead of the chosen one, and why.

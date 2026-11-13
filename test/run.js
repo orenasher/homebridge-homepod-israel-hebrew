@@ -341,6 +341,15 @@ exit 1
     const last = speakCalls().slice(before);
     assert.ok(last.length >= 1 && last.every((c) => c.host === '10.0.0.5'), 'group switch speaks its own phrase on its HomePod');
 
+    // more than 90 phrases continue in a second group
+    const many = Array.from({ length: 95 }, (_, i) => `משפט מספר ${i + 1}`);
+    gp.config = { ...gp.config, phrases: many };
+    gp.syncAccessories();
+    const groups = reg2.filter((a) => a.context.group && a.services.some((x) => x.UUID === 'switch'));
+    assert.deepStrictEqual(groups.map((a) => a.displayName), ['קבצי הקול שלי', 'קבצי הקול שלי 2']);
+    assert.strictEqual(groups[0].services.filter((x) => x.UUID === 'switch').length, 90);
+    assert.strictEqual(groups[1].services.filter((x) => x.UUID === 'switch').length, 5);
+
     // a removed phrase disappears from the group; back to single switches removes the group
     gp.config = { ...gp.config, phrases: [config.phrases[1]] };
     gp.syncAccessories();

@@ -48,7 +48,7 @@ Got many phrases? Collect all the switches into one accessory so Apple Home stay
 1. In the plugin settings, under the phrase list, tick **"📁 All switches in one group"**.
 2. Optionally rename the group (default: **"קבצי הקול שלי"** — "My voice files").
 3. Save and restart Homebridge.
-4. Apple Home shows one accessory; open it to find a switch for each phrase.
+4. Apple Home shows one accessory; open it to find a switch for each phrase. (HomeKit allows about 100 switches per accessory, so beyond 90 phrases a second group "קבצי הקול שלי 2" is created automatically.)
 
 > ⚠️ Switching between separate switches and the group (either way) recreates the switches, so existing automations and scenes need to be reconnected. Siri keeps working by switch name.
 > 💡 If Apple Home shows the switches as separate tiles: long-press one of the switches → ⚙️ → turn off **Show as Separate Tiles**.

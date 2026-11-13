@@ -17,7 +17,7 @@ function repeatGuardMs(config) {
   return (Number.isFinite(v) && v >= 0 ? Math.min(v, 600) : 10) * 1000;
 }
 
-const MAX_GROUP_SWITCHES = 90; // HomeKit allows up to 100 services per accessory
+const MAX_GROUP_SWITCHES = 90; // per group accessory; HomeKit allows about 100 services per accessory
 
 class HomePodIsraelHebrewPlatform {
   constructor(log, config, api) {
@@ -106,28 +106,29 @@ class HomePodIsraelHebrewPlatform {
     const wanted = new Set();
 
     if (this.config.groupSwitches) {
-      // One accessory ("My voice files") holding a switch per phrase.
-      const groupName = switchName(this.config.groupName || DEFAULT_GROUP_NAME);
-      const uuid = this.api.hap.uuid.generate(`${PLATFORM_NAME}:group`);
-      wanted.add(uuid);
-      const shown = items.slice(0, MAX_GROUP_SWITCHES);
-      if (items.length > shown.length) {
-        this.log.warn(`A group can hold up to ${MAX_GROUP_SWITCHES} switches — ${items.length - shown.length} phrase(s) were left out.`);
+      // One accessory ("My voice files") holding a switch per phrase. HomeKit allows about 100
+      // services per accessory, so a long list continues in "<name> 2", "<name> 3"...
+      const baseName = switchName(this.config.groupName || DEFAULT_GROUP_NAME);
+      for (let start = 0, n = 1; start < items.length || n === 1; start += MAX_GROUP_SWITCHES, n++) {
+        const shown = items.slice(start, start + MAX_GROUP_SWITCHES);
+        const uuid = this.api.hap.uuid.generate(n === 1 ? `${PLATFORM_NAME}:group` : `${PLATFORM_NAME}:group:${n}`);
+        wanted.add(uuid);
+        this.ensureAccessory(uuid, n === 1 ? baseName : `${baseName} ${n}`, (accessory) => {
+          accessory.context.group = true;
+          accessory.context.items = shown;
+          const { Service } = this.api.hap;
+          const keep = new Set(shown.map((i) => i.name));
+          for (const svc of [...accessory.services]) {
+            if (svc.UUID === Service.Switch.UUID && !keep.has(svc.subtype)) accessory.removeService(svc);
+          }
+          for (const item of shown) {
+            const service = accessory.getServiceById(Service.Switch, item.name)
+              || accessory.addService(Service.Switch, item.name, item.name);
+            this.setupSwitch(service, item.name, () => (accessory.context.items || []).find((i) => i.name === item.name));
+          }
+        });
+        if (!items.length) break;
       }
-      this.ensureAccessory(uuid, groupName, (accessory) => {
-        accessory.context.group = true;
-        accessory.context.items = shown;
-        const { Service } = this.api.hap;
-        const keep = new Set(shown.map((i) => i.name));
-        for (const svc of [...accessory.services]) {
-          if (svc.UUID === Service.Switch.UUID && !keep.has(svc.subtype)) accessory.removeService(svc);
-        }
-        for (const item of shown) {
-          const service = accessory.getServiceById(Service.Switch, item.name)
-            || accessory.addService(Service.Switch, item.name, item.name);
-          this.setupSwitch(service, item.name, () => (accessory.context.items || []).find((i) => i.name === item.name));
-        }
-      });
     } else {
       for (const item of items) {
         const uuid = this.api.hap.uuid.generate(`${PLATFORM_NAME}:${item.name}`);
