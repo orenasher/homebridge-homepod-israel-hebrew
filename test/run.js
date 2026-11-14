@@ -443,6 +443,14 @@ exit 1
     api3.emit('shutdown');
   }
 
+  // every release must say what's new: in the settings screen and in the changelog
+  {
+    const { version } = require('../package.json');
+    const ui = fs.readFileSync(path.join(__dirname, '../homebridge-ui/public/index.html'), 'utf8');
+    assert.ok(ui.includes(`'${version}': {`), `WHATS_NEW in the settings screen has no entry for ${version}`);
+    assert.ok(fs.readFileSync(path.join(__dirname, '../CHANGELOG.md'), 'utf8').includes(`## ${version}\n`), `CHANGELOG.md has no ${version} section`);
+  }
+
   api.emit('shutdown');
   console.log('All tests passed');
   console.log(logs.filter((l) => l.startsWith('E') || l.startsWith('W')).join('\n'));
