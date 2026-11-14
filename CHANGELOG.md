@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.5.5
+- Editing the text of an existing phrase in the settings keeps its switch name, so the switch and its Apple Home automations stay the same. Only the "Switch name" field creates a new switch.
+
 ## 1.5.4
 - Group mode: more than 90 phrases continue automatically in a second group ("קבצי הקול שלי 2", ...), since HomeKit allows about 100 switches per accessory.
 

@@ -180,7 +180,7 @@
       phrasesHelp: 'כל משפט הופך למתג בבית של אפל. בוחרים איזה הום פוד ידבר (אחד, כמה או כולם), קול וווליום.',
       groupSwitches: '📁 כל המתגים בקבוצה אחת (אביזר אחד בבית של אפל)', groupName: 'שם הקבוצה',
       groupHelp: 'בבית של אפל יופיע אביזר אחד, ובתוכו מתג לכל משפט. שינוי ההגדרה יוצר את המתגים מחדש, אז צריך לחבר מחדש אוטומציות קיימות.',
-      addPhrase: '➕ הוסף משפט', phraseText: 'הטקסט שיוקרא', switchName: 'שם המתג (לא חובה)',
+      nameKept: 'שם המתג נשמר כמו שהיה, כדי שהאוטומציות ימשיכו לעבוד. אפשר לשנות אותו בשדה "שם המתג".', addPhrase: '➕ הוסף משפט', phraseText: 'הטקסט שיוקרא', switchName: 'שם המתג (לא חובה)',
       who: 'מי ידבר:', allIfNone: '(אם לא סומן — כולם)', voice: 'קול', defaultOpt: 'ברירת המחדל',
       useVol: 'ווליום מיוחד', test: '▶️ השמע עכשיו', testing: 'משמיע…', played: 'הושמע ✓',
       voiceTitle: '🎙️ קול ברירת המחדל', preview: '▶️ השמע דוגמה',
@@ -232,7 +232,7 @@
       phrasesHelp: 'Each phrase becomes a switch in Apple Home. Choose which HomePod speaks (one, several or all), the voice and the volume.',
       groupSwitches: '📁 All switches in one group (one accessory in Apple Home)', groupName: 'Group name',
       groupHelp: 'Apple Home shows one accessory with a switch for each phrase inside. Changing this recreates the switches, so existing automations need to be reconnected.',
-      addPhrase: '➕ Add phrase', phraseText: 'Text to say', switchName: 'Switch name (optional)',
+      nameKept: 'The switch keeps its name so your automations keep working. You can change it in the "Switch name" field.', addPhrase: '➕ Add phrase', phraseText: 'Text to say', switchName: 'Switch name (optional)',
       who: 'Who speaks:', allIfNone: '(none checked = all)', voice: 'Voice', defaultOpt: 'Default',
       useVol: 'Custom volume', test: '▶️ Play now', testing: 'Playing…', played: 'Played ✓',
       voiceTitle: '🎙️ Default voice', preview: '▶️ Play sample',
@@ -491,6 +491,17 @@
   });
 
   /* ---------- phrases ---------- */
+  const newPhrases = new WeakSet(); // phrases added in this session (no switch exists yet)
+  /** Same rule as the plugin (src/platform.js switchName) — keep the two in sync. */
+  function switchName(text) {
+    let s = String(text).replace(/[^\p{L}\p{N}\s']/gu, ' ').replace(/\s+/g, ' ').trim();
+    if (s.length > 40) {
+      const cut = s.lastIndexOf(' ', 40);
+      s = s.slice(0, cut > 15 ? cut : 40).trim();
+    }
+    s = s.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '');
+    return s || 'Announcement';
+  }
   function renderPhrases() {
     const box = $('phrases');
     box.innerHTML = cfg.phrases.map((p, i) => `
@@ -528,7 +539,16 @@
       const ssel = el.querySelector('[data-k=style]');
       renderStyleSelect(ssel, p.style || '', true);
       ssel.addEventListener('change', () => { if (ssel.value) p.style = ssel.value; else delete p.style; save(); });
-      el.querySelector('[data-k=text]').addEventListener('input', (e) => { p.text = e.target.value; save(); });
+      el.querySelector('[data-k=text]').addEventListener('input', (e) => {
+        // Editing the text of an existing switch keeps its current name, so the switch (and the
+        // Apple Home automations that use it) stays the same. Only brand-new phrases follow their text.
+        if (!p.name && !newPhrases.has(p) && String(p.text || '').trim()) {
+          p.name = switchName(p.text);
+          el.querySelector('[data-k=name]').value = p.name;
+          homebridge.toast.info(t('nameKept'));
+        }
+        p.text = e.target.value; save();
+      });
       el.querySelector('[data-k=name]').addEventListener('change', (e) => { const v = e.target.value.trim(); if (v) p.name = v; else delete p.name; save(); });
       el.querySelectorAll('[data-sp]').forEach((cb) => cb.addEventListener('change', () => {
         p.speakers = [...el.querySelectorAll('[data-sp]:checked')].map((c) => c.dataset.sp);
@@ -549,7 +569,9 @@
     });
   }
   $('addPhraseBtn').addEventListener('click', () => {
-    cfg.phrases.push({ text: '' });
+    const fresh = { text: '' };
+    newPhrases.add(fresh);
+    cfg.phrases.push(fresh);
     save(); renderPhrases();
     const areas = $('phrases').querySelectorAll('textarea');
     if (areas.length) areas[areas.length - 1].focus();

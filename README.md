@@ -43,6 +43,9 @@ Type a sentence → it becomes a switch in Apple Home → turn it on and the Hom
 5. **Save** and restart Homebridge. The switches appear in Apple Home.
 6. **Use it** — tap the switch, ask Siri, or trigger it from an Apple Home automation.
 
+### ✏️ Changing what an existing phrase says
+You can edit the text of a phrase in the settings and the switch stays the same: its name is kept, so automations keep working. A new switch is created only if you change the **Switch name** itself (or delete a phrase and add a new one).
+
 ### 📁 All switches in one group (optional)
 Got many phrases? Collect all the switches into one accessory so Apple Home stays tidy.
 1. In the plugin settings, under the phrase list, tick **"📁 All switches in one group"**.
