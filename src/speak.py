@@ -2,7 +2,8 @@
 """Small pyatv helper used by homebridge-homepod-israel-hebrew.
 
 Usage: speak.py '<json>'
-  {"cmd": "speak", "host": "10.0.0.5", "id": "AA:BB:...", "file": "/x.mp3", "volume": 50, "restore": true}
+  {"cmd": "speak", "host": "10.0.0.5", "id": "AA:BB:...", "files": ["/chime.wav", "/x.mp3"], "volume": 50, "restore": true}
+  {"cmd": "ping", "host": "10.0.0.5", "id": "AA:BB:..."}
   {"cmd": "scan", "timeout": 6}
   {"cmd": "check"}
 Prints one JSON line. Exit codes: 0 ok, 2 bad input, 3 pyatv missing, 4 device not found, 5 playback error.
@@ -58,7 +59,8 @@ async def speak(args, cache=None):
 
 
 async def speak_reply(args, cache=None):
-    if not args.get("file"):
+    files = args.get("files") or ([args["file"]] if args.get("file") else [])
+    if not files:
         raise SpeakError({"ok": False, "error": "missing file"}, 2)
     loop = asyncio.get_running_loop()
     key = f'{args.get("host") or ""}|{args.get("id") or ""}'
@@ -96,20 +98,25 @@ async def speak_reply(args, cache=None):
                 await atv.audio.set_volume(target)
             except Exception as exc:
                 warnings.append(f"set volume: {exc}")
-        try:
-            await atv.stream.stream_file(args["file"])
-        except Exception as exc:
-            # A sleeping HomePod sometimes drops the very first connection — reconnect once and retry.
-            warnings.append(f"retry after: {exc}")
-            pending = atv.close()
-            if pending:
-                await asyncio.wait(pending, timeout=3)
-            await asyncio.sleep(1)
-            atv = await pyatv.connect(conf, loop)
+        # Several files (e.g. a chime, then the announcement) play back to back on one connection.
+        for index, file in enumerate(files):
             try:
-                await atv.stream.stream_file(args["file"])
-            except Exception as exc2:
-                raise SpeakError({"ok": False, "error": f"playback failed: {exc2}", "warnings": warnings}, 5)
+                await atv.stream.stream_file(file)
+            except Exception as exc:
+                # A sleeping HomePod sometimes drops the very first connection — reconnect once and retry.
+                warnings.append(f"retry after: {exc}")
+                pending = atv.close()
+                if pending:
+                    await asyncio.wait(pending, timeout=3)
+                await asyncio.sleep(1)
+                atv = await pyatv.connect(conf, loop)
+                try:
+                    await atv.stream.stream_file(file)
+                except Exception as exc2:
+                    if index < len(files) - 1:
+                        warnings.append(f"skipped {file}: {exc2}")
+                        continue
+                    raise SpeakError({"ok": False, "error": f"playback failed: {exc2}", "warnings": warnings}, 5)
         if previous is not None and volume is not None and abs(previous - float(volume)) > 0.5:
             try:
                 await atv.audio.set_volume(previous)
@@ -140,6 +147,8 @@ async def serve():
                 reply = await speak_reply(req, cache)
             elif cmd == "scan":
                 reply = await scan_reply(req)
+            elif cmd == "ping":
+                reply = await ping_reply(req, cache)
             elif cmd == "warm":
                 for d in req.get("devices", []):
                     key = f'{d.get("host") or ""}|{d.get("id") or ""}'
@@ -166,6 +175,15 @@ async def serve():
         except Exception:
             continue
         asyncio.ensure_future(handle(req))
+
+
+async def ping_reply(args, cache=None):
+    """Is the HomePod answering on the network? (a short look-up, nothing is played)"""
+    loop = asyncio.get_running_loop()
+    conf = await find(loop, args.get("host"), args.get("id"), args.get("timeout", 3))
+    if conf is not None and cache is not None:
+        cache[f'{args.get("host") or ""}|{args.get("id") or ""}'] = conf
+    return {"ok": True, "online": conf is not None}
 
 
 async def scan(args):
@@ -216,6 +234,9 @@ async def main():
         return 0
     if cmd == "scan":
         return await scan(args)
+    if cmd == "ping":
+        out(await ping_reply(args))
+        return 0
     if cmd == "serve":
         await serve()
         return 0

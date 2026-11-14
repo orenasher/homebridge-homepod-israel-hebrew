@@ -153,6 +153,12 @@
                   ]
                 }
               ]
+            },
+            "urgent": {
+              "title": "דחוף | Urgent",
+              "type": "boolean",
+              "default": false,
+              "description": "קופץ לראש התור, מושמע גם בשעות שקט | Jumps the queue and plays even during quiet hours"
             }
           },
           "required": [
@@ -380,6 +386,128 @@
         "maximum": 600,
         "default": 10,
         "description": "משפט שהופעל לא יושמע שוב במשך הזמן הזה (וגם לא בזמן שהוא מתנגן). 0 = רק בזמן שהוא מתנגן | A phrase won't replay within this time (or while still playing). 0 = only while playing"
+      },
+      "quietHours": {
+        "title": "שעות שקט | Quiet hours",
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "title": "הפעל שעות שקט | Enable quiet hours",
+            "type": "boolean",
+            "default": false
+          },
+          "start": {
+            "title": "מ-שעה | From",
+            "type": "string",
+            "default": "22:00",
+            "pattern": "^([01]?\\d|2[0-3]):[0-5]\\d$"
+          },
+          "end": {
+            "title": "עד שעה | Until",
+            "type": "string",
+            "default": "07:00",
+            "pattern": "^([01]?\\d|2[0-3]):[0-5]\\d$"
+          },
+          "mode": {
+            "title": "מה לעשות | Mode",
+            "type": "string",
+            "default": "lower",
+            "oneOf": [
+              {
+                "title": "להנמיך ווליום | Lower volume",
+                "enum": [
+                  "lower"
+                ]
+              },
+              {
+                "title": "השתקה מלאה | Mute",
+                "enum": [
+                  "mute"
+                ]
+              }
+            ]
+          },
+          "volume": {
+            "title": "ווליום בשעות שקט | Quiet volume",
+            "type": "integer",
+            "default": 25,
+            "minimum": 0,
+            "maximum": 100
+          }
+        }
+      },
+      "chime": {
+        "title": "צליל לפני הכרזה | Chime before announcements",
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "title": "השמע צליל לפני כל הכרזה | Play a chime first",
+            "type": "boolean",
+            "default": false
+          },
+          "sound": {
+            "title": "צליל | Sound",
+            "type": "string",
+            "default": "dingdong",
+            "oneOf": [
+              {
+                "title": "דינג-דונג | Ding-dong",
+                "enum": [
+                  "dingdong"
+                ]
+              },
+              {
+                "title": "רך | Soft",
+                "enum": [
+                  "soft"
+                ]
+              }
+            ]
+          },
+          "urgentSound": {
+            "title": "צליל להודעה דחופה | Urgent sound",
+            "type": "string",
+            "default": "urgent",
+            "oneOf": [
+              {
+                "title": "צפצוף דחוף | Urgent beeps",
+                "enum": [
+                  "urgent"
+                ]
+              },
+              {
+                "title": "כמו הרגיל | Same as normal",
+                "enum": [
+                  "same"
+                ]
+              },
+              {
+                "title": "ללא צליל | No sound",
+                "enum": [
+                  "none"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "availability": {
+        "title": "חיישן זמינות הום פוד | HomePod availability sensor",
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "title": "הוסף חיישן \"מחובר\" לכל הום פוד | Add a \"connected\" sensor per HomePod",
+            "type": "boolean",
+            "default": false
+          },
+          "intervalMinutes": {
+            "title": "בדיקה כל (דקות) | Check every (minutes)",
+            "type": "integer",
+            "default": 5,
+            "minimum": 1,
+            "maximum": 60
+          }
+        }
       }
     },
     "required": [

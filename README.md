@@ -18,6 +18,10 @@ Type a sentence → it becomes a switch in Apple Home → turn it on and the Hom
 - 🇮🇱 **Made for Israelis** — Hebrew by default, bilingual settings screen (Hebrew / English toggle).
 - 💬 **One phrase = one switch.**
 - 📁 **One group (optional)** — all switches inside a single accessory called "My voice files", keeping Apple Home tidy.
+- 🚨 **Urgent phrases** — jump the queue and play even during quiet hours.
+- 🌙 **Quiet hours** — at night announcements play quietly, or not at all.
+- 🔔 **Chime before announcements (optional)** — ding-dong or a soft tone, with special beeps for urgent ones.
+- 📡 **"Connected" sensor per HomePod** — know right away when one is unavailable.
 - 🔊 **Pick the HomePods per phrase** — kitchen only, bedroom only, or both together.
 - 🎙️ **Voice + style per phrase** — 16 truly different Gemini voices (free key), Microsoft's Hila & Avri, Google and ElevenLabs; 9 styles: cheerful, calm, whisper, announcer, urgent, warm, excited, playful.
 - ▶️ **Test playback** right from the settings screen.
@@ -55,6 +59,23 @@ Got many phrases? Collect all the switches into one accessory so Apple Home stay
 
 > ⚠️ Switching between separate switches and the group (either way) recreates the switches, so existing automations and scenes need to be reconnected. Siri keeps working by switch name.
 > 💡 If Apple Home shows the switches as separate tiles: long-press one of the switches → ⚙️ → turn off **Show as Separate Tiles**.
+
+### 🚨 Urgent phrases
+Every phrase has an **"🚨 Urgent"** checkbox. An urgent phrase:
+- jumps the queue (plays right after the announcement that is playing now),
+- is always accepted, even when many announcements are already waiting,
+- plays at its normal volume even during quiet hours,
+- and, if the chime is on, starts with urgent beeps.
+
+Great for alarms, a door left open, a water leak, etc.
+
+### ⚙️ General settings
+At the top of the settings screen, under the default voice:
+1. **🌙 Quiet hours** — tick it, pick from/until (e.g. 22:00 to 07:00) and choose *Lower the volume to* (move the slider) or *Do not play at all*.
+2. **🔔 Chime before every announcement** — tick it and pick *Ding-dong* or *Soft tone*. Next to "For urgent ones" pick *Urgent beeps*, *Same chime* or *No chime*. ▶️ plays a sample on the first HomePod.
+3. **📡 "Connected" sensor for each HomePod** — tick it and choose how often to check (default every 5 minutes). After saving and restarting, Apple Home shows a contact sensor per HomePod, e.g. **"Kitchen מחובר"**: *closed* = connected, *open* = unavailable. Turn on its notifications or use it in an automation.
+
+After changes tap **Save** and restart Homebridge.
 
 ---
 
@@ -112,6 +133,7 @@ Enable **Webhook** in the settings (default port `8095`) and set a token.
 | `GET /say?text=Hello&speakers=Kitchen,Bedroom&voice=avri&volume=50&token=…` | Say any text |
 | `POST /say` with JSON `{"text":"…","speakers":"Kitchen"}` | Same, for long text |
 | `GET /announce?name=Laundry done&token=…` | Play a configured phrase |
+| add `&urgent=1` to either | Treat it as urgent (jumps the queue, ignores quiet hours) |
 | `GET /status?token=…` | State, HomePods and phrases |
 
 Shortcut: *Text* → *Get Contents of URL* `http://<homebridge-ip>:8095/say`, Method **POST**, Request Body **JSON** with `text` and `token`.
@@ -133,8 +155,12 @@ Shortcut: *Text* → *Get Contents of URL* `http://<homebridge-ip>:8095/say`, Me
   "phrases": [
     { "text": "The laundry is done", "speakers": ["Kitchen"], "voice": "avri-deep", "volume": 60 },
     { "text": "Good night everyone", "name": "Good night", "speakers": ["Kitchen", "Bedroom"] },
-    { "text": "Dinner is ready" }
+    { "text": "Dinner is ready" },
+    { "text": "The front door is open", "urgent": true }
   ],
+  "quietHours": { "enabled": true, "start": "22:00", "end": "07:00", "mode": "lower", "volume": 25 },
+  "chime": { "enabled": true, "sound": "dingdong", "urgentSound": "urgent" },
+  "availability": { "enabled": true, "intervalMinutes": 5 },
   "webhook": { "enabled": true, "port": 8095, "token": "change-me" }
 }
 ```

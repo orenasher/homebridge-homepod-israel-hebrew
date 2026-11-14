@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.6.0
+- **Urgent phrases 🚨** — tick "Urgent" on a phrase: it jumps ahead of waiting announcements, is never dropped when the line is full, and plays even during quiet hours.
+- **Quiet hours 🌙** (General settings) — between two times announcements play at a lower volume, or not at all. Urgent phrases play normally.
+- **Chime before announcements 🔔** (optional) — ding-dong or a soft tone before each announcement, and special beeps (or the same chime, or none) for urgent ones. The tones are generated locally.
+- **HomePod "connected" sensor 📡** (optional) — a contact sensor per HomePod in Apple Home: closed = connected, open = unavailable. Checked every few minutes and after every announcement.
+- The default voice is now at the top of the settings screen, followed by the new General settings.
+- After an update the settings screen shows "What's new" once.
+- Webhook: `urgent=1` on `/say` and `/announce`.
+
 ## 1.5.5
 - Editing the text of an existing phrase in the settings keeps its switch name, so the switch and its Apple Home automations stay the same. Only the "Switch name" field creates a new switch.
 

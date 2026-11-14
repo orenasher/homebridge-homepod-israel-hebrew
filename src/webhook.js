@@ -37,11 +37,15 @@ function send(res, status, obj) {
 
 /**
  * Endpoints:
- *   GET|POST /say?text=...&speakers=Kitchen,Bedroom&volume=50&voice=avri-deep
+ *   GET|POST /say?text=...&speakers=Kitchen,Bedroom&volume=50&voice=avri-deep&urgent=1
  *   GET|POST /announce?name=<announcement name>
  *   GET      /status
  * Auth: ?token=... or header "Authorization: Bearer ..." when a token is set.
  */
+function isTrue(v) {
+  return v === true || ['1', 'true', 'yes', 'on'].includes(String(v).toLowerCase());
+}
+
 function startWebhook(platform, cfg, log) {
   const port = Number(cfg.port) || 8095;
   const token = cfg.token ? String(cfg.token) : '';
@@ -92,6 +96,7 @@ function startWebhook(platform, cfg, log) {
           volume: params.volume,
           voice: params.voice,
           style: params.style,
+          urgent: isTrue(params.urgent),
         });
       } else if (route === '/announce') {
         const item = platform.items()
@@ -101,6 +106,7 @@ function startWebhook(platform, cfg, log) {
           ...item,
           speakers: params.speakers || params.speaker || item.speakers,
           volume: params.volume ?? item.volume,
+          urgent: params.urgent !== undefined ? isTrue(params.urgent) : item.urgent,
         });
       } else {
         return send(res, 404, { ok: false, error: 'unknown path — use /say, /announce or /status' });

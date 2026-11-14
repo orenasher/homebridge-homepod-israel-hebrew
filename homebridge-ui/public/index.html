@@ -17,6 +17,7 @@
   #hih details summary { cursor: pointer; font-weight: 600; }
   #hih .scan-item { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px dashed rgba(128,128,128,.3); }
   #hih input[type=range] { width: 140px; vertical-align: middle; }
+  #hih .phrase.urgent { border-color: #c62828; box-shadow: inset 4px 0 0 #c62828; }
   #hih .tip { border: 1px dashed #f9a825; border-radius: 10px; padding: 10px; background: rgba(249,168,37,.08); }
 </style>
 
@@ -36,32 +37,11 @@
     </div>
   </div>
 
-  <!-- HomePods -->
-  <div class="card">
-    <h5 data-t="speakersTitle"></h5>
-    <div id="speakers"></div>
-    <div class="row-flex" style="margin-top:8px">
-      <button id="scanBtn" class="btn btn-primary btn-sm" data-t="scan"></button>
-      <button id="addSpeakerBtn" class="btn btn-outline-secondary btn-sm" data-t="addManual"></button>
-    </div>
-    <div id="scanResults" style="margin-top:10px"></div>
-  </div>
-
-  <!-- Phrases -->
-  <div class="card">
-    <h5 data-t="phrasesTitle"></h5>
-    <div class="muted" style="margin-bottom:8px" data-t="phrasesHelp"></div>
-    <div id="phrases"></div>
-    <button id="addPhraseBtn" class="btn btn-primary btn-sm" data-t="addPhrase"></button>
-    <div class="form-check" style="margin-top:12px">
-      <input id="groupSwitches" type="checkbox" class="form-check-input">
-      <label for="groupSwitches" class="form-check-label" data-t="groupSwitches"></label>
-    </div>
-    <div id="groupBox" style="display:none; margin-top:6px">
-      <label data-t="groupName"></label>
-      <input id="groupName" type="text" class="form-control">
-      <div class="muted" style="margin-top:4px" data-t="groupHelp"></div>
-    </div>
+  <!-- What's new (shown once after an update) -->
+  <div id="whatsNew" class="card tip" style="display:none">
+    <h5 id="wnTitle"></h5>
+    <ul id="wnList" style="margin:0 0 8px; padding-inline-start:20px"></ul>
+    <button id="wnOk" class="btn btn-sm btn-primary" data-t="wnOk"></button>
   </div>
 
   <!-- Default voice -->
@@ -106,6 +86,83 @@
         <label for="fallback" class="form-check-label" data-t="fallback"></label>
       </div>
     </details>
+  </div>
+
+  <!-- General settings -->
+  <div class="card">
+    <h5 data-t="generalTitle"></h5>
+
+    <div class="form-check">
+      <input id="qEnabled" type="checkbox" class="form-check-input">
+      <label for="qEnabled" class="form-check-label" data-t="qEnabled"></label>
+    </div>
+    <div id="qBox" style="margin:6px 0 4px">
+      <div class="row-flex">
+        <span data-t="qFrom"></span><input id="qStart" type="time" class="form-control" style="max-width:130px" dir="ltr">
+        <span data-t="qTo"></span><input id="qEnd" type="time" class="form-control" style="max-width:130px" dir="ltr">
+        <select id="qMode" class="form-control" style="max-width:200px">
+          <option value="lower" data-t="qLower"></option>
+          <option value="mute" data-t="qMute"></option>
+        </select>
+        <span id="qVolWrap"><input id="qVolume" type="range" min="0" max="100"> <span id="qVolV"></span></span>
+      </div>
+      <div class="muted" style="margin-top:4px" data-t="qHelp"></div>
+    </div>
+
+    <div class="form-check" style="margin-top:12px">
+      <input id="cEnabled" type="checkbox" class="form-check-input">
+      <label for="cEnabled" class="form-check-label" data-t="cEnabled"></label>
+    </div>
+    <div id="cBox" class="row-flex" style="margin:6px 0 4px">
+      <select id="cSound" class="form-control" style="max-width:180px">
+        <option value="dingdong" data-t="cDingdong"></option>
+        <option value="soft" data-t="cSoft"></option>
+      </select>
+      <span data-t="cUrgentLabel"></span>
+      <select id="cUrgent" class="form-control" style="max-width:180px">
+        <option value="urgent" data-t="cUrgentBeeps"></option>
+        <option value="same" data-t="cSame"></option>
+        <option value="none" data-t="cNone"></option>
+      </select>
+      <button id="cTest" class="btn btn-sm btn-outline-primary" data-t="preview"></button>
+    </div>
+
+    <div class="form-check" style="margin-top:12px">
+      <input id="aEnabled" type="checkbox" class="form-check-input">
+      <label for="aEnabled" class="form-check-label" data-t="aEnabled"></label>
+    </div>
+    <div id="aBox" style="margin:6px 0 0">
+      <div class="row-flex"><span data-t="aEvery"></span><input id="aInterval" type="number" min="1" max="60" class="form-control" style="max-width:90px"></div>
+      <div class="muted" style="margin-top:4px" data-t="aHelp"></div>
+    </div>
+  </div>
+
+  <!-- HomePods -->
+  <div class="card">
+    <h5 data-t="speakersTitle"></h5>
+    <div id="speakers"></div>
+    <div class="row-flex" style="margin-top:8px">
+      <button id="scanBtn" class="btn btn-primary btn-sm" data-t="scan"></button>
+      <button id="addSpeakerBtn" class="btn btn-outline-secondary btn-sm" data-t="addManual"></button>
+    </div>
+    <div id="scanResults" style="margin-top:10px"></div>
+  </div>
+
+  <!-- Phrases -->
+  <div class="card">
+    <h5 data-t="phrasesTitle"></h5>
+    <div class="muted" style="margin-bottom:8px" data-t="phrasesHelp"></div>
+    <div id="phrases"></div>
+    <button id="addPhraseBtn" class="btn btn-primary btn-sm" data-t="addPhrase"></button>
+    <div class="form-check" style="margin-top:12px">
+      <input id="groupSwitches" type="checkbox" class="form-check-input">
+      <label for="groupSwitches" class="form-check-label" data-t="groupSwitches"></label>
+    </div>
+    <div id="groupBox" style="display:none; margin-top:6px">
+      <label data-t="groupName"></label>
+      <input id="groupName" type="text" class="form-control">
+      <div class="muted" style="margin-top:4px" data-t="groupHelp"></div>
+    </div>
   </div>
 
   <!-- Voice cloning -->
@@ -218,6 +275,16 @@
       pythonPath: 'נתיב Python עם pyatv (רק אם אתה יודע מה זה — השאר ריק)',
       saveHint: 'אחרי שינויים לחץ Save והפעל מחדש את Homebridge', guide: 'מדריך מלא',
       errNoSpeaker: 'הוסף קודם הום פוד', errEmpty: 'כתוב טקסט קודם',
+      generalTitle: '⚙️ הגדרות כלליות',
+      qEnabled: '🌙 שעות שקט', qFrom: 'מ-', qTo: 'עד', qLower: 'להנמיך ווליום ל-', qMute: 'לא להשמיע בכלל',
+      qHelp: 'בשעות האלה ההכרזות יושמעו בשקט (או לא יושמעו). משפט שמסומן "דחוף" תמיד יושמע כרגיל.',
+      cEnabled: '🔔 צליל לפני כל הכרזה', cDingdong: 'דינג-דונג', cSoft: 'צליל רך', cUrgentLabel: 'בהודעה דחופה:',
+      cUrgentBeeps: 'צפצוף דחוף', cSame: 'אותו צליל', cNone: 'בלי צליל',
+      aEnabled: '📡 חיישן "מחובר" לכל הום פוד', aEvery: 'בדיקה כל (דקות):',
+      aHelp: 'בבית של אפל יופיע חיישן מגע לכל הום פוד: סגור = מחובר, פתוח = לא זמין. אפשר לבנות עליו התראה או אוטומציה.',
+      urgent: '🚨 דחוף', urgentHelp: 'קופץ לראש התור ומושמע גם בשעות שקט',
+      chimeSample: 'שלום, זו בדיקת צליל.',
+      wnTitle: '🎉 מה חדש בגרסה', wnOk: 'הבנתי',
     },
     en: {
       title: 'HomePod Israel Hebrew', subtitle: 'Natural-voice announcements on your HomePods',
@@ -270,6 +337,36 @@
       pythonPath: 'Path to a Python with pyatv (leave empty unless you know you need it)',
       saveHint: 'After changes, tap Save and restart Homebridge', guide: 'Full guide',
       errNoSpeaker: 'Add a HomePod first', errEmpty: 'Type some text first',
+      generalTitle: '⚙️ General settings',
+      qEnabled: '🌙 Quiet hours', qFrom: 'From', qTo: 'until', qLower: 'Lower the volume to', qMute: 'Do not play at all',
+      qHelp: 'During these hours announcements play quietly (or not at all). Phrases marked "Urgent" always play normally.',
+      cEnabled: '🔔 Chime before every announcement', cDingdong: 'Ding-dong', cSoft: 'Soft tone', cUrgentLabel: 'For urgent ones:',
+      cUrgentBeeps: 'Urgent beeps', cSame: 'Same chime', cNone: 'No chime',
+      aEnabled: '📡 "Connected" sensor for each HomePod', aEvery: 'Check every (minutes):',
+      aHelp: 'Apple Home gets a contact sensor per HomePod: closed = connected, open = unavailable. Use it for a notification or an automation.',
+      urgent: '🚨 Urgent', urgentHelp: 'Jumps the queue and plays even during quiet hours',
+      chimeSample: 'Hello, this is a chime test.',
+      wnTitle: '🎉 What\'s new in version', wnOk: 'Got it',
+    },
+  };
+
+  /** Shown once after updating to a version listed here. */
+  const WHATS_NEW = {
+    '1.6.0': {
+      he: [
+        '🚨 משפט "דחוף" — סמנו וי ליד משפט, והוא קופץ לראש התור ומושמע גם בשעות שקט.',
+        '🌙 שעות שקט — בלילה ההכרזות מושמעות בשקט, או לא מושמעות בכלל.',
+        '🔔 צליל לפני הכרזה — דינג-דונג או צליל רך (לא חובה), וצפצוף מיוחד להודעות דחופות.',
+        '📡 חיישן "מחובר" לכל הום פוד — תדעו מיד כשהום פוד לא זמין.',
+        '🎙️ קול ברירת המחדל עבר לראש ההגדרות.',
+      ],
+      en: [
+        '🚨 "Urgent" phrases — tick a phrase and it jumps the queue and plays even during quiet hours.',
+        '🌙 Quiet hours — at night announcements play quietly, or not at all.',
+        '🔔 Chime before announcements — ding-dong or a soft tone (optional), with special beeps for urgent ones.',
+        '📡 A "connected" sensor for each HomePod — know right away when one is unavailable.',
+        '🎙️ The default voice is now at the top of the settings.',
+      ],
     },
   };
 
@@ -326,7 +423,7 @@
   const save = () => homebridge.updatePluginConfig([cfg]);
 
   /* ---------- language ---------- */
-  function applyLang() {
+  let applyLang = function applyLang() {
     root.dir = lang === 'he' ? 'rtl' : 'ltr';
     root.querySelectorAll('[data-t]').forEach((el) => { el.textContent = t(el.dataset.t); });
     root.querySelectorAll('[data-lang]').forEach((b) => {
@@ -466,7 +563,15 @@
     const list = names && names.length ? cfg.speakers.filter((s) => names.includes(s.name)) : cfg.speakers;
     return list.map((s) => ({ name: s.name, host: s.host, id: s.id, volume: s.volume }));
   }
-  async function playTest(text, voice, names, volume, btn, style) {
+  /** Same rule as the plugin (src/platform.js chimeFor). */
+  function chimeName(urgent) {
+    const c = cfg.chime;
+    if (!c || !c.enabled) return null;
+    if (urgent && c.urgentSound === 'none') return null;
+    if (urgent && (!c.urgentSound || c.urgentSound === 'urgent')) return 'urgent';
+    return c.sound || 'dingdong';
+  }
+  async function playTest(text, voice, names, volume, btn, style, urgent) {
     if (!cfg.speakers.length) return homebridge.toast.warning(t('errNoSpeaker'));
     if (!String(text || '').trim()) return homebridge.toast.warning(t('errEmpty'));
     const label = btn.textContent;
@@ -474,7 +579,7 @@
     try {
       const r = await homebridge.request('/test', {
         text, voice: voice || cfg.voice, style: style || cfg.style, speakers: speakerObjs(names), volume,
-        tts: ttsBlock(), restoreVolume: cfg.restoreVolume !== false,
+        tts: ttsBlock(), restoreVolume: cfg.restoreVolume !== false, chime: chimeName(urgent),
       });
       if (r.requested) homebridge.toast.warning(`${t('fellBack')} ${r.voice}\n${r.fallbackReason || ''}`);
       else homebridge.toast.success(`${t('played')} (${r.voice})`);
@@ -522,6 +627,7 @@
             <label style="margin:0"><input type="checkbox" data-k="useVol" ${p.volume !== undefined && p.volume !== null ? 'checked' : ''}> ${esc(t('useVol'))}</label>
             <input type="range" min="0" max="100" data-k="volume" value="${esc(p.volume ?? 50)}" ${p.volume !== undefined && p.volume !== null ? '' : 'disabled'}>
             <span data-volv>${esc(p.volume ?? '')}</span>
+            <label style="margin:0; margin-inline-start:10px" title="${esc(t('urgentHelp'))}"><input type="checkbox" data-k="urgent" ${p.urgent ? 'checked' : ''}> ${esc(t('urgent'))}</label>
           </div>
           <div class="row-flex">
             <button class="btn btn-sm btn-outline-primary" data-act="test">${esc(t('test'))}</button>
@@ -564,8 +670,11 @@
         save();
       });
       range.addEventListener('input', () => { p.volume = Number(range.value); vv.textContent = range.value; save(); });
+      const urg = el.querySelector('[data-k=urgent]');
+      urg.addEventListener('change', () => { if (urg.checked) p.urgent = true; else delete p.urgent; el.classList.toggle('urgent', urg.checked); save(); });
+      el.classList.toggle('urgent', !!p.urgent);
       el.querySelector('[data-act=del]').addEventListener('click', () => { cfg.phrases.splice(i, 1); save(); renderPhrases(); });
-      el.querySelector('[data-act=test]').addEventListener('click', (e) => playTest(p.text, p.voice, p.speakers, p.volume, e.target, p.style));
+      el.querySelector('[data-act=test]').addEventListener('click', (e) => playTest(p.text, p.voice, p.speakers, p.volume, e.target, p.style, p.urgent));
     });
   }
   $('addPhraseBtn').addEventListener('click', () => {
@@ -597,6 +706,32 @@
   bind('repeatGuardSeconds', (el) => { el.value = cfg.repeatGuardSeconds ?? 10; }, (el) => { const n = Number(el.value); if (Number.isFinite(n) && n >= 0) cfg.repeatGuardSeconds = Math.min(600, Math.round(n)); else delete cfg.repeatGuardSeconds; });
   bind('cacheDays', (el) => { el.value = cfg.cacheDays || 90; }, (el) => { cfg.cacheDays = Number(el.value) || 90; });
   for (const id of ['elKey', 'gKey', 'oaKey', 'caKey', 'geminiKey']) $(id).addEventListener('change', () => refreshVoiceSelects());
+  // quiet hours
+  const q = () => { cfg.quietHours = cfg.quietHours || {}; return cfg.quietHours; };
+  const showQuiet = () => {
+    const on = !!(cfg.quietHours && cfg.quietHours.enabled);
+    $('qBox').style.display = on ? '' : 'none';
+    $('qVolWrap').style.display = (cfg.quietHours && cfg.quietHours.mode === 'mute') ? 'none' : '';
+  };
+  bind('qEnabled', (el) => { el.checked = !!(cfg.quietHours && cfg.quietHours.enabled); showQuiet(); }, (el) => { q().enabled = el.checked; showQuiet(); });
+  bind('qStart', (el) => { el.value = (cfg.quietHours && cfg.quietHours.start) || '22:00'; }, (el) => { q().start = el.value || '22:00'; });
+  bind('qEnd', (el) => { el.value = (cfg.quietHours && cfg.quietHours.end) || '07:00'; }, (el) => { q().end = el.value || '07:00'; });
+  bind('qMode', (el) => { el.value = (cfg.quietHours && cfg.quietHours.mode) || 'lower'; }, (el) => { q().mode = el.value; showQuiet(); });
+  bind('qVolume', (el) => { el.value = (cfg.quietHours && cfg.quietHours.volume) ?? 25; $('qVolV').textContent = el.value; },
+    (el) => { q().volume = Number(el.value); $('qVolV').textContent = el.value; }, 'input');
+  // chime
+  const ch = () => { cfg.chime = cfg.chime || {}; return cfg.chime; };
+  const showChime = () => { $('cBox').style.display = (cfg.chime && cfg.chime.enabled) ? '' : 'none'; };
+  bind('cEnabled', (el) => { el.checked = !!(cfg.chime && cfg.chime.enabled); showChime(); }, (el) => { ch().enabled = el.checked; showChime(); });
+  bind('cSound', (el) => { el.value = (cfg.chime && cfg.chime.sound) || 'dingdong'; }, (el) => { ch().sound = el.value; });
+  bind('cUrgent', (el) => { el.value = (cfg.chime && cfg.chime.urgentSound) || 'urgent'; }, (el) => { ch().urgentSound = el.value; });
+  $('cTest').addEventListener('click', (e) => playTest(t('chimeSample'), cfg.voice, [cfg.speakers[0] && cfg.speakers[0].name].filter(Boolean), undefined, e.target, cfg.style));
+  // availability sensor
+  const av = () => { cfg.availability = cfg.availability || {}; return cfg.availability; };
+  const showAv = () => { $('aBox').style.display = (cfg.availability && cfg.availability.enabled) ? '' : 'none'; };
+  bind('aEnabled', (el) => { el.checked = !!(cfg.availability && cfg.availability.enabled); showAv(); }, (el) => { av().enabled = el.checked; showAv(); });
+  bind('aInterval', (el) => { el.value = (cfg.availability && cfg.availability.intervalMinutes) || 5; },
+    (el) => { const n = Math.round(Number(el.value)); av().intervalMinutes = Number.isFinite(n) ? Math.max(1, Math.min(60, n)) : 5; });
   bind('pythonPath', (el) => { el.value = cfg.pythonPath || ''; }, (el) => { const v = el.value.trim(); if (v) cfg.pythonPath = v; else delete cfg.pythonPath; refreshState(); });
 
   /* ---------- Cartesia voices ---------- */
@@ -679,6 +814,26 @@
     const tok = cfg.webhook.token ? `&token=${encodeURIComponent(cfg.webhook.token)}` : '';
     $('whExample').textContent = `http://<Homebridge-IP>:${port}/say?text=${encodeURIComponent(lang === 'he' ? 'שלום' : 'Hello')}${tok}`;
   }
+
+  /* ---------- what's new ---------- */
+  let version = '';
+  try { version = (await homebridge.request('/version')).version || ''; } catch { /* older backend */ }
+  const SEEN_KEY = 'hih-whats-new-seen';
+  function renderWhatsNew() {
+    const notes = WHATS_NEW[version];
+    let seen = '';
+    try { seen = localStorage.getItem(SEEN_KEY) || ''; } catch { /* storage blocked */ }
+    if (!notes || seen === version) { $('whatsNew').style.display = 'none'; return; }
+    $('wnTitle').textContent = `${t('wnTitle')} ${version}`;
+    $('wnList').innerHTML = (notes[lang] || notes.he).map((n) => `<li>${esc(n)}</li>`).join('');
+    $('whatsNew').style.display = '';
+  }
+  $('wnOk').addEventListener('click', () => {
+    try { localStorage.setItem(SEEN_KEY, version); } catch { /* storage blocked */ }
+    $('whatsNew').style.display = 'none';
+  });
+  const applyLangBase = applyLang;
+  applyLang = () => { applyLangBase(); renderWhatsNew(); };
 
   save();
   applyLang();

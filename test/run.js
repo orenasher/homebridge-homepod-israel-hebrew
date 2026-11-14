@@ -15,6 +15,7 @@ fs.writeFileSync(fakePython, `#!/usr/bin/env node
 const reply = (a) => {
   require('fs').appendFileSync(${JSON.stringify(callsLog)}, JSON.stringify(a) + '\\n');
   if (a.cmd === 'warm') return { ok: true, known: (a.devices || []).length };
+  if (a.cmd === 'ping') return { ok: true, online: a.host !== '10.0.0.99' };
   if (a.cmd === 'scan') return { ok: true, devices: [{ name: 'מטבח', host: '10.0.0.5', id: 'AA', homepod: true }] };
   if (a.host === '10.0.0.99') return { ok: false, error: 'HomePod not found on the network' };
   return { ok: true, previousVolume: 35, warnings: [] };
@@ -74,8 +75,9 @@ class PlatformAccessory {
   removeService(s) { this.services = this.services.filter((x) => x !== s); }
 }
 const api = new EventEmitter();
-api.hap = { Service: { AccessoryInformation: { UUID: 'info' }, Switch: { UUID: 'switch' } },
-  Characteristic: { On: 'On', Name: 'Name', ConfiguredName: 'CN', Manufacturer: 'm', Model: 'mo', SerialNumber: 's' },
+api.hap = { Service: { AccessoryInformation: { UUID: 'info' }, Switch: { UUID: 'switch' }, ContactSensor: { UUID: 'contact' } },
+  Characteristic: { On: 'On', Name: 'Name', ConfiguredName: 'CN', Manufacturer: 'm', Model: 'mo', SerialNumber: 's',
+    ContactSensorState: Object.assign('CSS', { CONTACT_DETECTED: 0, CONTACT_NOT_DETECTED: 1 }) },
   uuid: { generate: (s) => require('crypto').createHash('md5').update(s).digest('hex') } };
 api.platformAccessory = PlatformAccessory;
 api.user = { storagePath: () => tmp };
@@ -357,6 +359,88 @@ exit 1
     gp.config = { ...gp.config, groupSwitches: false };
     gp.syncAccessories();
     assert.strictEqual(unreg[0], reg2[0], 'group accessory removed when grouping is off');
+  }
+
+  /* ---------- 1.6.0: urgent, quiet hours, chime, availability ---------- */
+  {
+    const { Speaker } = require('../src/player');
+    const { quietNow } = require('../src/platform');
+    // priority queue: urgent jumps ahead of waiting normal announcements and is never dropped
+    const order = [];
+    const fakeEngine = { ensure: async () => {}, helper: async (a) => { order.push(a.files[0]); await sleep(30); return { ok: true }; } };
+    const sp = new Speaker({ name: 'x', volume: 60 }, fakeEngine, log);
+    const jobs = ['n1', 'n2', 'n3', 'n4', 'n5'].map((f) => sp.play(f).catch(() => 'dropped'));
+    const dropped = sp.play('n6').catch(() => 'dropped');
+    const u = sp.play('u1', { urgent: true });
+    await Promise.all([...jobs, u]);
+    assert.strictEqual(await dropped, 'dropped', 'normal announcement dropped when the queue is full');
+    assert.deepStrictEqual(order, ['n1', 'u1', 'n2', 'n3', 'n4', 'n5'], 'urgent plays right after the current one');
+    // quiet-hours volume cap
+    const caps = [];
+    const capEngine = { ensure: async () => {}, helper: async (a) => { caps.push(a.volume); return { ok: true }; } };
+    const sp2 = new Speaker({ name: 'y', volume: 60 }, capEngine, log);
+    await sp2.play('a', { maxVolume: 20 });
+    await sp2.play('a', { volume: 10, maxVolume: 20 });
+    await sp2.play('a', {});
+    assert.deepStrictEqual(caps, [20, 10, 60]);
+
+    const at = (h, m) => new Date(2026, 0, 1, h, m);
+    const qc = { quietHours: { enabled: true, start: '22:00', end: '07:00', volume: 15 } };
+    assert.deepStrictEqual(quietNow(qc, at(23, 30)), { mute: false, volume: 15 });
+    assert.deepStrictEqual(quietNow(qc, at(6, 59)), { mute: false, volume: 15 });
+    assert.strictEqual(quietNow(qc, at(7, 0)), null);
+    assert.strictEqual(quietNow(qc, at(12, 0)), null);
+    assert.strictEqual(quietNow({ quietHours: { ...qc.quietHours, start: '13:00', end: '15:00' } }, at(14, 0)).volume, 15);
+    assert.strictEqual(quietNow({ quietHours: { ...qc.quietHours, enabled: false } }, at(23, 0)), null);
+    assert.strictEqual(quietNow({ quietHours: { ...qc.quietHours, mode: 'mute' } }, at(23, 0)).mute, true);
+
+    // chime WAV + chime before the speech, urgent beeps for urgent phrases
+    const { chimeFile } = require('../src/chime');
+    const cf = chimeFile(path.join(tmp, 'chimes'), 'dingdong');
+    assert.strictEqual(fs.readFileSync(cf).toString('ascii', 0, 4), 'RIFF');
+    assert.strictEqual(chimeFile(tmp, 'nope'), null);
+
+    const reg3 = [];
+    const api3 = Object.assign(new EventEmitter(), {
+      hap: api.hap, platformAccessory: api.platformAccessory, user: api.user, updatePlatformAccessories: () => {},
+      registerPlatformAccessories: (p, n, a) => reg3.push(...a), unregisterPlatformAccessories: () => {},
+    });
+    const cp = new Platform(log, {
+      ...config,
+      webhook: { enabled: false },
+      phrases: [{ text: 'רגיל', speakers: ['מטבח'] }, { text: 'אזעקה', speakers: ['מטבח'], urgent: true }],
+      chime: { enabled: true, sound: 'dingdong' },
+      quietHours: { enabled: true, start: '00:00', end: '23:59', mode: 'mute' },
+      availability: { enabled: true, intervalMinutes: 5 },
+    }, api3);
+    api3.emit('didFinishLaunching');
+    await sleep(600);
+    const sensors = reg3.filter((a) => a.context.sensorFor);
+    assert.deepStrictEqual(sensors.map((a) => a.displayName), ['מטבח מחובר', 'חדר שינה הורים מחובר', 'Broken מחובר']);
+    assert.ok(calls().some((c) => c.cmd === 'ping'), 'availability checked at startup');
+    const css = (a) => a.getService('contact').getCharacteristic(api.hap.Characteristic.ContactSensorState);
+    assert.strictEqual(css(sensors[0]).getter(), 0, 'reachable HomePod → closed');
+    assert.strictEqual(css(sensors[2]).getter(), 1, 'unreachable HomePod → open');
+
+    const now = new Date();
+    const muted = now.getHours() * 60 + now.getMinutes() < 23 * 60 + 59;
+    fs.rmSync(callsLog, { force: true });
+    const r1 = await cp.say('רגיל', { speakers: ['מטבח'] });
+    if (muted) {
+      assert.strictEqual(r1.quiet, 'muted');
+      assert.strictEqual(speakCalls().length, 0, 'quiet hours (mute) → nothing played');
+    }
+    const r2 = await cp.say('אזעקה', { speakers: ['מטבח'], urgent: true });
+    assert.ok(!r2.quiet, 'urgent ignores quiet hours');
+    const last = speakCalls().pop();
+    assert.ok(/chime-urgent/.test(last.files[0]) && last.files.length === 2, 'urgent beeps before the speech');
+    cp.config = { ...cp.config, quietHours: { enabled: false } };
+    await cp.say('רגיל', { speakers: ['מטבח'] });
+    assert.ok(/chime-dingdong/.test(speakCalls().pop().files[0]), 'ding-dong before normal speech');
+    cp.config = { ...cp.config, chime: { enabled: false } };
+    await cp.say('רגיל', { speakers: ['מטבח'] });
+    assert.strictEqual(speakCalls().pop().files.length, 1, 'no chime when disabled');
+    api3.emit('shutdown');
   }
 
   api.emit('shutdown');

@@ -9,6 +9,8 @@ const { Speaker } = require('../src/player');
 const { listVoices, listStyles } = require('../src/voices');
 const { CACHE_DIR } = require('../src/platform');
 const { listCartesiaVoices, createElevenLabsClone } = require('../src/providers');
+const { chimeFile } = require('../src/chime');
+const { version } = require('../package.json');
 
 const quietLog = {
   info: (m) => console.log(m),
@@ -26,6 +28,7 @@ const quietLog = {
       super();
       this.engine = new PyatvEnv(quietLog, { storagePath: this.homebridgeStoragePath });
 
+      this.onRequest('/version', async () => ({ version }));
       this.onRequest('/voices', async () => listVoices());
       this.onRequest('/styles', async () => listStyles());
 
@@ -80,9 +83,12 @@ const quietLog = {
           if (!speakers.length) throw new Error('no HomePod selected');
           const tts = new TtsService(body.tts || {}, path.join(this.homebridgeStoragePath, CACHE_DIR), quietLog);
           const audio = await tts.getAudio(text, body.voice, body.style);
+          const files = [audio.file];
+          const chime = body.chime ? chimeFile(path.join(this.homebridgeStoragePath, CACHE_DIR), body.chime) : null;
+          if (chime) files.unshift(chime);
           await this.engine.ensure();
           const results = await Promise.allSettled(speakers.map((s) => new Speaker(s, this.engine, quietLog)
-            .play(audio.file, { volume: body.volume, restoreVolume: body.restoreVolume !== false })));
+            .play(files, { volume: body.volume, restoreVolume: body.restoreVolume !== false })));
           const failed = results.map((r, i) => (r.status === 'rejected' ? `${speakers[i].name}: ${r.reason.message}` : null))
             .filter(Boolean);
           if (failed.length === speakers.length) throw new Error(failed.join(' | '));

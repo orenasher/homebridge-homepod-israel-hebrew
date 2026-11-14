@@ -6,6 +6,7 @@ const { Speaker } = require('./player');
 const { PyatvEnv } = require('./pyatv-env');
 const { startWebhook } = require('./webhook');
 const { DEFAULT_VOICE } = require('./voices');
+const { chimeFile } = require('./chime');
 
 const PLUGIN_NAME = 'homebridge-homepod-israel-hebrew';
 const PLATFORM_NAME = 'HomePodIsraelHebrew';
@@ -15,6 +16,29 @@ const DEFAULT_GROUP_NAME = 'קבצי הקול שלי';
 function repeatGuardMs(config) {
   const v = Number(config.repeatGuardSeconds);
   return (Number.isFinite(v) && v >= 0 ? Math.min(v, 600) : 10) * 1000;
+}
+
+/** "HH:MM" → minutes after midnight, or null. */
+function parseClock(v) {
+  const m = /^(\d{1,2}):(\d{2})$/.exec(String(v || '').trim());
+  if (!m) return null;
+  const h = Number(m[1]);
+  const min = Number(m[2]);
+  return h < 24 && min < 60 ? h * 60 + min : null;
+}
+
+/** Quiet-hours settings in effect at `date`, or null when it is not quiet time. */
+function quietNow(config, date = new Date()) {
+  const q = config.quietHours;
+  if (!q || !q.enabled) return null;
+  const start = parseClock(q.start || '22:00');
+  const end = parseClock(q.end || '07:00');
+  if (start === null || end === null || start === end) return null;
+  const now = date.getHours() * 60 + date.getMinutes();
+  const inside = start < end ? now >= start && now < end : now >= start || now < end;
+  if (!inside) return null;
+  const vol = Number(q.volume);
+  return { mute: q.mode === 'mute', volume: Number.isFinite(vol) ? Math.max(0, Math.min(100, vol)) : 25 };
 }
 
 const MAX_GROUP_SWITCHES = 90; // per group accessory; HomeKit allows about 100 services per accessory
@@ -27,7 +51,9 @@ class HomePodIsraelHebrewPlatform {
     this.cached = new Map();
     this.lastTrigger = new Map();
     this.speakers = new Map();
+    this.online = new Map(); // HomePod name → last known reachability
     this.server = null;
+    this.pingTimer = null;
 
     if (!config) {
       log.warn('No configuration found — plugin disabled.');
@@ -39,6 +65,7 @@ class HomePodIsraelHebrewPlatform {
     });
     api.on('shutdown', () => {
       if (this.server) this.server.close();
+      if (this.pingTimer) clearInterval(this.pingTimer);
       if (this.engine) this.engine.stopDaemon();
     });
   }
@@ -59,7 +86,9 @@ class HomePodIsraelHebrewPlatform {
 
     for (const s of cfg.speakers || []) {
       if (!s || !s.name) continue;
-      this.speakers.set(s.name, new Speaker(s, this.engine, this.log));
+      const speaker = new Speaker(s, this.engine, this.log);
+      speaker.onResult = (ok) => this.setOnline(speaker, ok, ok ? 'played' : 'playback failed');
+      this.speakers.set(s.name, speaker);
     }
     if (!this.speakers.size) this.log.warn('No HomePods configured yet — open the plugin settings and tap "Find HomePods".');
 
@@ -73,6 +102,7 @@ class HomePodIsraelHebrewPlatform {
     this.engine.ensure()
       .then(() => this.engine.warm([...this.speakers.values()].map((s) => ({ host: s.host, id: s.id }))))
       .then(() => this.log.info('Fast mode ready — HomePods located.'))
+      .then(() => this.startAvailabilityChecks())
       .catch((err) => this.log.error(`Voice engine setup failed: ${err.message}`));
     if (cfg.pregenerate !== false) this.pregenerate();
     this.tts.prune(cfg.cacheDays || 90).catch(() => {});
@@ -139,6 +169,25 @@ class HomePodIsraelHebrewPlatform {
           const { Service } = this.api.hap;
           const service = accessory.getService(Service.Switch) || accessory.addService(Service.Switch, item.name);
           this.setupSwitch(service, item.name, () => accessory.context.item);
+        });
+      }
+    }
+
+    if (this.availabilityEnabled) {
+      for (const speaker of this.speakers.values()) {
+        const uuid = this.api.hap.uuid.generate(`${PLATFORM_NAME}:online:${speaker.name}`);
+        wanted.add(uuid);
+        this.ensureAccessory(uuid, switchName(`${speaker.name} מחובר`), (accessory) => {
+          accessory.context.sensorFor = speaker.name;
+          const { Service, Characteristic } = this.api.hap;
+          const service = accessory.getService(Service.ContactSensor)
+            || accessory.addService(Service.ContactSensor, accessory.displayName);
+          const state = service.getCharacteristic(Characteristic.ContactSensorState);
+          // closed (detected) = HomePod reachable, open = HomePod unreachable
+          state.onGet(() => (this.online.get(speaker.name) === false
+            ? Characteristic.ContactSensorState.CONTACT_NOT_DETECTED
+            : Characteristic.ContactSensorState.CONTACT_DETECTED));
+          speaker.sensor = service;
         });
       }
     }
@@ -218,6 +267,50 @@ class HomePodIsraelHebrewPlatform {
     on.updateValue(false);
   }
 
+  /* ------------------------------------------------------------ availability */
+
+  get availabilityEnabled() {
+    const a = this.config.availability;
+    return !!(a && a.enabled);
+  }
+
+  /** Record whether a HomePod is reachable and update its contact sensor. */
+  setOnline(speaker, ok, why) {
+    const before = this.online.get(speaker.name);
+    this.online.set(speaker.name, ok);
+    if (before !== undefined && before !== ok) {
+      if (ok) this.log.info(`[${speaker.name}] HomePod is reachable again (${why}).`);
+      else this.log.warn(`[${speaker.name}] HomePod is not reachable (${why}).`);
+    }
+    if (speaker.sensor) {
+      const { Characteristic } = this.api.hap;
+      speaker.sensor.updateCharacteristic(Characteristic.ContactSensorState, ok
+        ? Characteristic.ContactSensorState.CONTACT_DETECTED
+        : Characteristic.ContactSensorState.CONTACT_NOT_DETECTED);
+    }
+  }
+
+  /** Check every few minutes that each HomePod still answers on the network. */
+  startAvailabilityChecks() {
+    if (!this.availabilityEnabled || this.pingTimer || !this.speakers.size) return;
+    const minutes = Math.max(1, Math.min(60, Number(this.config.availability.intervalMinutes) || 5));
+    const check = async () => {
+      for (const speaker of this.speakers.values()) {
+        if (speaker.running) continue; // it is talking right now, so it is clearly there
+        try {
+          let ok = await speaker.ping();
+          if (!ok) ok = await speaker.ping(); // one miss can be a Wi-Fi hiccup — ask again
+          this.setOnline(speaker, ok, 'network check');
+        } catch (err) {
+          this.log.debug(`[${speaker.name}] availability check: ${err.message}`);
+        }
+      }
+    };
+    check();
+    this.pingTimer = setInterval(check, minutes * 60000);
+    if (this.pingTimer.unref) this.pingTimer.unref();
+  }
+
   /* ------------------------------------------------------------ speaking */
 
   resolveSpeakers(names) {
@@ -237,7 +330,7 @@ class HomePodIsraelHebrewPlatform {
   /** A configured phrase (from a switch or the webhook). */
   announce(item) {
     return this.say(item.text, {
-      speakers: item.speakers, volume: item.volume, voice: item.voice, style: item.style, label: item.name,
+      speakers: item.speakers, volume: item.volume, voice: item.voice, style: item.style, label: item.name, urgent: item.urgent,
     });
   }
 
@@ -245,18 +338,30 @@ class HomePodIsraelHebrewPlatform {
    * Say any text.
    * @returns {Promise<{voice: string, cached: boolean, speakers: string[], failed: string[]}>}
    */
-  async say(text, { speakers, volume, voice, style, label } = {}) {
+  async say(text, { speakers, volume, voice, style, label, urgent } = {}) {
     const targets = this.resolveSpeakers(speakers);
     if (!targets.length) throw new Error('no matching HomePods');
+    const tag0 = label ? `"${label}"` : `"${String(text).slice(0, 40)}"`;
+
+    // Quiet hours: lower the volume or stay silent — urgent announcements always play normally.
+    const quiet = urgent ? null : quietNow(this.config);
+    if (quiet && quiet.mute) {
+      this.log.info(`Quiet hours — ${tag0} was not played.`);
+      return { voice: null, cached: false, speakers: [], failed: [], quiet: 'muted' };
+    }
 
     const started = Date.now();
     const audio = await this.tts.getAudio(text, voice || this.defaultVoice, style || this.config.style);
-    const tag = label ? `"${label}"` : `"${String(text).slice(0, 40)}"`;
-    this.log.info(`Speaking ${tag} on ${targets.map((s) => s.name).join(' + ')} `
-      + `(${audio.voice}${audio.cached ? ', cached' : ''}, ready in ${Date.now() - started} ms)`);
+    this.log.info(`Speaking ${tag0}${urgent ? ' (urgent)' : ''} on ${targets.map((s) => s.name).join(' + ')} `
+      + `(${audio.voice}${audio.cached ? ', cached' : ''}${quiet ? `, quiet hours ${quiet.volume}%` : ''}, ready in ${Date.now() - started} ms)`);
+
+    const files = [audio.file];
+    const chime = this.chimeFor(urgent);
+    if (chime) files.unshift(chime);
 
     const restore = this.config.restoreVolume !== false;
-    const results = await Promise.allSettled(targets.map((s) => s.play(audio.file, { volume, restoreVolume: restore })));
+    const opts = { volume, restoreVolume: restore, urgent: !!urgent, maxVolume: quiet ? quiet.volume : undefined };
+    const results = await Promise.allSettled(targets.map((s) => s.play(files, opts)));
     const failed = [];
     results.forEach((r, i) => {
       if (r.status === 'rejected') {
@@ -266,6 +371,23 @@ class HomePodIsraelHebrewPlatform {
     });
     if (failed.length === targets.length) throw new Error(`playback failed on ${failed.join(', ')}`);
     return { voice: audio.voice, cached: audio.cached, speakers: targets.map((s) => s.name), failed };
+  }
+
+  /** The attention tone to play first, or null. */
+  chimeFor(urgent) {
+    const c = this.config.chime;
+    if (!c || !c.enabled) return null;
+    let name = c.sound || 'dingdong';
+    if (urgent) {
+      if (c.urgentSound === 'none') return null;
+      if (!c.urgentSound || c.urgentSound === 'urgent') name = 'urgent';
+    }
+    try {
+      return chimeFile(path.join(this.api.user.storagePath(), CACHE_DIR), name);
+    } catch (err) {
+      this.log.warn(`Could not prepare the chime: ${err.message}`);
+      return null;
+    }
   }
 
   /** Create audio for all phrases in the background so the first trigger is instant. */
@@ -295,4 +417,4 @@ function switchName(text) {
   return s || 'Announcement';
 }
 
-module.exports = { HomePodIsraelHebrewPlatform, PLUGIN_NAME, PLATFORM_NAME, CACHE_DIR, switchName };
+module.exports = { HomePodIsraelHebrewPlatform, PLUGIN_NAME, PLATFORM_NAME, CACHE_DIR, switchName, quietNow };
