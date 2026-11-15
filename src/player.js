@@ -1,6 +1,7 @@
 'use strict';
 
-const MAX_QUEUE = 5; // never let a burst of normal triggers pile up on one HomePod
+const MAX_QUEUE = 10; // a runaway automation loop is stopped by the repeat guard; this is a last safety net
+const CHIME_GAP_MS = 4000; // announcements that follow each other closely share one chime
 
 class Speaker {
   /**
@@ -18,6 +19,7 @@ class Speaker {
     this.jobs = [];      // waiting announcements; urgent ones are kept at the front
     this.running = false;
     this.onResult = null; // (ok: boolean) => void — used by the availability sensor
+    this.lastEnd = 0;
   }
 
   /** Announcements waiting or playing on this HomePod. */
@@ -49,15 +51,32 @@ class Speaker {
 
   _next() {
     if (this.running || !this.jobs.length) return;
-    const job = this.jobs.shift();
+    // Announcements that arrived together (several windows opened at once…) are played back to back
+    // on one connection: no gap between them, one chime, and nobody is left out.
+    const batch = [this.jobs.shift()];
+    const key = this._volumeKey(batch[0].opts);
+    while (this.jobs.length && batch.length < MAX_QUEUE && this._volumeKey(this.jobs[0].opts) === key) {
+      batch.push(this.jobs.shift());
+    }
+    const files = [];
+    const chime = batch.map((j) => j.opts.chime).find(Boolean);
+    if (chime && Date.now() - this.lastEnd > CHIME_GAP_MS) files.push(chime);
+    for (const j of batch) files.push(...j.files);
+
     this.running = true;
-    this._play(job.files, job.opts)
-      .then((r) => { this._report(true); job.resolve(r); },
-        (err) => { this._report(false); job.reject(err); })
+    this._play(files, batch[0].opts)
+      .then((r) => { this._report(true); batch.forEach((j) => j.resolve(r)); },
+        (err) => { this._report(false); batch.forEach((j) => j.reject(err)); })
       .finally(() => {
         this.running = false;
+        this.lastEnd = Date.now();
         this._next();
       });
+  }
+
+  /** Jobs can share one playback only if they would play at the same volume. */
+  _volumeKey(opts = {}) {
+    return `${numberOrNull(opts.volume) ?? 'd'}|${numberOrNull(opts.maxVolume) ?? '-'}|${opts.restoreVolume !== false}`;
   }
 
   _report(ok) {

@@ -6,6 +6,7 @@ const fsp = fs.promises;
 const path = require('path');
 
 const { resolveVoice, DEFAULT_VOICE } = require('./voices');
+const { hebrewNumbers } = require('./numbers');
 
 const DEFAULT_TIMEOUT_MS = 20000;
 
@@ -313,8 +314,10 @@ class TtsService {
    * @param {string} [styleId] style id from voices.js
    */
   async getAudio(text, voiceId, styleId) {
-    const clean = String(text || '').trim();
+    let clean = String(text || '').trim();
     if (!clean) throw new Error('nothing to say (empty text)');
+    // Some voices skip digits in Hebrew ("השעה 8" → "השעה") — say them as words instead.
+    if (/[\u0590-\u05FF]/.test(clean)) clean = hebrewNumbers(clean);
 
     const errors = [];
     const chain = this.chain(voiceId, styleId);

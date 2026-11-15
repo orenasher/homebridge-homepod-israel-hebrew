@@ -365,16 +365,20 @@ exit 1
   {
     const { Speaker } = require('../src/player');
     const { quietNow } = require('../src/platform');
-    // priority queue: urgent jumps ahead of waiting normal announcements and is never dropped
+    // priority queue: urgent jumps ahead of waiting announcements; announcements that arrive together
+    // are played back to back in one go; a runaway burst is capped
     const order = [];
-    const fakeEngine = { ensure: async () => {}, helper: async (a) => { order.push(a.files[0]); await sleep(30); return { ok: true }; } };
+    const fakeEngine = { ensure: async () => {}, helper: async (a) => { order.push(a.files); await sleep(30); return { ok: true }; } };
     const sp = new Speaker({ name: 'x', volume: 60 }, fakeEngine, log);
-    const jobs = ['n1', 'n2', 'n3', 'n4', 'n5'].map((f) => sp.play(f).catch(() => 'dropped'));
-    const dropped = sp.play('n6').catch(() => 'dropped');
+    const names = Array.from({ length: 10 }, (_, i) => `n${i + 1}`);
+    const jobs = names.map((f) => sp.play(f, { chime: 'ding' }).catch(() => 'dropped'));
+    const dropped = sp.play('n11').catch(() => 'dropped');
     const u = sp.play('u1', { urgent: true });
-    await Promise.all([...jobs, u]);
-    assert.strictEqual(await dropped, 'dropped', 'normal announcement dropped when the queue is full');
-    assert.deepStrictEqual(order, ['n1', 'u1', 'n2', 'n3', 'n4', 'n5'], 'urgent plays right after the current one');
+    const loud = sp.play('alarm', { volume: 100, urgent: true });
+    await Promise.all([...jobs, u, loud]);
+    assert.strictEqual(await dropped, 'dropped', 'normal announcement dropped when 10 are already waiting');
+    assert.deepStrictEqual(order, [['ding', 'n1'], ['u1'], ['alarm'], ['n2', 'n3', 'n4', 'n5', 'n6', 'n7', 'n8', 'n9', 'n10']],
+      'urgent first, a different volume separately, the rest together without another chime');
     // quiet-hours volume cap
     const caps = [];
     const capEngine = { ensure: async () => {}, helper: async (a) => { caps.push(a.volume); return { ok: true }; } };
@@ -435,12 +439,27 @@ exit 1
     const last = speakCalls().pop();
     assert.ok(/chime-urgent/.test(last.files[0]) && last.files.length === 2, 'urgent beeps before the speech');
     cp.config = { ...cp.config, quietHours: { enabled: false } };
+    cp.speakers.get('מטבח').lastEnd = 0;
     await cp.say('רגיל', { speakers: ['מטבח'] });
     assert.ok(/chime-dingdong/.test(speakCalls().pop().files[0]), 'ding-dong before normal speech');
     cp.config = { ...cp.config, chime: { enabled: false } };
     await cp.say('רגיל', { speakers: ['מטבח'] });
     assert.strictEqual(speakCalls().pop().files.length, 1, 'no chime when disabled');
     api3.emit('shutdown');
+  }
+
+  // digits are read as Hebrew words (some voices skip digits)
+  {
+    const { hebrewNumbers } = require('../src/numbers');
+    assert.strictEqual(hebrewNumbers('לילה טוב השעה 8 בערב'), 'לילה טוב השעה שמונה בערב');
+    assert.strictEqual(hebrewNumbers('השעה 20:00'), 'השעה שמונה בערב');
+    assert.strictEqual(hebrewNumbers('השעה 20:00 בערב'), 'השעה שמונה בערב');
+    assert.strictEqual(hebrewNumbers('7:30'), 'שבע וחצי בבוקר');
+    assert.strictEqual(hebrewNumbers('ב-8 בבוקר'), 'בשמונה בבוקר');
+    assert.strictEqual(hebrewNumbers('סוללה 15%'), 'סוללה חמש עשרה אחוז');
+    assert.strictEqual(hebrewNumbers('1,500'), 'אלף וחמש מאות');
+    assert.strictEqual(hebrewNumbers('123'), 'מאה עשרים ושלוש');
+    assert.strictEqual(hebrewNumbers('בלי מספרים'), 'בלי מספרים');
   }
 
   // every release must say what's new: in the settings screen and in the changelog

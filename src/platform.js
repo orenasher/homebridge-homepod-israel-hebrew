@@ -355,13 +355,12 @@ class HomePodIsraelHebrewPlatform {
     this.log.info(`Speaking ${tag0}${urgent ? ' (urgent)' : ''} on ${targets.map((s) => s.name).join(' + ')} `
       + `(${audio.voice}${audio.cached ? ', cached' : ''}${quiet ? `, quiet hours ${quiet.volume}%` : ''}, ready in ${Date.now() - started} ms)`);
 
-    const files = [audio.file];
-    const chime = this.chimeFor(urgent);
-    if (chime) files.unshift(chime);
-
     const restore = this.config.restoreVolume !== false;
-    const opts = { volume, restoreVolume: restore, urgent: !!urgent, maxVolume: quiet ? quiet.volume : undefined };
-    const results = await Promise.allSettled(targets.map((s) => s.play(files, opts)));
+    const opts = {
+      volume, restoreVolume: restore, urgent: !!urgent, maxVolume: quiet ? quiet.volume : undefined,
+      chime: this.chimeFor(urgent) || undefined,
+    };
+    const results = await Promise.allSettled(targets.map((s) => s.play(audio.file, opts)));
     const failed = [];
     results.forEach((r, i) => {
       if (r.status === 'rejected') {

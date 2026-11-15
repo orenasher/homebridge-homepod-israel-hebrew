@@ -60,6 +60,15 @@ Got many phrases? Collect all the switches into one accessory so Apple Home stay
 > ⚠️ Switching between separate switches and the group (either way) recreates the switches, so existing automations and scenes need to be reconnected. Siri keeps working by switch name.
 > 💡 If Apple Home shows the switches as separate tiles: long-press one of the switches → ⚙️ → turn off **Show as Separate Tiles**.
 
+### 🔢 Numbers and times
+You can type digits. The plugin turns them into Hebrew words before speaking:
+- `השעה 8 בערב` → "השעה שמונה בערב"
+- `20:00` → "שמונה בערב", `7:30` → "שבע וחצי בבוקר"
+- `15%` → "חמש עשרה אחוז", `24°` → "עשרים וארבע מעלות"
+
+### 📢 Several announcements at once
+When several automations fire together, the announcements play back to back, with a single chime first (if enabled). Each HomePod queues up to 10 announcements.
+
 ### 🚨 Urgent phrases
 Every phrase has an **"🚨 Urgent"** checkbox. An urgent phrase:
 - jumps the queue (plays right after the announcement that is playing now),

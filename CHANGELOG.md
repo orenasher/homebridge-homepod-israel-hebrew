@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.1
+- **Numbers are read as words 🔢** — some voices skipped digits ("השעה 8 בערב" came out as "השעה בערב"). Digits, clock times (20:00 → "שמונה בערב"), percentages and degrees are now turned into Hebrew words before speaking. Phrases without digits are not affected.
+- **Announcements that arrive together all play 📢** — when several automations fire at once (e.g. a few windows opened while the AC is on) they now play back to back in one go, with a single chime, instead of some being skipped. The waiting line holds up to 10 announcements per HomePod.
+
 ## 1.6.0
 - **Urgent phrases 🚨** — tick "Urgent" on a phrase: it jumps ahead of waiting announcements, is never dropped when the line is full, and plays even during quiet hours.
 - **Quiet hours 🌙** (General settings) — between two times announcements play at a lower volume, or not at all. Urgent phrases play normally.
