@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.7.0
+- **Separate volume per HomePod 🔊** — a phrase that plays on more than one HomePod can now have its own volume on each one (e.g. loud in the kitchen, quiet in the bedroom). Tick "Separate volume per HomePod" under the phrase and move each slider. Config: `"volumes": { "Kitchen": 80, "Bedroom": 35 }`.
+
 ## 1.6.1
 - **Numbers are read as words 🔢** — some voices skipped digits ("השעה 8 בערב" came out as "השעה בערב"). Digits, clock times (20:00 → "שמונה בערב"), percentages and degrees are now turned into Hebrew words before speaking. Phrases without digits are not affected.
 - **Announcements that arrive together all play 📢** — when several automations fire at once (e.g. a few windows opened while the AC is on) they now play back to back in one go, with a single chime, instead of some being skipped. The waiting line holds up to 10 announcements per HomePod.

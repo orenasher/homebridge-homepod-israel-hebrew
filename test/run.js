@@ -445,6 +445,14 @@ exit 1
     cp.config = { ...cp.config, chime: { enabled: false } };
     await cp.say('רגיל', { speakers: ['מטבח'] });
     assert.strictEqual(speakCalls().pop().files.length, 1, 'no chime when disabled');
+
+    // separate volume per HomePod: the per-HomePod value wins, others use the phrase volume
+    fs.rmSync(callsLog, { force: true });
+    await cp.announce({ text: 'רגיל', speakers: ['מטבח', 'חדר שינה הורים'], volume: 60, volumes: { 'מטבח': 30 } });
+    const vols = Object.fromEntries(speakCalls().map((c) => [c.host, c.volume]));
+    const hostOf = (n) => config.speakers.find((x) => x.name === n).host;
+    assert.strictEqual(vols[hostOf('מטבח')], 30);
+    assert.strictEqual(vols[hostOf('חדר שינה הורים')], 60);
     api3.emit('shutdown');
   }
 

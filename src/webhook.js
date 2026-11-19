@@ -106,6 +106,7 @@ function startWebhook(platform, cfg, log) {
           ...item,
           speakers: params.speakers || params.speaker || item.speakers,
           volume: params.volume ?? item.volume,
+          volumes: params.volume !== undefined ? undefined : item.volumes,
           urgent: params.urgent !== undefined ? isTrue(params.urgent) : item.urgent,
         });
       } else {

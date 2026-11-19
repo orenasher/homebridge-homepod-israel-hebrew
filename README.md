@@ -60,6 +60,15 @@ Got many phrases? Collect all the switches into one accessory so Apple Home stay
 > ⚠️ Switching between separate switches and the group (either way) recreates the switches, so existing automations and scenes need to be reconnected. Siri keeps working by switch name.
 > 💡 If Apple Home shows the switches as separate tiles: long-press one of the switches → ⚙️ → turn off **Show as Separate Tiles**.
 
+### 🔊 Separate volume per HomePod
+When a phrase plays on more than one HomePod you can give it a different volume on each:
+1. Under the phrase tick **"Separate volume per HomePod"**.
+2. A slider appears for each HomePod — set each one (e.g. Kitchen 80, Bedroom 35).
+3. Tap **Save** and restart.
+
+Priority: the phrase's per-HomePod volume → the phrase volume → the HomePod's default volume.
+In `config.json`: `"volumes": { "Kitchen": 80, "Bedroom": 35 }`.
+
 ### 🔢 Numbers and times
 You can type digits. The plugin turns them into Hebrew words before speaking:
 - `השעה 8 בערב` → "השעה שמונה בערב"

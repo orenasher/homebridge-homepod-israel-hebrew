@@ -94,6 +94,16 @@
               "minimum": 0,
               "maximum": 100
             },
+            "volumes": {
+              "title": "ווליום לכל הום פוד | Volume per HomePod",
+              "type": "object",
+              "description": "שם ההום פוד ← ווליום, גובר על הווליום של המשפט | HomePod name → volume, overrides the phrase volume",
+              "additionalProperties": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100
+              }
+            },
             "style": {
               "title": "סגנון | Style",
               "type": "string",

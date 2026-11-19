@@ -330,7 +330,7 @@ class HomePodIsraelHebrewPlatform {
   /** A configured phrase (from a switch or the webhook). */
   announce(item) {
     return this.say(item.text, {
-      speakers: item.speakers, volume: item.volume, voice: item.voice, style: item.style, label: item.name, urgent: item.urgent,
+      speakers: item.speakers, volume: item.volume, volumes: item.volumes, voice: item.voice, style: item.style, label: item.name, urgent: item.urgent,
     });
   }
 
@@ -338,7 +338,7 @@ class HomePodIsraelHebrewPlatform {
    * Say any text.
    * @returns {Promise<{voice: string, cached: boolean, speakers: string[], failed: string[]}>}
    */
-  async say(text, { speakers, volume, voice, style, label, urgent } = {}) {
+  async say(text, { speakers, volume, volumes, voice, style, label, urgent } = {}) {
     const targets = this.resolveSpeakers(speakers);
     if (!targets.length) throw new Error('no matching HomePods');
     const tag0 = label ? `"${label}"` : `"${String(text).slice(0, 40)}"`;
@@ -360,7 +360,11 @@ class HomePodIsraelHebrewPlatform {
       volume, restoreVolume: restore, urgent: !!urgent, maxVolume: quiet ? quiet.volume : undefined,
       chime: this.chimeFor(urgent) || undefined,
     };
-    const results = await Promise.allSettled(targets.map((s) => s.play(audio.file, opts)));
+    // a volume set for one HomePod wins over the phrase volume, which wins over the HomePod's default
+    const perSpeaker = volumes && typeof volumes === 'object' ? volumes : {};
+    const results = await Promise.allSettled(targets.map((s) => s.play(audio.file, {
+      ...opts, volume: perSpeaker[s.name] ?? volume,
+    })));
     const failed = [];
     results.forEach((r, i) => {
       if (r.status === 'rejected') {

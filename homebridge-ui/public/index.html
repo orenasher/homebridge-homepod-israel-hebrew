@@ -239,7 +239,7 @@
       groupHelp: 'בבית של אפל יופיע אביזר אחד, ובתוכו מתג לכל משפט. שינוי ההגדרה יוצר את המתגים מחדש, אז צריך לחבר מחדש אוטומציות קיימות.',
       nameKept: 'שם המתג נשמר כמו שהיה, כדי שהאוטומציות ימשיכו לעבוד. אפשר לשנות אותו בשדה "שם המתג".', addPhrase: '➕ הוסף משפט', phraseText: 'הטקסט שיוקרא', switchName: 'שם המתג (לא חובה)',
       who: 'מי ידבר:', allIfNone: '(אם לא סומן — כולם)', voice: 'קול', defaultOpt: 'ברירת המחדל',
-      useVol: 'ווליום מיוחד', test: '▶️ השמע עכשיו', testing: 'משמיע…', played: 'הושמע ✓',
+      useVol: 'ווליום מיוחד', perVol: 'ווליום נפרד לכל הום פוד', perVolHelp: 'כל הום פוד מושמע בווליום משלו', test: '▶️ השמע עכשיו', testing: 'משמיע…', played: 'הושמע ✓',
       voiceTitle: '🎙️ קול ברירת המחדל', preview: '▶️ השמע דוגמה',
       voiceHelp: 'בוחרים קול (מי מדבר) וסגנון (איך הוא מדבר). לכל משפט אפשר לבחור קול וסגנון משלו.',
       style: 'סגנון', defaultStyleOpt: 'סגנון ברירת המחדל',
@@ -301,7 +301,7 @@
       groupHelp: 'Apple Home shows one accessory with a switch for each phrase inside. Changing this recreates the switches, so existing automations need to be reconnected.',
       nameKept: 'The switch keeps its name so your automations keep working. You can change it in the "Switch name" field.', addPhrase: '➕ Add phrase', phraseText: 'Text to say', switchName: 'Switch name (optional)',
       who: 'Who speaks:', allIfNone: '(none checked = all)', voice: 'Voice', defaultOpt: 'Default',
-      useVol: 'Custom volume', test: '▶️ Play now', testing: 'Playing…', played: 'Played ✓',
+      useVol: 'Custom volume', perVol: 'Separate volume per HomePod', perVolHelp: 'Each HomePod plays at its own volume', test: '▶️ Play now', testing: 'Playing…', played: 'Played ✓',
       voiceTitle: '🎙️ Default voice', preview: '▶️ Play sample',
       voiceHelp: 'Pick a voice (who speaks) and a style (how they speak). Every phrase can have its own voice and style.',
       style: 'Style', defaultStyleOpt: 'Default style',
@@ -352,6 +352,14 @@
 
   /** Shown once after updating to a version listed here. */
   const WHATS_NEW = {
+    '1.7.0': {
+      he: [
+        '🔊 ווליום נפרד לכל הום פוד — משפט שמושמע בכמה הום פודים יכול לקבל ווליום אחר בכל אחד (למשל חזק במטבח ושקט בחדר השינה). מסמנים "ווליום נפרד לכל הום פוד" מתחת למשפט ומזיזים כל סרגל.',
+      ],
+      en: [
+        '🔊 Separate volume per HomePod — a phrase that plays on several HomePods can have a different volume on each (e.g. loud in the kitchen, quiet in the bedroom). Tick "Separate volume per HomePod" under the phrase and move each slider.',
+      ],
+    },
     '1.6.1': {
       he: [
         '🔢 מספרים נקראים במילים — "השעה 8 בערב" נשמע עכשיו "השעה שמונה בערב" (גם 20:00, אחוזים ומעלות). לפני כן חלק מהקולות דילגו על ספרות.',
@@ -495,13 +503,20 @@
         if (k === 'volume') {
           if (inp.value === '') delete cfg.speakers[i].volume; else cfg.speakers[i].volume = Number(inp.value);
         } else cfg.speakers[i][k] = inp.value.trim();
-        if (k === 'name') cfg.phrases.forEach((p) => { if (p.speakers) p.speakers = p.speakers.map((n) => (n === old ? inp.value.trim() : n)); });
+        if (k === 'name') cfg.phrases.forEach((p) => {
+          const nn = inp.value.trim();
+          if (p.speakers) p.speakers = p.speakers.map((n) => (n === old ? nn : n));
+          if (p.volumes && old in p.volumes) { p.volumes[nn] = p.volumes[old]; delete p.volumes[old]; }
+        });
         save(); if (k === 'name') renderPhrases();
       }));
       row.querySelector('[data-act=del]').addEventListener('click', () => {
         const name = cfg.speakers[i].name;
         cfg.speakers.splice(i, 1);
-        cfg.phrases.forEach((p) => { if (p.speakers) p.speakers = p.speakers.filter((n) => n !== name); });
+        cfg.phrases.forEach((p) => {
+          if (p.speakers) p.speakers = p.speakers.filter((n) => n !== name);
+          if (p.volumes) { delete p.volumes[name]; if (!Object.keys(p.volumes).length) delete p.volumes; }
+        });
         save(); renderSpeakers(); renderPhrases();
       });
     });
@@ -581,14 +596,14 @@
     if (urgent && (!c.urgentSound || c.urgentSound === 'urgent')) return 'urgent';
     return c.sound || 'dingdong';
   }
-  async function playTest(text, voice, names, volume, btn, style, urgent) {
+  async function playTest(text, voice, names, volume, btn, style, urgent, volumes) {
     if (!cfg.speakers.length) return homebridge.toast.warning(t('errNoSpeaker'));
     if (!String(text || '').trim()) return homebridge.toast.warning(t('errEmpty'));
     const label = btn.textContent;
     btn.disabled = true; btn.textContent = t('testing');
     try {
       const r = await homebridge.request('/test', {
-        text, voice: voice || cfg.voice, style: style || cfg.style, speakers: speakerObjs(names), volume,
+        text, voice: voice || cfg.voice, style: style || cfg.style, speakers: speakerObjs(names), volume, volumes,
         tts: ttsBlock(), restoreVolume: cfg.restoreVolume !== false, chime: chimeName(urgent),
       });
       if (r.requested) homebridge.toast.warning(`${t('fellBack')} ${r.voice}\n${r.fallbackReason || ''}`);
@@ -644,6 +659,7 @@
             <button class="btn btn-sm btn-outline-danger" data-act="del">${esc(t('remove'))}</button>
           </div>
         </div>
+        <div data-perbox style="margin-top:6px"></div>
       </div>`).join('');
 
     box.querySelectorAll('.phrase').forEach((el) => {
@@ -680,11 +696,39 @@
         save();
       });
       range.addEventListener('input', () => { p.volume = Number(range.value); vv.textContent = range.value; save(); });
+      // separate volume per HomePod — offered when the phrase plays on more than one HomePod
+      const perBox = el.querySelector('[data-perbox]');
+      const renderPer = () => {
+        const names = (p.speakers && p.speakers.length ? p.speakers : cfg.speakers.map((s) => s.name));
+        if (p.volumes) {
+          for (const k of Object.keys(p.volumes)) if (!names.includes(k)) delete p.volumes[k];
+          if (!Object.keys(p.volumes).length && names.length < 2) delete p.volumes;
+        }
+        if (names.length < 2) { perBox.innerHTML = ''; useVol.disabled = false; range.disabled = !useVol.checked; return; }
+        const on = !!p.volumes;
+        const def = (n) => { const sp = cfg.speakers.find((x) => x.name === n); return p.volume ?? (sp && sp.volume) ?? 50; };
+        perBox.innerHTML = `<label style="margin:0" title="${esc(t('perVolHelp'))}"><input type="checkbox" data-perv ${on ? 'checked' : ''}> ${esc(t('perVol'))}</label>`
+          + (on ? names.map((n) => `<div class="row-flex" style="margin:4px 0 0; padding-inline-start:20px">
+              <span style="min-width:120px">${esc(n)}</span>
+              <input type="range" min="0" max="100" data-pv="${esc(n)}" value="${esc(p.volumes[n] ?? def(n))}">
+              <span>${esc(p.volumes[n] ?? def(n))}</span></div>`).join('') : '');
+        useVol.disabled = on; range.disabled = on || !useVol.checked;
+        perBox.querySelector('[data-perv]').addEventListener('change', (e) => {
+          if (e.target.checked) p.volumes = Object.fromEntries(names.map((n) => [n, def(n)]));
+          else delete p.volumes;
+          save(); renderPer();
+        });
+        perBox.querySelectorAll('[data-pv]').forEach((r) => r.addEventListener('input', () => {
+          p.volumes[r.dataset.pv] = Number(r.value); r.nextElementSibling.textContent = r.value; save();
+        }));
+      };
+      renderPer();
+      el.querySelectorAll('[data-sp]').forEach((cb) => cb.addEventListener('change', renderPer));
       const urg = el.querySelector('[data-k=urgent]');
       urg.addEventListener('change', () => { if (urg.checked) p.urgent = true; else delete p.urgent; el.classList.toggle('urgent', urg.checked); save(); });
       el.classList.toggle('urgent', !!p.urgent);
       el.querySelector('[data-act=del]').addEventListener('click', () => { cfg.phrases.splice(i, 1); save(); renderPhrases(); });
-      el.querySelector('[data-act=test]').addEventListener('click', (e) => playTest(p.text, p.voice, p.speakers, p.volume, e.target, p.style, p.urgent));
+      el.querySelector('[data-act=test]').addEventListener('click', (e) => playTest(p.text, p.voice, p.speakers, p.volume, e.target, p.style, p.urgent, p.volumes));
     });
   }
   $('addPhraseBtn').addEventListener('click', () => {

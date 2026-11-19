@@ -88,7 +88,10 @@ const quietLog = {
           if (chime) files.unshift(chime);
           await this.engine.ensure();
           const results = await Promise.allSettled(speakers.map((s) => new Speaker(s, this.engine, quietLog)
-            .play(files, { volume: body.volume, restoreVolume: body.restoreVolume !== false })));
+            .play(files, {
+              volume: (body.volumes && body.volumes[s.name]) ?? body.volume,
+              restoreVolume: body.restoreVolume !== false,
+            })));
           const failed = results.map((r, i) => (r.status === 'rejected' ? `${speakers[i].name}: ${r.reason.message}` : null))
             .filter(Boolean);
           if (failed.length === speakers.length) throw new Error(failed.join(' | '));
