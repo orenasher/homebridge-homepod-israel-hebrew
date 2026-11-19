@@ -2,6 +2,7 @@
 
 ## 1.7.1
 - Clearer Hebrew wording in the settings screen: "עוצמת קול" instead of "ווליום", and the per-HomePod option is now called "עוצמת קול נפרדת לכל HomePod".
+- "What's new" in the settings screen now lists every change since the last version you saw, even when versions were skipped.
 
 ## 1.7.0
 - **Separate volume per HomePod 🔊** — a phrase that plays on more than one HomePod can now have its own volume on each one (e.g. loud in the kitchen, quiet in the bedroom). Tick "Separate volume per HomePod" under the phrase and move each slider. Config: `"volumes": { "Kitchen": 80, "Bedroom": 35 }`.

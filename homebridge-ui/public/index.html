@@ -354,15 +354,17 @@
   const WHATS_NEW = {
     '1.7.1': {
       he: [
-        '✏️ ניסוח ברור יותר בהגדרות: "עוצמת קול" במקום "ווליום", ו"עוצמת קול נפרדת לכל HomePod".',
+        '✏️ ניסוח ברור יותר בהגדרות: "עוצמת קול" במקום "ווליום".',
+        '🎉 "מה חדש" מציג עכשיו את כל השינויים מאז הגרסה האחרונה שראיתם, גם אם דילגתם על גרסאות.',
       ],
       en: [
         '✏️ Clearer Hebrew wording in the settings ("עוצמת קול" instead of "ווליום").',
+        '🎉 "What\'s new" now lists everything since the last version you saw, even if you skipped versions.',
       ],
     },
     '1.7.0': {
       he: [
-        '🔊 ווליום נפרד לכל הום פוד — משפט שמושמע בכמה הום פודים יכול לקבל ווליום אחר בכל אחד (למשל חזק במטבח ושקט בחדר השינה). מסמנים "ווליום נפרד לכל הום פוד" מתחת למשפט ומזיזים כל סרגל.',
+        '🔊 עוצמת קול נפרדת לכל HomePod — משפט שמושמע בכמה HomePod יכול לקבל עוצמת קול אחרת בכל אחד (למשל חזק במטבח ושקט בחדר השינה). מסמנים "עוצמת קול נפרדת לכל HomePod" מתחת למשפט ומזיזים כל סרגל.',
       ],
       en: [
         '🔊 Separate volume per HomePod — a phrase that plays on several HomePods can have a different volume on each (e.g. loud in the kitchen, quiet in the bedroom). Tick "Separate volume per HomePod" under the phrase and move each slider.',
@@ -881,13 +883,22 @@
   let version = '';
   try { version = (await homebridge.request('/version')).version || ''; } catch { /* older backend */ }
   const SEEN_KEY = 'hih-whats-new-seen';
+  const cmpVer = (a, b) => {
+    const x = a.split('.').map(Number); const y = b.split('.').map(Number);
+    for (let i = 0; i < 3; i++) if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) - (y[i] || 0);
+    return 0;
+  };
   function renderWhatsNew() {
-    const notes = WHATS_NEW[version];
     let seen = '';
     try { seen = localStorage.getItem(SEEN_KEY) || ''; } catch { /* storage blocked */ }
-    if (!notes || seen === version) { $('whatsNew').style.display = 'none'; return; }
+    // everything new since the version the user last saw (or just this version on a first visit)
+    const versions = Object.keys(WHATS_NEW)
+      .filter((v) => cmpVer(v, version) <= 0 && (seen ? cmpVer(v, seen) > 0 : v === version))
+      .sort((a, b) => cmpVer(b, a));
+    if (!version || !versions.length) { $('whatsNew').style.display = 'none'; return; }
     $('wnTitle').textContent = `${t('wnTitle')} ${version}`;
-    $('wnList').innerHTML = (notes[lang] || notes.he).map((n) => `<li>${esc(n)}</li>`).join('');
+    $('wnList').innerHTML = versions.flatMap((v) => (WHATS_NEW[v][lang] || WHATS_NEW[v].he)
+      .map((n) => `<li>${versions.length > 1 ? `<b>${esc(v)}</b> · ` : ''}${esc(n)}</li>`)).join('');
     $('whatsNew').style.display = '';
   }
   $('wnOk').addEventListener('click', () => {
