@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.7.2
+
+- New versions are published to npm straight from GitHub (verified, with provenance). Nothing changes in the plugin itself.
+- גרסאות חדשות מתפרסמות ל‑npm ישירות מ‑GitHub (מאומת, עם מקור מוצהר). בפלאגין עצמו לא השתנה כלום.
+
 ## 1.7.1
 - Clearer Hebrew wording in the settings screen: "עוצמת קול" instead of "ווליום", and the per-HomePod option is now called "עוצמת קול נפרדת לכל HomePod".
 - "What's new" in the settings screen now lists every change since the last version you saw, even when versions were skipped.
