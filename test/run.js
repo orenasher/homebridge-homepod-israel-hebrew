@@ -128,7 +128,16 @@ const speakCalls = () => calls().filter((c) => c.cmd === 'speak');
   api.emit('didFinishLaunching');
   await sleep(400);
 
-  assert.deepStrictEqual(registered.map((a) => a.displayName), ['ארוחת ערב מוכנה כולם לשולחן', 'הכביסה מוכנה', 'Good night']);
+  assert.deepStrictEqual(registered.map((a) => a.displayName), ['HomePod ארוחת ערב מוכנה כולם לשולחן', 'HomePod הכביסה מוכנה', 'HomePod Good night'],
+    '"HomePod" is shown in front of every switch name by default');
+  // the switch identity (and so every Apple Home automation) does not depend on the shown name
+  const md5 = (x) => require('crypto').createHash('md5').update(x).digest('hex');
+  assert.deepStrictEqual(registered.map((a) => a.UUID), ['ארוחת ערב מוכנה כולם לשולחן', 'הכביסה מוכנה', 'Good night'].map((n) => md5(`HomePodIsraelHebrew:${n}`)));
+  {
+    const off = new Platform(log, { ...config, homepodPrefix: false, webhook: { enabled: false } }, Object.assign(new EventEmitter(), {}));
+    assert.strictEqual(off.label('הכביסה מוכנה'), 'הכביסה מוכנה', 'prefix can be turned off');
+    assert.strictEqual(platform.label('HomePod כבר כתוב'), 'HomePod כבר כתוב', 'no double prefix');
+  }
   assert.ok(generated.some((g) => g.voice === 'he-IL-AvriNeural' && g.pitch === '-4Hz'), 'legacy avri-deep → avri + announcer style');
   assert.ok(generated.some((g) => g.voice === 'he-IL-HilaNeural' && g.rate === '-18%'), 'legacy hila-calm → hila + calm style');
 
@@ -420,7 +429,7 @@ exit 1
     api3.emit('didFinishLaunching');
     await sleep(600);
     const sensors = reg3.filter((a) => a.context.sensorFor);
-    assert.deepStrictEqual(sensors.map((a) => a.displayName), ['מטבח מחובר', 'חדר שינה הורים מחובר', 'Broken מחובר']);
+    assert.deepStrictEqual(sensors.map((a) => a.displayName), ['HomePod מטבח מחובר', 'HomePod חדר שינה הורים מחובר', 'HomePod Broken מחובר']);
     assert.ok(calls().some((c) => c.cmd === 'ping'), 'availability checked at startup');
     const css = (a) => a.getService('contact').getCharacteristic(api.hap.Characteristic.ContactSensorState);
     assert.strictEqual(css(sensors[0]).getter(), 0, 'reachable HomePod → closed');

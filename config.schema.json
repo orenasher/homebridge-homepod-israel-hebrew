@@ -187,6 +187,12 @@
         "type": "string",
         "default": "קבצי הקול שלי"
       },
+      "homepodPrefix": {
+        "title": "הוסף \"HomePod\" בתחילת שם כל מתג | Add \"HomePod\" in front of every switch name",
+        "type": "boolean",
+        "default": true,
+        "description": "משנה רק את השם שמוצג — האוטומציות הקיימות ממשיכות לעבוד | Changes only the shown name — existing automations keep working"
+      },
       "voice": {
         "title": "קול ברירת מחדל | Default voice",
         "type": "string",

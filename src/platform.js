@@ -131,6 +131,15 @@ class HomePodIsraelHebrewPlatform {
     return list;
   }
 
+  /**
+   * The name shown in Apple Home. "HomePod" is added in front (unless turned off) so the
+   * announcement switches are easy to tell apart from other switches. Only the shown name
+   * changes — the switch identity stays the same, so existing automations keep working.
+   */
+  label(name) {
+    return this.config.homepodPrefix === false || /^homepod\b/i.test(name) ? name : `HomePod ${name}`;
+  }
+
   syncAccessories() {
     const items = this.items();
     const wanted = new Set();
@@ -153,8 +162,8 @@ class HomePodIsraelHebrewPlatform {
           }
           for (const item of shown) {
             const service = accessory.getServiceById(Service.Switch, item.name)
-              || accessory.addService(Service.Switch, item.name, item.name);
-            this.setupSwitch(service, item.name, () => (accessory.context.items || []).find((i) => i.name === item.name));
+              || accessory.addService(Service.Switch, this.label(item.name), item.name);
+            this.setupSwitch(service, this.label(item.name), () => (accessory.context.items || []).find((i) => i.name === item.name));
           }
         });
         if (!items.length) break;
@@ -163,12 +172,12 @@ class HomePodIsraelHebrewPlatform {
       for (const item of items) {
         const uuid = this.api.hap.uuid.generate(`${PLATFORM_NAME}:${item.name}`);
         wanted.add(uuid);
-        this.ensureAccessory(uuid, item.name, (accessory) => {
+        this.ensureAccessory(uuid, this.label(item.name), (accessory) => {
           accessory.context.group = false;
           accessory.context.item = item;
           const { Service } = this.api.hap;
-          const service = accessory.getService(Service.Switch) || accessory.addService(Service.Switch, item.name);
-          this.setupSwitch(service, item.name, () => accessory.context.item);
+          const service = accessory.getService(Service.Switch) || accessory.addService(Service.Switch, this.label(item.name));
+          this.setupSwitch(service, this.label(item.name), () => accessory.context.item);
         });
       }
     }
@@ -177,7 +186,7 @@ class HomePodIsraelHebrewPlatform {
       for (const speaker of this.speakers.values()) {
         const uuid = this.api.hap.uuid.generate(`${PLATFORM_NAME}:online:${speaker.name}`);
         wanted.add(uuid);
-        this.ensureAccessory(uuid, switchName(`${speaker.name} מחובר`), (accessory) => {
+        this.ensureAccessory(uuid, this.label(switchName(`${speaker.name} מחובר`)), (accessory) => {
           accessory.context.sensorFor = speaker.name;
           const { Service, Characteristic } = this.api.hap;
           const service = accessory.getService(Service.ContactSensor)

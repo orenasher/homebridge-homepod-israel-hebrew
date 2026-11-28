@@ -60,6 +60,12 @@ Got many phrases? Collect all the switches into one accessory so Apple Home stay
 > ⚠️ Switching between separate switches and the group (either way) recreates the switches, so existing automations and scenes need to be reconnected. Siri keeps working by switch name.
 > 💡 If Apple Home shows the switches as separate tiles: long-press one of the switches → ⚙️ → turn off **Show as Separate Tiles**.
 
+### 🏷️ "HomePod" in front of switch names
+By default every switch shows up in Apple Home with **HomePod** in front, e.g. "HomePod Dinner is ready", so announcement switches are easy to tell apart.
+- To turn it off: **General settings** → untick **"Add HomePod in front of every switch name"** → Save → restart (`"homepodPrefix": false`).
+- Only the shown name changes. The switch stays the same, so **existing automations keep working**.
+- For switches that already exist, Apple Home sometimes keeps the old name. You can rename them by hand in the switch settings — that doesn't affect automations either.
+
 ### 🔊 Separate volume per HomePod
 When a phrase plays on more than one HomePod you can give it a different volume on each:
 1. Under the phrase tick **"Separate volume per HomePod"**.

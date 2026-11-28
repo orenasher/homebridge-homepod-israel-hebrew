@@ -93,6 +93,12 @@
     <h5 data-t="generalTitle"></h5>
 
     <div class="form-check">
+      <input id="hpPrefix" type="checkbox" class="form-check-input">
+      <label for="hpPrefix" class="form-check-label" data-t="hpPrefix"></label>
+    </div>
+    <div class="muted" style="margin:2px 0 12px" data-t="hpPrefixHelp"></div>
+
+    <div class="form-check">
       <input id="qEnabled" type="checkbox" class="form-check-input">
       <label for="qEnabled" class="form-check-label" data-t="qEnabled"></label>
     </div>
@@ -276,6 +282,8 @@
       saveHint: 'אחרי שינויים לחץ Save והפעל מחדש את Homebridge', guide: 'מדריך מלא',
       errNoSpeaker: 'הוסף קודם הום פוד', errEmpty: 'כתוב טקסט קודם',
       generalTitle: '⚙️ הגדרות כלליות',
+      hpPrefix: '🏷️ הוסף "HomePod" בתחילת שם כל מתג',
+      hpPrefixHelp: 'למשל "HomePod השואב עצר" — כך קל להבדיל בין מתגי ההכרזות למתגים אחרים בבית של אפל. משנה רק את השם שמוצג: האוטומציות הקיימות ממשיכות לעבוד.',
       qEnabled: '🌙 שעות שקט', qFrom: 'מ-', qTo: 'עד', qLower: 'להנמיך את עוצמת הקול ל-', qMute: 'לא להשמיע בכלל',
       qHelp: 'בשעות האלה ההכרזות יושמעו בשקט (או לא יושמעו). משפט שמסומן "דחוף" תמיד יושמע כרגיל.',
       cEnabled: '🔔 צליל לפני כל הכרזה', cDingdong: 'דינג-דונג', cSoft: 'צליל רך', cUrgentLabel: 'בהודעה דחופה:',
@@ -338,6 +346,8 @@
       saveHint: 'After changes, tap Save and restart Homebridge', guide: 'Full guide',
       errNoSpeaker: 'Add a HomePod first', errEmpty: 'Type some text first',
       generalTitle: '⚙️ General settings',
+      hpPrefix: '🏷️ Add "HomePod" in front of every switch name',
+      hpPrefixHelp: 'e.g. "HomePod Dinner is ready" — easy to tell the announcement switches apart in Apple Home. Only the shown name changes: existing automations keep working.',
       qEnabled: '🌙 Quiet hours', qFrom: 'From', qTo: 'until', qLower: 'Lower the volume to', qMute: 'Do not play at all',
       qHelp: 'During these hours announcements play quietly (or not at all). Phrases marked "Urgent" always play normally.',
       cEnabled: '🔔 Chime before every announcement', cDingdong: 'Ding-dong', cSoft: 'Soft tone', cUrgentLabel: 'For urgent ones:',
@@ -352,6 +362,18 @@
 
   /** Shown once after updating to a version listed here. */
   const WHATS_NEW = {
+    '1.8.0': {
+      he: [
+        '🏷️ "HomePod" בתחילת שם כל מתג — למשל "HomePod השואב עצר", כדי שקל להבדיל בין מתגי ההכרזות למתגים אחרים. פועל כברירת מחדל, ואפשר לכבות ב"הגדרות כלליות". רק השם שמוצג משתנה — האוטומציות הקיימות ממשיכות לעבוד.',
+      ],
+      en: [
+        '🏷️ "HomePod" in front of every switch name — e.g. "HomePod Dinner is ready", so announcement switches are easy to tell apart. On by default, can be turned off in General settings. Only the shown name changes — existing automations keep working.',
+      ],
+    },
+    '1.7.2': {
+      he: ['📦 גרסאות חדשות מתפרסמות ישירות מ-GitHub (מאומת). בפלאגין עצמו לא השתנה כלום.'],
+      en: ['📦 New versions are published straight from GitHub (verified). Nothing changed in the plugin itself.'],
+    },
     '1.7.1': {
       he: [
         '✏️ ניסוח ברור יותר בהגדרות: "עוצמת קול" במקום "ווליום".',
@@ -770,6 +792,7 @@
   bind('repeatGuardSeconds', (el) => { el.value = cfg.repeatGuardSeconds ?? 10; }, (el) => { const n = Number(el.value); if (Number.isFinite(n) && n >= 0) cfg.repeatGuardSeconds = Math.min(600, Math.round(n)); else delete cfg.repeatGuardSeconds; });
   bind('cacheDays', (el) => { el.value = cfg.cacheDays || 90; }, (el) => { cfg.cacheDays = Number(el.value) || 90; });
   for (const id of ['elKey', 'gKey', 'oaKey', 'caKey', 'geminiKey']) $(id).addEventListener('change', () => refreshVoiceSelects());
+  bind('hpPrefix', (el) => { el.checked = cfg.homepodPrefix !== false; }, (el) => { cfg.homepodPrefix = el.checked; });
   // quiet hours
   const q = () => { cfg.quietHours = cfg.quietHours || {}; return cfg.quietHours; };
   const showQuiet = () => {

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.8.0
+
+- 🏷️ **"HomePod" in front of every switch name** – e.g. "HomePod Dinner is ready", so the announcement switches are easy to tell apart from other switches in Apple Home. On by default; turn it off in General settings ("Add HomePod in front of every switch name"). Only the shown name changes — the switches stay the same, so existing automations keep working.
+- 🏷️ **"HomePod" בתחילת שם כל מתג** – למשל "HomePod השואב עצר", כדי שקל להבדיל בין מתגי ההכרזות למתגים אחרים בבית של אפל. פועל כברירת מחדל, ואפשר לכבות ב"הגדרות כלליות". רק השם שמוצג משתנה — המתגים נשארים אותם מתגים, והאוטומציות הקיימות ממשיכות לעבוד.
+
+
 ## 1.7.2
 
 - New versions are published to npm straight from GitHub (verified, with provenance). Nothing changes in the plugin itself.
